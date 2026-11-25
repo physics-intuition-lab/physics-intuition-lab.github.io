@@ -10358,14 +10358,38 @@ function duelFmt(R,v){return fmtVal(v,R.unit);}
    itself would tell you is drawn on the apparatus. */
 function duelBand(ctx,lines,W){
   if(!lines||!lines.length)return;
-  const rows=[];let cur="";
-  lines.forEach(s=>{const t=String(s);if(!cur)cur=t;else if((cur+"  •  "+t).length<=62)cur+="  •  "+t;else{rows.push(cur);cur=t;}});
-  if(cur)rows.push(cur);
-  const show=rows.slice(0,3),lh=17,hh=show.length*lh+9;
   ctx.save();
+  ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";
+  /* Wrap by MEASURED pixel width, never by character count: a character
+     budget overflows the band whenever the rendered glyphs run wider than
+     the budget assumed (long captions, Latin units, a fallback font), and
+     the old 3-row slice silently dropped the rest. Now every row is
+     measured against the band width minus side padding, a single item
+     wider than the band wraps word by word (and letter by letter if one
+     word alone is wider still), and ALL rows render — no caption content
+     is ever clipped, dropped, or spilled onto the scene drawing. */
+  const maxW=W-28,sep="  •  ";
+  const fits=s=>ctx.measureText(s).width<=maxW;
+  const rows=[];let cur="";
+  const addItem=t=>{
+    if(cur){const joined=cur+sep+t;if(fits(joined)){cur=joined;return;}rows.push(cur);cur="";}
+    if(fits(t)){cur=t;return;}
+    let wcur="";
+    t.split(/\s+/).forEach(wd=>{
+      if(!wd)return;
+      if(wcur){const j=wcur+" "+wd;if(fits(j)){wcur=j;return;}rows.push(wcur);wcur="";}
+      if(fits(wd)){wcur=wd;return;}
+      let ch="";for(const c of wd){if(ch&&!fits(ch+c)){rows.push(ch);ch=c;}else ch+=c;}
+      wcur=ch;
+    });
+    cur=wcur;
+  };
+  lines.forEach(s=>addItem(String(s)));
+  if(cur)rows.push(cur);
+  const lh=17,hh=rows.length*lh+9;
   ctx.fillStyle="rgba(13,20,26,.87)";ctx.fillRect(0,0,W,hh);
-  ctx.fillStyle="#fff";ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-  show.forEach((r,i)=>{ctx.fillText(r,W/2,20+i*lh);});
+  ctx.fillStyle="#fff";ctx.textAlign="center";
+  rows.forEach((r,i)=>{ctx.fillText(r,W/2,20+i*lh);});
   ctx.restore();
 }
 function duelOverlayAxis(ctx,W,H,guessPct,reveal){
