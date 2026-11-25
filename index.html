@@ -1458,6 +1458,15 @@ function checkLoginStreak(){
   if(typeof window!=="undefined"&&window.__sbStreakBlocked){renderStreakCard();return;}
   const adv=streakAdvance(S.streak,today);
   if(!adv.claimed){renderStreakCard();return;}
+  /* Durable synchronous claim marker, per account: written FIRST — before
+     the gain below is queued — so a second entry in this same browser can
+     never re-claim this day. Two entry paths used to derive an empty streak
+     day-set from the ledgers before the first claim's debounced ledger write
+     landed, and both claimed (two day-1 rows ~70 ms apart). sbEnterWithSession
+     merges this marker into the ledger-derived day-set at hydration, so the
+     marked day counts as already claimed there too. The marker holds a day
+     number: it can only ever mark its own day, never block a later day. */
+  try{const mkId=SESSION.uid||SESSION.email;if(mkId)localStorage.setItem("il_streak_claim_"+mkId,String(today));}catch(e){}
   _streakClaimBusy=true;_streakClaimedDays.add(today);
   try{
   S.streak={last:today,count:adv.count};
@@ -6969,6 +6978,11 @@ function inviteStatus(iv){
   if(ACCOUNTS[iv.email])return T("سجّل — بانتظار إكمال أول تجربة","Registered — awaiting their first experiment");
   return T("بانتظار التسجيل","Awaiting registration");
 }
+/* Invite links are built from the app's REAL location at runtime — the old
+   hard-coded https://intuitionlab.app/join domain does not exist. On the live
+   site this yields https://physics-intuition-lab.github.io/?ref=CODE, and the
+   boot handler below already reads the ?ref= parameter into registration. */
+function inviteLink(code){return location.origin+location.pathname+"?ref="+code;}
 function renderInvites(){
   const list=document.getElementById("invList");if(!list)return;
   /* personal code card at the very top of the invite section */
@@ -6977,7 +6991,7 @@ function renderInvites(){
   if(card)card.style.display=pc?"block":"none";
   if(pc){
     const co=document.getElementById("myCodeOut");if(co)co.textContent=pc;
-    const lo=document.getElementById("myLinkOut");if(lo)lo.value="https://intuitionlab.app/join?ref="+pc;
+    const lo=document.getElementById("myLinkOut");if(lo)lo.value=inviteLink(pc);
   }
   const invs=Array.isArray(S.invites)?S.invites:[];
   const used=document.getElementById("invUsedLbl");
@@ -7040,7 +7054,7 @@ function creditInviteReward(){
     saveCurrentAccount();
     const res=document.getElementById("invResult");
     if(res){res.style.display="block";
-      const lo=document.getElementById("invLinkOut");if(lo)lo.value="https://intuitionlab.app/join?ref="+code;
+      const lo=document.getElementById("invLinkOut");if(lo)lo.value=inviteLink(code);
       const co=document.getElementById("invCodeOut");if(co)co.value=code;
       const nt=document.getElementById("invResultNote");if(nt)nt.textContent=T("ابعت الرابط أو الكود لصديقك — لما يسجّل بيه ويخلّص أول تجربة، هيوصلك +100 💠.","Send the link or the code to your friend — when they register with it and finish their first experiment, you receive +100 💠.");
     }
@@ -7065,7 +7079,7 @@ function creditInviteReward(){
   const shBtn=document.getElementById("myShare");
   if(shBtn)shBtn.onclick=()=>{
     const c=ensurePersonalCode();if(!c)return;
-    const link="https://intuitionlab.app/join?ref="+c;
+    const link=inviteLink(c);
     const text=T("انضم ليّ في مختبر الحدس الفيزيائي — سجّل بكود الدعوة الخاص بي: ","Join me in the Physics Intuition Lab — register with my personal invite code: ")+c;
     if(navigator.share){navigator.share({title:T("مختبر الحدس الفيزيائي","Physics Intuition Lab"),text:text,url:link}).catch(()=>{});}
     else if(navigator.clipboard&&navigator.clipboard.writeText){
@@ -7756,6 +7770,9 @@ async function sbRehydrateLedgers(uid){
     const daySet=new Set();
     xlData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
     glData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
+    /* same claim-marker merge as sign-in hydration: a day claimed in this
+       browser whose ledger write has not landed yet stays claimed here too */
+    try{const mkDay=parseInt(localStorage.getItem("il_streak_claim_"+uid),10);if(isFinite(mkDay))daySet.add(mkDay);}catch(e){}
     S.streak=streakStateFromDays(daySet);
     if(SB_SESSION_GAINS===0){
       S.xpLog=xlData.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));
@@ -7874,6 +7891,14 @@ async function sbEnterWithSession(session){
     const daySet=new Set();
     (fp.xpLog||[]).forEach(e=>{if(e&&e.why==="streak"&&e.t)daySet.add(localDayNum(e.t));});
     (fp._streakGemDays||[]).forEach(d=>daySet.add(d));
+    /* merge this browser's synchronous streak-claim marker (written by
+       checkLoginStreak at the moment of the claim, before the gain was
+       queued): a day claimed here whose debounced ledger write has not
+       landed yet still counts as already claimed, so a second entry in
+       this browser can never re-claim it. The marker holds one day number
+       — on a later day it is simply an old day in the set, and a fresh
+       claim proceeds whenever the ledger state also says unclaimed. */
+    try{const mkDay=parseInt(localStorage.getItem("il_streak_claim_"+uid),10);if(isFinite(mkDay))daySet.add(mkDay);}catch(e){}
     fp.streak=streakStateFromDays(daySet);
   }catch(e){}
   delete fp._streakGemDays;
@@ -8295,8 +8320,14 @@ if(_riSb){
     sbCall(SB.from("profiles").update({role:role}).eq("id",acc._uid)).catch(()=>{});
   });
 })();
-/* ---------- real leaderboard: all users, from the server ledger ---------- */
-let SB_BOARD={at:0,rows:null,pmap:null,err:false};
+/* ---------- real leaderboard: all users, aggregated on the server ----------
+   xp_ledger is readable own-rows-only under RLS, so summing it client-side
+   can only ever see the signed-in user. The boards are therefore built from
+   the security-definer RPC get_leaderboard(period) — one row per user with
+   user_id, display_name, nickname, avatar_url, role and that period's XP
+   ('weekly' | 'monthly' | 'all'). If an RPC call fails, sbPaintBoard falls
+   back to the existing local rendering for that board. */
+let SB_BOARD_RPC={};
 const _rbSb=renderBoard;
 renderBoard=function(){
   _rbSb();
@@ -8309,43 +8340,40 @@ function sbAvatarFor(p,px){
 }
 async function sbPaintBoard(){
   const board=document.getElementById("weekBoard");if(!board)return;
-  if(!SB_BOARD.rows||Date.now()-SB_BOARD.at>45000){
+  const period=rankPeriod==="week"?"weekly":rankPeriod==="month"?"monthly":"all";
+  let data=null;
+  const cached=SB_BOARD_RPC[period];
+  if(cached&&Date.now()-cached.at<45000)data=cached.rows;
+  else{
     try{
-      const led=await sbCall(SB.from("xp_ledger").select("user_id,amount,created_at").limit(10000));
-      if(led.error)throw led.error;
-      const pmap={};
-      try{
-        const profs=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url").limit(1000));
-        if(!profs.error&&profs.data)profs.data.forEach(p=>{pmap[p.id]=p;});
-      }catch(e){}
-      SB_BOARD={at:Date.now(),rows:led.data||[],pmap:pmap,err:false};
-    }catch(e){SB_BOARD.err=true;}
+      const r=await sbCall(SB.rpc("get_leaderboard",{period:period}));
+      if(r.error||!Array.isArray(r.data))throw (r.error||new Error("leaderboard"));
+      data=r.data;SB_BOARD_RPC[period]={at:Date.now(),rows:data};
+    }catch(e){
+      /* RPC failed: fall back to the existing local rendering for this board
+         (repaint it, so the board is never left showing a stale period) */
+      try{_rbSb();}catch(e2){}
+      return;
+    }
   }
   if(!document.getElementById("weekBoard"))return;
   const since=rankPeriod==="all"?0:(rankPeriod==="week"?weekStartMs():monthStartMs());
   const mine=rankPeriod==="all"?S.xp:xpEarnedSince(since);
-  if(SB_BOARD.err||!SB_BOARD.rows){
-    board.innerHTML=`<div class="boardrow me"><b style="width:26px">—</b><span class="grow">${escHTML(displayName())} <span class="chip l0">${T("أنت","You")}</span></span><b>${AR(mine)} XP</b></div>`+
-      `<p class="small" style="margin-top:8px">${T("تعذّر تحميل لوحة الترتيب من السيرفر دلوقتي — صفّك من سجلّك أنت ظاهر، وحاول تاني بعد شوية.","The standings board could not be loaded from the server right now — your own row from your ledger is shown; try again shortly.")}</p>`;
-    return;
-  }
-  const sums={};
-  SB_BOARD.rows.forEach(r=>{
-    const t=new Date(r.created_at).getTime()||0;
-    if(rankPeriod!=="all"&&t<since)return;
-    sums[r.user_id]=(sums[r.user_id]||0)+(r.amount||0);
+  const rows=data.map(r=>{
+    const me=r.user_id===SESSION.uid;
+    const nm=((r.nickname||"").trim())||((r.display_name||"").trim());
+    const name=nm||(me?displayName():T("طالب","Student"));
+    return {uid:r.user_id,name:name,xp:+(r.xp||0),me:me,prof:r};
   });
-  if(!(SESSION.uid in sums))sums[SESSION.uid]=mine;
-  const rows=Object.keys(sums).map(uid=>{
-    const p=SB_BOARD.pmap[uid];
-    const me=uid===SESSION.uid;
-    const name=me?displayName():(p?((p.nickname||"").trim()||(p.display_name||"").trim()||T("طالب","Student")):T("طالب","Student"));
-    return {uid:uid,name:name,xp:sums[uid],me:me,prof:p};
-  }).sort((a,b)=>b.xp-a.xp);
+  /* the signed-in player always appears, at their true rank by XP, even when
+     the RPC has no row for them in this period yet */
+  if(!rows.some(r=>r.me))rows.push({uid:SESSION.uid,name:displayName(),xp:mine,me:true,prof:null});
+  rows.sort((a,b)=>b.xp-a.xp);
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const av=r=>r.me?((typeof avatarHTML==="function")?avatarHTML(26):""):sbAvatarFor(r.prof,26);
-  const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
-  const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
+  const tier=r=>escHTML(rankOf(r.xp).cur[0]);
+  const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
+  const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
   board.innerHTML=`<div class="podium">${pod}</div>`+rest+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
