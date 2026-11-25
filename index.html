@@ -3227,7 +3227,9 @@ function startHeat(exp){
       ctx.fillStyle=t<=0.05?"#5b6d77":`rgb(${200+Math.round(55*t)},${Math.round(160*(1-t))},40)`;
       ctx.fillRect(x,y,6,26);}
     ctx.strokeStyle=C_INK;ctx.strokeRect(x0,y,x1-x0,26);
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(label,x0-8,y+18);
+    /* the material label sits ABOVE the rod's hot end — beside the rod
+       it would be painted over by the flame block at the rod's start */
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(label,x0-26,y-10);
     ctx.fillStyle="rgba(224,60,0,.9)";ctx.fillRect(x0-26,y-2,16,30);
     // midpoint tick
     const mx=x0+(x1-x0)*.5;
@@ -4070,9 +4072,19 @@ function drawDuelMarker(anim,reveal){
   drawAxis=function(c2,w,h){
     const y=h-34,x0=38,x1=w-38;
     c2.strokeStyle=C_INK;c2.lineWidth=2;c2.beginPath();c2.moveTo(x0,y);c2.lineTo(x1,y);c2.stroke();
-    const tri=(pct,col,lbl,dy)=>{if(pct==null)return;const x=x0+(x1-x0)*pct;c2.fillStyle=col;c2.beginPath();c2.moveTo(x,y-16);c2.lineTo(x-7,y-28);c2.lineTo(x+7,y-28);c2.fill();c2.fillRect(x-1,y-16,2,12);c2.font="12px 'IBM Plex Sans Arabic',sans-serif";c2.textAlign="center";c2.fillText(lbl,x,y-32-(dy||0));};
-    tri(D.guess,C_BLUE,T("أنت","You"),0);
-    if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
+    const marks=[];
+    if(D.guess!=null)marks.push({p:D.guess,c:C_BLUE,l:T("أنت","You"),dy:0});
+    if(reveal){if(D.truePct!=null)marks.push({p:D.truePct,c:C_GOOD,l:T("الصح","Truth"),dy:14});if(D.botPct!=null)marks.push({p:D.botPct,c:C_RED,l:T("البوت","Bot"),dy:0});}
+    marks.forEach(m=>{m.x=x0+(x1-x0)*m.p;m.lx=m.x;
+      c2.fillStyle=m.c;c2.beginPath();c2.moveTo(m.x,y-16);c2.lineTo(m.x-7,y-28);c2.lineTo(m.x+7,y-28);c2.fill();c2.fillRect(m.x-1,y-16,2,12);});
+    /* when two marks land close together (a near-perfect guess), their
+       labels would overprint into one smudge — the triangles stay at the
+       true spots, but the LABELS are spread at least 48px apart */
+    const srt=marks.slice().sort((a,b)=>a.lx-b.lx);
+    for(let i=1;i<srt.length;i++)if(srt[i].lx-srt[i-1].lx<48)srt[i].lx=srt[i-1].lx+48;
+    for(let i=srt.length-1;i>=0;i--){if(srt[i].lx>w-32)srt[i].lx=w-32;if(i<srt.length-1&&srt[i+1].lx-srt[i].lx<48)srt[i].lx=srt[i+1].lx-48;if(srt[i].lx<32)srt[i].lx=32;}
+    c2.font="12px 'IBM Plex Sans Arabic',sans-serif";c2.textAlign="center";
+    marks.forEach(m=>{c2.fillStyle=m.c;c2.fillText(m.l,m.lx,y-32-m.dy);});
   };
   try{window.__duelPaint=(D.R&&D.R.conv)||null;
     const sd=(D.R&&D.R.sceneData&&D.R.sceneData.length&&typeof duelBandRows==="function")?D.R.sceneData:null;
@@ -4085,9 +4097,12 @@ function drawDuelMarker(anim,reveal){
     let bh=0;
     if(sd){ctx.save();ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";bh=duelBandRows(ctx,sd,640).length*17+9;ctx.restore();
       if(cv.height!==250+bh)cv.height=250+bh;}
+    /* every frame starts from a clean, identity transform, and the band
+       shift is restored in a finally — no painter can leave a transform
+       behind that would make the next frame draw lower and stack copies */
+    ctx.setTransform(1,0,0,1,0,0);
     ctx.save();if(bh)ctx.translate(0,bh);
-    drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);
-    ctx.restore();
+    try{drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);}finally{ctx.restore();}
     /* the model's own givens, printed on the scene as apparatus data — a
        duel hides the givens PANEL, never the values the scene is built from */
     if(sd)duelBand(ctx,sd,640);}
@@ -4447,7 +4462,10 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     // الطفو: قطعة خشب طافية — التوقع هو خط سطح الماء على جسم الخشب نفسه، والحقيقة هي
     // نسبة الغمر من ارتفاع القطعة عند الاتزان (كثافة الخشب ÷ كثافة المية)
     ctx.clearRect(0,0,w,h);
-    const tx=170,ty=26,tw=300,th=170;
+    /* the whole tank sits lower than the other liquid scenes: at zero
+       submersion the block's top (waterTop − pieceH) must stay BELOW the
+       caption row at y=20, so the caption line is never crossed by the wood */
+    const tx=170,ty=48,tw=300,th=146;
     const wg24=ctx.createLinearGradient(0,ty,0,ty+th);wg24.addColorStop(0,"rgba(90,160,230,.30)");wg24.addColorStop(1,"rgba(25,90,180,.5)");
     ctx.fillStyle=wg24;ctx.fillRect(tx+3,ty+34,tw-6,th-37);
     ctx.fillStyle="rgba(255,255,255,.35)";
@@ -9989,15 +10007,15 @@ const GSCENE_PAINT={
   ctx.fillStyle="#8a5a2b";ctx.fillRect(70,by,150,10);ctx.fillRect(390,by,150,10);
   gsFlame(ctx,145,by,1);gsFlame(ctx,465,by,1);
   ctx.fillStyle="rgba(29,111,209,.45)";ctx.fillRect(95,120,100,66);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(90,112,110,74);
-  gsTxt(ctx,T("ماء","Water"),145,204,{s:12});
+  gsTxt(ctx,T("ماء","Water"),145,157,{s:12,b:1});
   gsThermo(ctx,238,96,168,P?P.dTw/120:.083,C_BLUE,false);gsTxt(ctx,"+"+(P?P.dTw:10)+"°",238,84,{s:11,c:C_BLUE});
   ctx.fillStyle="#5b6d77";ctx.fillRect(415,128,100,58);ctx.strokeStyle=C_INK;ctx.strokeRect(415,128,100,58);
   ctx.fillStyle="rgba(224,60,0,"+(reveal?.25+.55*tp*anim:.18)+")";ctx.fillRect(415,128,100,58);
-  gsTxt(ctx,P?(LANG==="en"?P.metalEn:P.metalAr):T("حديد","Iron"),465,204,{s:12});
+  gsTxt(ctx,P?(LANG==="en"?P.metalEn:P.metalAr):T("حديد","Iron"),465,162,{s:12,b:1,c:"#fff"});
   if(!reveal&&g!=null)gsThermo(ctx,556,96,168,g,C_RED,true);
   if(reveal)gsThermo(ctx,556,96,168,tp*anim,C_RED,false);
   if(!reveal&&g==null)gsTxt(ctx,LANG==="en"?"?":"؟",556,84,{b:1,s:15,c:C_RED});
-  gsTxt(ctx,P?T("حرارة المعدن؟","Metal's rise?"):T("حرارة الحديد؟","Iron's rise?"),556,204,{s:12,c:C_RED});
+  gsTxt(ctx,P?T("حرارة المعدن؟","Metal's rise?"):T("حرارة الحديد؟","Iron's rise?"),556,62,{s:12,b:1,c:C_RED});
 },
 7(ctx,w,h,anim,g,tp,reveal){ // drops mounding on a coin
   gsCap(ctx,w,T("قطرات مية بتتكوّم على عملة معدنية — التوتر السطحي ماسكها","Water drops mounding on a coin — surface tension holds them"));
@@ -10005,7 +10023,7 @@ const GSCENE_PAINT={
   const cx=320,cy=168;
   ctx.fillStyle="#d9a441";ctx.beginPath();ctx.ellipse(cx,cy,170*CR,26,0,0,7);ctx.fill();ctx.strokeStyle="#a8742a";ctx.lineWidth=2;ctx.stroke();
   ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(cx,cy-4,150*CR,18,0,0,7);ctx.fill();
-  const dome=(frac,col,dash)=>{const dh=4+frac*52;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.fillStyle="rgba(90,160,230,.30)";ctx.beginPath();ctx.ellipse(cx,cy-8,120*CR,-dh,0,Math.PI,0);ctx.closePath();if(!dash)ctx.fill();ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
+  const dome=(frac,col,dash)=>{const dh=4+frac*52;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.fillStyle="rgba(90,160,230,.30)";ctx.beginPath();ctx.ellipse(cx,cy-8,120*CR,dh,0,Math.PI,2*Math.PI);ctx.closePath();if(!dash)ctx.fill();ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
   dome(.16,"rgba(29,111,209,.7)",false);
   if(!reveal&&g!=null)dome(g,C_BLUE,true);
   if(reveal)dome(tp*anim,"rgba(29,111,209,.9)",false);
@@ -10379,7 +10397,10 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
   const P=(exp&&exp.scene==="generic")?GSCENE_PAINT[exp.n]:null;
   if(P){
     ctx.clearRect(0,0,w,h);
-    try{P(ctx,w,h,anim,guessPct,truePct,reveal,exp);}catch(e){}
+    /* the painter runs inside its own save/restore, restored in a finally:
+       a painter that throws mid-draw can never leak canvas state (a pending
+       transform, dash or alpha) into the axis or into the next frame */
+    ctx.save();try{P(ctx,w,h,anim,guessPct,truePct,reveal,exp);}catch(e){}finally{ctx.restore();}
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);
     return;
   }
@@ -10747,7 +10768,9 @@ function duelBuildHeat(exp){
         for(let x=x0;x<x1;x+=6){const p=(x-x0)/(x1-x0);const t=show?erfc((p*HL)/(2*Math.max(sCm,.35))):0;
           ctx.fillStyle=t<=0.05?"#5b6d77":`rgb(${200+Math.round(55*t)},${Math.round(160*(1-t))},40)`;ctx.fillRect(x,y,6,26);}
         ctx.strokeStyle=C_INK;ctx.strokeRect(x0,y,x1-x0,26);
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(label,x0-8,y+18);
+        /* the material label sits ABOVE the rod's hot end — beside the rod
+           it would be painted over by the flame block at the rod's start */
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(label,x0-26,y-10);
         ctx.fillStyle="rgba(224,60,0,.9)";ctx.fillRect(x0-26,y-2,16,30);
         const mx=x0+(x1-x0)*.5;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx,y-6);ctx.lineTo(mx,y+32);ctx.stroke();
         ctx.fillStyle=C_INK;ctx.font="11px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("المنتصف","Midpoint"),mx,y+48);};
