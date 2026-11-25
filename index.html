@@ -18,6 +18,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script>
+/* Service-worker hygiene: the standalone deployment ships sw.js v2, which
+   never intercepts cross-origin API traffic. Register it here so every
+   visitor gets it, and purge any pre-v2 Cache Storage cache on load — the
+   old v1 worker cached Supabase GET reads under a cache name that never
+   changed, which froze signed-in users' server data at its first-read
+   state while writes kept working. */
+try{
+  if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){});}
+  if(window.caches&&caches.keys){caches.keys().then(function(ks){ks.forEach(function(k){if(k!=="intuition-lab-v2")caches.delete(k);});}).catch(function(){});}
+}catch(e){}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.min.js" integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>

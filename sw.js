@@ -1,8 +1,16 @@
-/* Physics Intuition Lab — service worker (standalone deployment).
-   Strategy: network-first for the main document so every deploy reaches users
-   on their next open; cache-first for static assets (icons, images) with
-   runtime caching for the rest, so the lab also opens offline. */
-const CACHE = "intuition-lab-v1";
+/* Physics Intuition Lab — service worker (standalone deployment) v2.
+   v1 cached EVERY non-document GET response forever under a cache name that
+   never changed — including cross-origin Supabase API reads — so the app kept
+   re-reading the first (empty/error) ledger responses it ever got and server
+   progress never appeared, while writes (non-GET) passed through fine.
+   v2 rules:
+   - NEVER intercept cross-origin traffic (Supabase API/auth, CDNs): the
+     network answers directly, always fresh.
+   - Documents: network-first (every deploy reaches users on next open),
+     cached copy only as the offline fallback.
+   - Same-origin static assets only: cache-first with runtime caching.
+   Activating v2 deletes the poisoned v1 cache. */
+const CACHE = "intuition-lab-v2";
 const CORE = [
   "./",
   "./index.html",
@@ -28,6 +36,9 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   const req = e.request;
   if (req.method !== "GET") return;
+  let url;
+  try { url = new URL(req.url); } catch (_) { return; }
+  if (url.origin !== self.location.origin) return; /* API/auth/CDN: never intercept, never cache */
   const accept = req.headers.get("accept") || "";
   const isDoc = req.mode === "navigate" || accept.indexOf("text/html") !== -1;
   if (isDoc) {
