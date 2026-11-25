@@ -2047,6 +2047,40 @@ function completeExp(exp,score,explain){
   fb.scrollIntoView({behavior:"smooth",block:"center"});
 }
 function feedbackBox(){return `<div class="feedback" id="expFeedback"></div>`;}
+/* ============ ONE MEASURED-WRAP RULE FOR EVERY SCENE CAPTION ============
+   Every caption / givens / data string drawn on a scene — the duel givens
+   band, the scene painters' own top captions, the duel round builders'
+   lines, the choice diagrams — goes through wrapTextRows: rows are split
+   by MEASURED pixel width against the scene width minus symmetric side
+   padding (14px each side), never by character count, and a single word
+   wider than a row is split letter by letter. No caption content is ever
+   clipped, dropped, or shrunk below its set size. */
+function wrapTextRows(ctx,text,maxW){
+  const s=String(text);
+  const fits=t=>ctx.measureText(t).width<=maxW;
+  if(fits(s))return [s];
+  const rows=[];let cur="";
+  const addWord=wd=>{
+    if(cur){const j=cur+" "+wd;if(fits(j)){cur=j;return;}rows.push(cur);cur="";}
+    if(fits(wd)){cur=wd;return;}
+    let ch="";for(const c of wd){if(ch&&!fits(ch+c)){rows.push(ch);ch=c;}else ch+=c;}
+    cur=ch;
+  };
+  s.split(/\s+/).forEach(wd=>{if(wd)addWord(wd);});
+  if(cur)rows.push(cur);
+  return rows.length?rows:[s];
+}
+/* Draws a caption with the caller's current font/fillStyle, wrapped by
+   wrapTextRows to the scene width minus padding, rows laid downward from
+   the y of the old single line — the text stays fully inside the scene
+   with padding on both edges and never spills off either side. */
+function fillCap(ctx,text,x,y,align,lh,W){
+  const rows=wrapTextRows(ctx,text,(W||640)-28);
+  ctx.save();ctx.textAlign=align||"center";
+  rows.forEach((r,i)=>{ctx.fillText(r,x,y+i*(lh||17));});
+  ctx.restore();
+  return rows.length;
+}
 function drawAxis(ctx,w,h,min,max,unit,guessPct,truePct){
   const y=h-34,x0=38,x1=w-38;
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
@@ -2076,7 +2110,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     const fl=14+truePct*26;ctx.fillStyle="rgba(224,138,0,.75)";
     for(let i=0;i<6;i++){const fx=80+i*45;ctx.beginPath();ctx.moveTo(fx-8,y+34);ctx.quadraticCurveTo(fx,y+34-fl,fx+8,y+34);ctx.fill();}
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(reveal?"القضيب بيتمدّد مع السخونية…":"قضيب معدني بيتسخّن من تحت — النار أقوى = تمدد أكبر",w-16,30);
+    fillCap(ctx,reveal?"القضيب بيتمدّد مع السخونية…":"قضيب معدني بيتسخّن من تحت — النار أقوى = تمدد أكبر",w-16,30,"right",17,w);
   }else if(exp.scene==="liquid"){
     const tx=170,ty=26,tw=300,th=170;
     const wg=ctx.createLinearGradient(0,ty,0,ty+th);wg.addColorStop(0,"rgba(90,160,230,.30)");wg.addColorStop(1,"rgba(25,90,180,.5)");
@@ -2109,7 +2143,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
       if(!reveal&&guessPct!=null)jetTo(guessPct,C_BLUE,[6,5],1);
       if(reveal)jetTo(truePct,C_TEAL,null,anim);
       ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-      ctx.fillText(T("نفاث مية من ثقب قريب من قاع الخزان — هيوصل لفين على الأرض؟","A water jet from a hole near the tank's bottom — where will it land?"),w-16,20);
+      fillCap(ctx,T("نفاث مية من ثقب قريب من قاع الخزان — هيوصل لفين على الأرض؟","A water jet from a hole near the tank's bottom — where will it land?"),w-16,20,"right",17,w);
     }else{
     let cy;
     if(exp.n===6){
@@ -2154,7 +2188,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle="rgba(0,0,0,.18)";ctx.fillRect(midX-32,cy+26,64,14);
     ctx.strokeStyle="#5f3d17";ctx.lineWidth=2;ctx.strokeRect(midX-32,cy,64,40);
     ctx.beginPath();ctx.moveTo(midX-32,cy+13);ctx.lineTo(midX+32,cy+13);ctx.moveTo(midX-32,cy+27);ctx.lineTo(midX+32,cy+27);ctx.stroke();
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(exp.n===6?T("المكعب بيغوص لحد ما وزن المية المزاحة يساوي وزنه — النسبة الغارقة هي كثافته النسبية","The cube sinks until the displaced water's weight equals its own — the submerged fraction IS its relative density"):exp.n===24?T("قطعة الخشب بتطفو لحد ما وزن المية المزاحة يساوي وزنها — النسبة الغارقة من ارتفاعها هي كثافتها النسبية","The wood piece floats until the displaced water's weight equals its own — the submerged fraction of its height IS its relative density"):T("جسم بينزل ببطء في سائل لزج — سرعته بتثبت على السرعة الحدية","A body sinking slowly in a viscous liquid — its speed settles at the terminal velocity"),w-16,20);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,exp.n===6?T("المكعب بيغوص لحد ما وزن المية المزاحة يساوي وزنه — النسبة الغارقة هي كثافته النسبية","The cube sinks until the displaced water's weight equals its own — the submerged fraction IS its relative density"):exp.n===24?T("قطعة الخشب بتطفو لحد ما وزن المية المزاحة يساوي وزنها — النسبة الغارقة من ارتفاعها هي كثافتها النسبية","The wood piece floats until the displaced water's weight equals its own — the submerged fraction of its height IS its relative density"):T("جسم بينزل ببطء في سائل لزج — سرعته بتثبت على السرعة الحدية","A body sinking slowly in a viscous liquid — its speed settles at the terminal velocity"),w-16,20,"right",17,w);
     }
   }else if(exp.scene==="drop"){
     // building height varies with the true fall time each round — window rows are a visual reference only, no numbers, no scale
@@ -2175,7 +2209,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle="rgba(255,255,255,.5)";ctx.beginPath();ctx.arc(148,by-4,3.5,0,7);ctx.fill();
     ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(24,192);ctx.lineTo(w-24,192);ctx.stroke();
     ctx.fillStyle="#5f7a4a";ctx.fillRect(24,192,w-48,6);
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("كرة بتتساب من سطح عمارة — الشبابيك مرجع بصري لارتفاعها بس","A ball released from a building roof — the windows are only a visual reference for its height"),w-16,22);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("كرة بتتساب من سطح عمارة — الشبابيك مرجع بصري لارتفاعها بس","A ball released from a building roof — the windows are only a visual reference for its height"),w-16,22,"right",17,w);
   }else if(exp.scene==="pendulum"){
     const L=46+truePct*truePct*104;const ang=Math.sin((reveal?anim*6:0.6))*0.5;
     ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(midX-70,26);ctx.lineTo(midX+70,26);ctx.stroke();
@@ -2188,13 +2222,13 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     const bx=midX+Math.sin(ang)*L,by=30+Math.cos(ang)*L;
     ctx.beginPath();ctx.moveTo(midX,28);ctx.lineTo(bx,by);ctx.stroke();
     ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(bx,by,13,0,7);ctx.fill();
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText("طول الخيط قدامك — زمن الذبذبة بيزيد مع الطول",w-16,20);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,"طول الخيط قدامك — زمن الذبذبة بيزيد مع الطول",w-16,20,"right",17,w);
   }else if(exp.scene==="wave"){
     ctx.strokeStyle=C_TEAL;ctx.lineWidth=2.5;ctx.beginPath();
     const f=2+truePct*9;
     for(let x=30;x<w-30;x++){const y=105+Math.sin((x-30)/(w-60)*Math.PI*2*f)*42;x===30?ctx.moveTo(x,y):ctx.lineTo(x,y);}
     ctx.stroke();ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText("شكل الموجة قدامك — عدّ القمم بعينك",w-16,24);
+    fillCap(ctx,"شكل الموجة قدامك — عدّ القمم بعينك",w-16,24,"right",17,w);
     if(exp.n===25){ // the vibrating string itself: fixed at both ends, on its supports
       ctx.fillStyle="#46525a";ctx.fillRect(20,58,12,94);ctx.fillRect(w-32,58,12,94);
       ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(24,52,6,0,7);ctx.fill();
@@ -2212,7 +2246,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
       ctx.strokeStyle=C_BLUE;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fx,100);ctx.lineTo(fx,64);ctx.stroke();
       ctx.fillStyle=C_BLUE;ctx.beginPath();ctx.moveTo(fx,64);ctx.lineTo(fx+15,70);ctx.lineTo(fx,76);ctx.fill();
       ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("نقطة توقعك","Your predicted point"),fx,54);}
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("الأرض ومجالها المغناطيسي — خطوط المجال من القطب للقطب","Earth and its magnetic field — field lines run from pole to pole"),w-16,22);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("الأرض ومجالها المغناطيسي — خطوط المجال من القطب للقطب","Earth and its magnetic field — field lines run from pole to pole"),w-16,22,"right",17,w);
   }else if(exp.scene==="field"){
     ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(120,95,24,0,7);ctx.fill();
     ctx.fillStyle=C_BLUE;ctx.beginPath();ctx.arc(w-120,95,15,0,7);ctx.fill();
@@ -2237,7 +2271,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     if(reveal){const a=truePct*1.2;zig(306,112,306+Math.cos(a)*170*anim,112-Math.sin(a)*170*anim,C_TEAL);
       ctx.strokeStyle=C_RED;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(306,132);ctx.lineTo(306+Math.cos(-.6)*90*anim,132-Math.sin(-.6)*90*anim);ctx.stroke();
       ctx.fillStyle=C_RED;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(T("الإلكترون المرتد","Recoiling electron"),380,168);}
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("فوتون بيتصادم مع إلكترون — بيتناثر بزاوية وبيفقد جزء من طاقته","A photon collides with an electron — it scatters at an angle and loses energy"),w-16,24);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("فوتون بيتصادم مع إلكترون — بيتناثر بزاوية وبيفقد جزء من طاقته","A photon collides with an electron — it scatters at an angle and loses energy"),w-16,24,"right",17,w);
   }else if(exp.scene==="scatter"){
     /* RUTHERFORD APPARATUS (#36): alpha source on the left, the thin gold foil
        standing vertically (the nucleus drawn on it), and a detection screen arc
@@ -2260,7 +2294,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
       const a=guessPct*1.2;ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;
       ctx.beginPath();ctx.moveTo(138,105);ctx.lineTo(138+Math.cos(a)*180,105-Math.sin(a)*180);ctx.stroke();ctx.restore();
       ctx.fillStyle=C_BLUE;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(T("زاوية توقعك","Your predicted angle"),150,84);}
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText("جسيمات ألفا على رقاقة ذهب رقيقة",w-16,24);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,"جسيمات ألفا على رقاقة ذهب رقيقة",w-16,24,"right",17,w);
   }else if(exp.scene==="orbit"){
     const r=26+truePct*64;ctx.strokeStyle=C_INK;ctx.beginPath();ctx.arc(midX,105,r,0,7);ctx.stroke();
     if(!reveal&&guessPct!=null){ // ghost orbit: the radius your prediction implies, drawn on the path itself
@@ -2269,7 +2303,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
       ctx.fillStyle=C_BLUE;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("نصف قطر توقعك","Your predicted radius"),midX,105+rg2+18);}
     ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(midX,105,7,0,7);ctx.fill();
     const a=reveal?anim*5:0.8;ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.arc(midX+Math.cos(a)*r,105+Math.sin(a)*r,8,0,7);ctx.fill();
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText("مسار دائري في مجال مغناطيسي",w-16,22);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,"مسار دائري في مجال مغناطيسي",w-16,22,"right",17,w);
   }else{
     /* Apparatus mini-schematic (top-left) for the gauge-readout experiments, so the
        student sees the actual setup whose quantity they are estimating. */
@@ -2301,7 +2335,7 @@ function drawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.strokeStyle=C_RED;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(midX,150);ctx.lineTo(midX+Math.cos(a)*82,150+Math.sin(a)*82);ctx.stroke();
     const bars=3+Math.round(truePct*7);ctx.fillStyle=C_TEAL;
     for(let i=0;i<bars;i++)ctx.fillRect(40+i*16,180-i*9,10,10+i*9);
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText("قوة الإشارة على الشمال بتلمّح للمقدار",w-16,24);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,"قوة الإشارة على الشمال بتلمّح للمقدار",w-16,24,"right",17,w);
   }
   drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);
 }
@@ -2689,7 +2723,9 @@ const CHOICE_EXTRA={
 function drawChoiceDiagram(ctx,n){
   const W=640,H=210;ctx.clearRect(0,0,W,H);
   const L=(x1,y1,x2,y2,c,w2)=>{ctx.strokeStyle=c||C_INK;ctx.lineWidth=w2||2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();};
-  const TX=(t,x,y,a,sz,b)=>{ctx.fillStyle=C_INK;ctx.font=(b?"bold ":"")+(sz||13)+"px sans-serif";ctx.textAlign=a||"center";ctx.fillText(t,x,y);};
+  const TX=(t,x,y,a,sz,b)=>{ctx.fillStyle=C_INK;ctx.font=(b?"bold ":"")+(sz||13)+"px sans-serif";ctx.textAlign=a||"center";
+    if(ctx.measureText(t).width>612){const rows=wrapTextRows(ctx,t,612),lh=(sz||13)+4;let y0=y;if(y0+(rows.length-1)*lh>224)y0=y-(rows.length-1)*lh;rows.forEach((r,i)=>ctx.fillText(r,x,y0+i*lh));return;}
+    ctx.fillText(t,x,y);};
   const BX=(x,y,w,h,c)=>{ctx.strokeStyle=c||C_INK;ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);};
   const CI=(x,y,r,c,f)=>{ctx.strokeStyle=c||C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r,0,7);if(f){ctx.fillStyle=c||C_INK;ctx.fill();}else ctx.stroke();};
   const AR=(x1,y1,x2,y2,c)=>{L(x1,y1,x2,y2,c,2.5);const a=Math.atan2(y2-y1,x2-x1);L(x2,y2,x2-Math.cos(a-.45)*10,y2-Math.sin(a-.45)*10,c,2.5);L(x2,y2,x2-Math.cos(a+.45)*10,y2-Math.sin(a+.45)*10,c,2.5);};
@@ -2977,7 +3013,7 @@ function startUnits(exp){
         ctx.beginPath();ctx.moveTo(214,gy);ctx.lineTo(426,gy);ctx.stroke();ctx.restore();
         ctx.fillStyle=C_BLUE;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(T("توقعك","Your prediction"),430,gy+4);}
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-        ctx.fillText(T("دورق ٣ لتر — المية اللي فيه قد إيه؟","A 3-litre jug — how much water is in it?"),320,20);
+        fillCap(ctx,T("دورق ٣ لتر — المية اللي فيه قد إيه؟","A 3-litre jug — how much water is in it?"),320,20,"center",17,640);
         if(rev>0){ // graduations appear ONLY now
           ctx.save();ctx.globalAlpha=rev;ctx.strokeStyle=C_GOOD;ctx.fillStyle=C_GOOD;ctx.lineWidth=2;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";
           for(let l=.5;l<=3;l+=.5){const y=bot-l/3*hMax;ctx.beginPath();ctx.moveTo(404,y);ctx.lineTo(420,y);ctx.stroke();ctx.fillText(l.toFixed(1),424,y+4);}
@@ -3008,7 +3044,7 @@ function startUnits(exp){
         for(let i=0;i<n;i++){const sx=320+(i-(n-1)/2)*36;
           ctx.beginPath();for(let y=0;y<58;y+=6){const xx=sx+Math.sin(y/11+i*1.7)*6;y===0?ctx.moveTo(xx,116):ctx.lineTo(xx,116-y);}ctx.stroke();}
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-        ctx.fillText(T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24);
+        fillCap(ctx,T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24,"center",17,640);
         if(guess!=null&&rev<=0){ // your prediction as a gauge beside the mug: height = guessed temperature
           const gy=196-(guess-10)/90*128;
           ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;
@@ -4038,10 +4074,23 @@ function drawDuelMarker(anim,reveal){
     tri(D.guess,C_BLUE,T("أنت","You"),0);
     if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
   };
-  try{window.__duelPaint=(D.R&&D.R.conv)||null;drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);
+  try{window.__duelPaint=(D.R&&D.R.conv)||null;
+    const sd=(D.R&&D.R.sceneData&&D.R.sceneData.length&&typeof duelBandRows==="function")?D.R.sceneData:null;
+    /* The givens band gets its OWN strip at the top of the canvas: its
+       wrapped height is measured first (the shared duelBandRows packing),
+       the canvas grows by exactly that height, and the whole scene is
+       shifted below the band — band text and scene drawing never overlap,
+       and the scene painter's own caption sits below the band's strip,
+       fully visible instead of ghosting through it. */
+    let bh=0;
+    if(sd){ctx.save();ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";bh=duelBandRows(ctx,sd,640).length*17+9;ctx.restore();
+      if(cv.height!==250+bh)cv.height=250+bh;}
+    ctx.save();if(bh)ctx.translate(0,bh);
+    drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);
+    ctx.restore();
     /* the model's own givens, printed on the scene as apparatus data — a
        duel hides the givens PANEL, never the values the scene is built from */
-    if(D.R&&D.R.sceneData&&D.R.sceneData.length&&typeof duelBand==="function")duelBand(ctx,D.R.sceneData,640);}
+    if(sd)duelBand(ctx,sd,640);}
   finally{drawAxis=_da;window.__duelPaint=null;}
 }
 $("#duelStart").onclick=()=>{
@@ -4289,7 +4338,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle=C_BLUE;ctx.beginPath();ctx.moveTo(-L,0);ctx.lineTo(14,-8);ctx.lineTo(14,8);ctx.fill();
     ctx.restore();
     ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(cx,cy,7,0,7);ctx.fill();
-    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("إبرة مغناطيسية حرة الحركة رأسيًا — الطرف الأحمر (الشمالي) بيميل لتحت عندنا","A magnetic needle free to move vertically — the red (north) end dips downward here"),cx,30);
+    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";fillCap(ctx,T("إبرة مغناطيسية حرة الحركة رأسيًا — الطرف الأحمر (الشمالي) بيميل لتحت عندنا","A magnetic needle free to move vertically — the red (north) end dips downward here"),cx,30,"center",17,w);
     if(reveal)ctx.fillText(T("زاوية الميل الحقيقية: ","True dip angle: ")+Math.round(truePct*90)+T("° عن الأفقي","° from the horizontal"),cx,196);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
@@ -4301,7 +4350,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle="#fff";ctx.font="bold 18px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
     ctx.fillText("+",120,102);ctx.fillText("+",w-120,95+r2*.35);
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";
-    ctx.fillText(T("شحنتان موجبتان — نقطة التعادل بينهما، وأقرب للأضعف دائمًا","Two positive charges — the zero point between them, always closer to the weaker"),w/2,30);
+    fillCap(ctx,T("شحنتان موجبتان — نقطة التعادل بينهما، وأقرب للأضعف دائمًا","Two positive charges — the zero point between them, always closer to the weaker"),w/2,30,"center",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
   if(exp.scene==="drop"){
@@ -4321,7 +4370,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(24,192);ctx.lineTo(w-24,192);ctx.stroke();
     ctx.fillStyle="#5f7a4a";ctx.fillRect(24,192,w-48,6);
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(T("كرة بتتساب من سطح عمارة — الشبابيك مرجع بصري لارتفاعها بس","A ball released from a building roof — the windows are only a visual reference for its height"),w-16,22);
+    fillCap(ctx,T("كرة بتتساب من سطح عمارة — الشبابيك مرجع بصري لارتفاعها بس","A ball released from a building roof — the windows are only a visual reference for its height"),w-16,22,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
   if(exp.scene==="wave"&&exp.n===27){
@@ -4330,7 +4379,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     const x0=70,x1=w-50,y0=168,y1=42;
     ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y0);ctx.moveTo(x0,y0);ctx.lineTo(x0,y1);ctx.stroke();
     ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("التيار","Current"),x0-6,y1+4);
-    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("دايرة RLC على التوالي: التيار بيتغيّر مع تردد المصدر — القمة هتظهر فين؟","A series RLC circuit: the current varies with the source frequency — where will the peak appear?"),w-16,24);
+    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";fillCap(ctx,T("دايرة RLC على التوالي: التيار بيتغيّر مع تردد المصدر — القمة هتظهر فين؟","A series RLC circuit: the current varies with the source frequency — where will the peak appear?"),w-16,24,"right",17,w);
     if(reveal){ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();
       for(let i=0;i<=60;i++){const p=i/60;const I=Math.exp(-Math.pow((p-truePct)*4.5,2));const x=x0+p*(x1-x0),y=y0-I*(y0-y1)*anim;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
       ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("عند الرنين: X_L = X_C والممانعة الكلية أصغر ما يمكن","At resonance: X_L = X_C and the total impedance is at its minimum"),320,196);}
@@ -4345,7 +4394,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("فوتون X داخل","Incoming X photon"),140,68);
     ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.arc(268,ey,13,0,7);ctx.fill();
     ctx.fillStyle="#fff";ctx.font="bold 12px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText("e⁻",268,ey+4);
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("تصادم فوتون أشعة سينية بإلكترون شبه حر","An X-ray photon colliding with a nearly free electron"),w-16,24);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("تصادم فوتون أشعة سينية بإلكترون شبه حر","An X-ray photon colliding with a nearly free electron"),w-16,24,"right",17,w);
     if(reveal){
       const a=-0.55;
       ctx.strokeStyle="#b07fe8";ctx.lineWidth=2.5;ctx.beginPath();
@@ -4366,7 +4415,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.fillStyle="#8a8f96";ctx.beginPath();ctx.arc(tx+tw/2,by,13,0,7);ctx.fill();
     ctx.fillStyle="rgba(255,255,255,.5)";ctx.beginPath();ctx.arc(tx+tw/2-4,by-4,4,0,7);ctx.fill();
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(T("كرة معدنية نازلة في أنبوبة زيت لزج — هتكون وصلت لفين بعد ٤ ثوانٍ؟","A metal sphere descending in a tube of viscous oil — where will it have reached after 4 seconds?"),w-16,20);
+    fillCap(ctx,T("كرة معدنية نازلة في أنبوبة زيت لزج — هتكون وصلت لفين بعد ٤ ثوانٍ؟","A metal sphere descending in a tube of viscous oil — where will it have reached after 4 seconds?"),w-16,20,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
   if(exp.scene==="liquid"&&exp.n===9){
@@ -4378,7 +4427,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(tx,ty,tw,th);
     ctx.fillStyle="#22303a";ctx.fillRect(tx+tw-4,ty+th-34,10,10);
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(T("خزان مية وثقب قريب من القاع — النفاث هيوصل لحد فين؟","A water tank with a hole near the bottom — how far will the jet reach?"),w-16,20);
+    fillCap(ctx,T("خزان مية وثقب قريب من القاع — النفاث هيوصل لحد فين؟","A water tank with a hole near the bottom — how far will the jet reach?"),w-16,20,"right",17,w);
     ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(24,196);ctx.lineTo(w-24,196);ctx.stroke();
     const hx=tx+tw+4,hy=ty+th-29;
     if(reveal){
@@ -4421,7 +4470,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
       ctx.fillText(T("خط الماء على الخشب = توقعك","The waterline on the wood = your prediction"),tx+10,waterTop-10);
     }
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(T("قطعة خشب طافية على المية — هتغوص قد إيه من ارتفاعها لحد ما تتوازن؟","A piece of wood floating on water — how much of its height will sink before it settles?"),w-16,20);
+    fillCap(ctx,T("قطعة خشب طافية على المية — هتغوص قد إيه من ارتفاعها لحد ما تتوازن؟","A piece of wood floating on water — how much of its height will sink before it settles?"),w-16,20,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
   if(exp.scene==="liquid"){
@@ -4443,7 +4492,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.strokeStyle="#46525a";ctx.lineWidth=2;ctx.strokeRect(midX-32,cy,64,34);
     ctx.beginPath();ctx.moveTo(midX-32,cy+11);ctx.lineTo(midX+32,cy+11);ctx.moveTo(midX-32,cy+23);ctx.lineTo(midX+32,cy+23);ctx.stroke();
     ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-    ctx.fillText(T("حوض مية وجسم بينزل فيه — بص على مادة الجسم ولمعته، مفيش تدريج على الحوض","A water tank and a body sinking in it — look at the body's material and sheen; there are no graduations on the tank"),w-16,20);
+    fillCap(ctx,T("حوض مية وجسم بينزل فيه — بص على مادة الجسم ولمعته، مفيش تدريج على الحوض","A water tank and a body sinking in it — look at the body's material and sheen; there are no graduations on the tank"),w-16,20,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);return;
   }
   _origDrawScene(exp,ctx,w,h,anim,guessPct,truePct,reveal);
@@ -5747,7 +5796,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.strokeStyle=C_RED;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(px-Math.cos(a)*L,py-Math.sin(a)*L);ctx.lineTo(px+Math.cos(a)*L,py+Math.sin(a)*L);ctx.stroke();
     ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(px+Math.cos(a)*L,py+Math.sin(a)*L,6,0,7);ctx.fill();
     ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fill();
-    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("إبرة ميل حرة في مصر — الطرف الشمالي (الأحمر) بيميل لتحت مع مجال الأرض","A free dip needle in Egypt — the north end (red) dips down with the Earth's field"),w-16,24);
+    ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("إبرة ميل حرة في مصر — الطرف الشمالي (الأحمر) بيميل لتحت مع مجال الأرض","A free dip needle in Egypt — the north end (red) dips down with the Earth's field"),w-16,24,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);
     return;
   }
@@ -5765,7 +5814,7 @@ drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
     ctx.stroke();
     const tipX=reveal?x0+anim*(x1-x0):x0+40;
     ctx.fillStyle="#46525a";ctx.beginPath();ctx.moveTo(tipX-9,py-58);ctx.lineTo(tipX+9,py-58);ctx.lineTo(tipX,py-Math.exp(-Math.pow((tipX-cx)/22,2))*bh-8);ctx.fill();
-    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("خط مسح STM فوق سطح مستوٍ عليه ذرة واحدة — البروز في خط المسح هو ارتفاع الذرة","An STM scan line over a flat surface with one atom — the bump in the scan line is the atom's height"),w-16,24);
+    ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("خط مسح STM فوق سطح مستوٍ عليه ذرة واحدة — البروز في خط المسح هو ارتفاع الذرة","An STM scan line over a flat surface with one atom — the bump in the scan line is the atom's height"),w-16,24,"right",17,w);
     drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);
     return;
   }
@@ -9915,7 +9964,7 @@ try{czEnsureCodes();czZone();czTeacherLabels();}catch(e){}
    follows the established drawScene override chain and falls through for every
    other experiment, so all existing scenes are untouched. */
 function gsTxt(ctx,txt,x,y,o){o=o||{};ctx.fillStyle=o.c||C_INK;ctx.font=(o.b?"bold ":"")+(o.s||12)+"px sans-serif";ctx.textAlign=o.a||"center";ctx.fillText(txt,x,y);}
-function gsCap(ctx,w,txt){gsTxt(ctx,txt,w-16,22,{a:"right",s:13});}
+function gsCap(ctx,w,txt){ctx.save();ctx.fillStyle=C_INK;ctx.font="13px sans-serif";fillCap(ctx,txt,w-16,22,"right",17,w);ctx.restore();}
 function gsGhost(ctx,draw){ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;draw();ctx.restore();}
 function gsMeter(ctx,cx,cy,r,g,tp,reveal,anim,label){
   ctx.fillStyle="#ffffff";ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.stroke();
@@ -10356,38 +10405,43 @@ function duelFmt(R,v){return fmtVal(v,R.unit);}
    the scene itself (dark band, white text — legible in both themes). The
    duel still hides the separate givens PANEL by design; what the apparatus
    itself would tell you is drawn on the apparatus. */
-function duelBand(ctx,lines,W){
-  if(!lines||!lines.length)return;
-  ctx.save();
-  ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";
-  /* Wrap by MEASURED pixel width, never by character count: a character
-     budget overflows the band whenever the rendered glyphs run wider than
-     the budget assumed (long captions, Latin units, a fallback font), and
-     the old 3-row slice silently dropped the rest. Now every row is
-     measured against the band width minus side padding, a single item
-     wider than the band wraps word by word (and letter by letter if one
-     word alone is wider still), and ALL rows render — no caption content
-     is ever clipped, dropped, or spilled onto the scene drawing. */
+/* The band's row packing — the ONE measured wrap every duel givens string
+   goes through (the caller sets the band font on ctx first): items pack
+   with the • separator while the joined line fits the band width minus
+   symmetric side padding, and a single item wider than the band is split
+   by the shared wrapTextRows core. Returns the rows; the band's height is
+   rows×17+9, which drawDuelMarker reserves above the shifted scene. */
+function duelBandRows(ctx,lines,W){
   const maxW=W-28,sep="  •  ";
   const fits=s=>ctx.measureText(s).width<=maxW;
   const rows=[];let cur="";
   const addItem=t=>{
     if(cur){const joined=cur+sep+t;if(fits(joined)){cur=joined;return;}rows.push(cur);cur="";}
     if(fits(t)){cur=t;return;}
-    let wcur="";
-    t.split(/\s+/).forEach(wd=>{
-      if(!wd)return;
-      if(wcur){const j=wcur+" "+wd;if(fits(j)){wcur=j;return;}rows.push(wcur);wcur="";}
-      if(fits(wd)){wcur=wd;return;}
-      let ch="";for(const c of wd){if(ch&&!fits(ch+c)){rows.push(ch);ch=c;}else ch+=c;}
-      wcur=ch;
-    });
-    cur=wcur;
+    const parts=wrapTextRows(ctx,t,maxW);
+    parts.forEach((p,i)=>{if(i<parts.length-1)rows.push(p);else cur=p;});
   };
   lines.forEach(s=>addItem(String(s)));
   if(cur)rows.push(cur);
+  return rows;
+}
+function duelBand(ctx,lines,W){
+  if(!lines||!lines.length)return;
+  ctx.save();
+  ctx.font="12.5px 'IBM Plex Sans Arabic',sans-serif";
+  /* Wrap by MEASURED pixel width, never by character count — the shared
+     wrapTextRows core that every scene caption uses: rows are measured
+     against the band width minus symmetric side padding, items pack with
+     the • separator while they fit, a single item wider than the band
+     wraps word by word (and letter by letter if one word alone is wider
+     still), the band height grows to fit ALL rows, and ALL rows render —
+     no caption content is ever clipped, dropped, or spilled onto the
+     scene drawing. The band is fully opaque so the scene painter's own
+     caption underneath can never ghost through and double up with the
+     givens printed here. */
+  const rows=duelBandRows(ctx,lines,W);
   const lh=17,hh=rows.length*lh+9;
-  ctx.fillStyle="rgba(13,20,26,.87)";ctx.fillRect(0,0,W,hh);
+  ctx.fillStyle="#0d141a";ctx.fillRect(0,0,W,hh);
   ctx.fillStyle="#fff";ctx.textAlign="center";
   rows.forEach((r,i)=>{ctx.fillText(r,W/2,20+i*lh);});
   ctx.restore();
@@ -10605,7 +10659,7 @@ function duelUnitsRounds(){
         const phY=148,phH=34,phW=15*SC;
         ctx.strokeStyle="rgba(217,119,6,.6)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(OX,102);ctx.lineTo(OX,196);ctx.moveTo(OX+phW,102);ctx.lineTo(OX+phW,196);ctx.stroke();ctx.setLineDash([]);
         ctx.fillStyle="#22303a";rr2(ctx,OX,phY,phW,phH,8);ctx.fill();ctx.fillStyle="#3d5a6b";rr2(ctx,OX+8,phY+6,phW-24,phH-12,4);ctx.fill();
-        ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("موبايل ١٥ سم — نفس خط البداية ونفس المقياس","A 15 cm phone — same start line, same scale"),330,138);
+        ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("موبايل ١٥ سم — نفس خط البداية ونفس المقياس","A 15 cm phone — same start line, same scale"),330,138,"center",17,640);
         const plen=tv*SC-35;
         ctx.fillStyle="#c9ccd1";ctx.fillRect(PX-13,PY,5,17);ctx.fillStyle="#d9779a";ctx.fillRect(PX-8,PY,8,17);
         ctx.fillStyle="#e8a13a";ctx.fillRect(PX,PY,plen,17);ctx.fillStyle="rgba(0,0,0,.15)";ctx.fillRect(PX,PY+12,plen,5);
@@ -10625,7 +10679,7 @@ function duelUnitsRounds(){
         ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.clip();ctx.fillStyle="rgba(20,80,45,.55)";for(let i=-3;i<=3;i++)ctx.fillRect(cx+i*rxT/2.6-rxT/9,cy-ryT,rxT/4.5,ryT*2);ctx.restore();
         ctx.strokeStyle="#1d5c38";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.stroke();
         ctx.fillStyle="#5b4632";ctx.fillRect(cx-3,cy-ryT-8,6,9);
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("بطيخة كاملة — قارن حجمها ببطيخة السوق اللي تعرفها","A whole watermelon — compare its size with a market watermelon you know"),cx,26);
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("بطيخة كاملة — قارن حجمها ببطيخة السوق اللي تعرفها","A whole watermelon — compare its size with a market watermelon you know"),cx,26,"center",17,640);
         if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.fillStyle="#22303a";rr2(ctx,cx-95,216,190,32,6);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 19px monospace";ctx.fillText(tv.toFixed(1)+" kg",cx,239);ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("الكتلة الحقيقية: ","True mass: ")+tv.toFixed(1)+T(" كجم"," kg"),cx,52);}}};},
    ()=>{const tv=Math.round(rnd(.4,2.6)*10)/10;
      return {name:T("الحجم","Volume"),min:0,max:3,unit:"لتر",trueVal:tv,
@@ -10636,7 +10690,7 @@ function duelUnitsRounds(){
         ctx.save();jug();ctx.clip();const fh=tv/3*hMax;ctx.fillStyle="rgba(29,111,209,.55)";ctx.fillRect(230,bot-fh,180,fh);ctx.fillStyle="rgba(29,111,209,.8)";ctx.fillRect(230,bot-fh,180,3);ctx.restore();
         jug();ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.stroke();ctx.beginPath();ctx.moveTo(402,top+16);ctx.quadraticCurveTo(448,top+50,402,top+90);ctx.stroke();
         if(guess!=null&&!reveal){const gy=bot-guess/3*hMax;ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(214,gy);ctx.lineTo(426,gy);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";ctx.fillText(T("توقعك","Your prediction"),430,gy+4);}
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("دورق ٣ لتر — المية اللي فيه قد إيه؟","A 3-litre jug — how much water is in it?"),320,20);
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("دورق ٣ لتر — المية اللي فيه قد إيه؟","A 3-litre jug — how much water is in it?"),320,20,"center",17,640);
         if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.strokeStyle=C_GOOD;ctx.fillStyle=C_GOOD;ctx.lineWidth=2;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="left";for(let l=.5;l<=3;l+=.5){const y=bot-l/3*hMax;ctx.beginPath();ctx.moveTo(404,y);ctx.lineTo(420,y);ctx.stroke();ctx.fillText(l.toFixed(1),424,y+4);}ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("الحجم الحقيقي: ","True volume: ")+tv.toFixed(1)+T(" لتر"," L"),320,252);}}};},
    ()=>{const tv=ri(35,95);
      return {name:T("درجة الحرارة","Temperature"),min:10,max:100,unit:"°م",trueVal:tv,
@@ -10647,7 +10701,7 @@ function duelUnitsRounds(){
         ctx.fillStyle="#d8e0dc";ctx.beginPath();ctx.ellipse(320,218,86,10,0,0,7);ctx.fill();
         const n=clamp(Math.round(tv/18),1,5);ctx.strokeStyle="rgba(160,180,190,.75)";ctx.lineWidth=3;
         for(let i=0;i<n;i++){const sx=320+(i-(n-1)/2)*36;ctx.beginPath();for(let y=0;y<58;y+=6){const xx=sx+Math.sin(y/11+i*1.7)*6;y===0?ctx.moveTo(xx,116):ctx.lineTo(xx,116-y);}ctx.stroke();}
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24);
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24,"center",17,640);
         if(guess!=null&&!reveal){const gy=196-(guess-10)/90*128;ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(120,196);ctx.lineTo(120,68);ctx.stroke();ctx.beginPath();ctx.moveTo(108,gy);ctx.lineTo(132,gy);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="bold 12px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("توقعك","Your prediction"),120,Math.max(14,gy-8));}
         if(reveal){ctx.save();ctx.globalAlpha=anim;const tx=486;ctx.strokeStyle=C_INK;ctx.lineWidth=2;rr2(ctx,tx-8,58,16,132,8);ctx.stroke();ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(tx,206,17,0,7);ctx.fill();ctx.stroke();const colH=(tv/110)*126*anim;ctx.fillRect(tx-4,190-colH,8,colH);ctx.fillStyle=C_GOOD;ctx.font="bold 16px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("الحرارة الحقيقية: ","True temperature: ")+tv+" °C",tx,34);ctx.restore();}}};},
    ()=>{const tv=Math.round(rnd(.9,3.1)*10)/10;
@@ -10660,7 +10714,7 @@ function duelUnitsRounds(){
         ctx.strokeStyle=C_GOOD;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1+16,y1-44);ctx.lineTo(x1+16,y1+8);ctx.stroke();ctx.fillStyle=C_GOOD;ctx.beginPath();ctx.moveTo(x1+16,y1-44);ctx.lineTo(x1+40,y1-36);ctx.lineTo(x1+16,y1-28);ctx.fill();
         const p=reveal?anim*anim:0;const bx=x0+(x1-x0)*p,by=y0+(y1-y0)*p-14;
         ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(bx,by,13,0,7);ctx.fill();ctx.fillStyle="rgba(255,255,255,.5)";ctx.beginPath();ctx.arc(bx-4,by-4,4,0,7);ctx.fill();
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("منحدر طوله حوالي ٤ أمتار وانحداره ثابت — الكرة بتسرع وهي نازلة","A ramp about 4 metres long with a steady slope — the ball speeds up as it descends"),632,26);
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("منحدر طوله حوالي ٤ أمتار وانحداره ثابت — الكرة بتسرع وهي نازلة","A ramp about 4 metres long with a steady slope — the ball speeds up as it descends"),632,26,"right",17,640);
         if(reveal){ctx.fillStyle="#22303a";rr2(ctx,486,36,138,40,8);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 20px monospace";ctx.textAlign="center";ctx.fillText((anim*tv).toFixed(1)+" s",555,63);
           if(anim>=1){ctx.fillStyle=C_GOOD;ctx.font="bold 15px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("الزمن الحقيقي: ","True time: ")+tv.toFixed(1)+T(" ث"," s"),320,246);}}}};}
   ];
@@ -10699,13 +10753,13 @@ function duelBuildHeat(exp){
         ctx.fillStyle=C_INK;ctx.font="11px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("المنتصف","Midpoint"),mx,y+48);};
       const demoS=0.9+0.45*Math.sin(anim*Math.PI*2); // neutral breathing demo before the reveal — never the round's truth
       if(compare){rod(70,reveal?sA*Math.sqrt(anim):demoS,T("نحاس","Copper"),true);rod(180,reveal?sB*Math.sqrt(anim):demoS*Math.sqrt(mB[0]/mA[0]),T("حديد","Iron"),true);
-        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";ctx.fillText(T("نفس النار، نفس الزمن — مين يسرّب الحرارة أبعد؟","Same flame, same time — who leaks heat farther?"),632,34);
-        ctx.font="bold 13px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("طول القضيب ٢٠ سم — زمن التسخين: ","Rod length 20 cm — heating time: ")+hTime+T(" ث"," s"),632,256);}
+        ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";fillCap(ctx,T("نفس النار، نفس الزمن — مين يسرّب الحرارة أبعد؟","Same flame, same time — who leaks heat farther?"),632,34,"right",17,640);
+        ctx.font="bold 13px 'IBM Plex Sans Arabic',sans-serif";fillCap(ctx,T("طول القضيب ٢٠ سم — زمن التسخين: ","Rod length 20 cm — heating time: ")+hTime+T(" ث"," s"),632,256,"right",17,640);}
       else{rod(96,reveal?sA*Math.sqrt(anim):demoS,LANG==="en"?mA[2]:mA[1],true);
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-        ctx.fillText(T("الأحمر = سخن جدًا، والرمادي = لسه بارد — الحرارة بتسرح تدريجيًا","Red = very hot, grey = still cold — heat creeps gradually"),632,40);
-        ctx.fillText(T("شاهد القضيب وهو بيسخن، وقدّر الجبهة هتقف فين لما الزمن يخلص","Watch the rod heating up and judge where the front will stop when the time is up"),632,62);
-        ctx.font="bold 13px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("طول القضيب ٢٠ سم — زمن التسخين: ","Rod length 20 cm — heating time: ")+hTime+T(" ث"," s"),632,250);}
+        fillCap(ctx,T("الأحمر = سخن جدًا، والرمادي = لسه بارد — الحرارة بتسرح تدريجيًا","Red = very hot, grey = still cold — heat creeps gradually"),632,40,"right",17,640);
+        fillCap(ctx,T("شاهد القضيب وهو بيسخن، وقدّر الجبهة هتقف فين لما الزمن يخلص","Watch the rod heating up and judge where the front will stop when the time is up"),632,62,"right",17,640);
+        ctx.font="bold 13px 'IBM Plex Sans Arabic',sans-serif";fillCap(ctx,T("طول القضيب ٢٠ سم — زمن التسخين: ","Rod length 20 cm — heating time: ")+hTime+T(" ث"," s"),632,250,"right",17,640);}
       if(!reveal&&guessPct!=null){ctx.fillStyle=C_BLUE;ctx.fillRect(70+530*guessPct-2,compare?44:70,4,compare?196:110);ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("توقع الجبهة","Front prediction"),70+530*guessPct,compare?38:64);}
     }};
 }
@@ -10817,7 +10871,7 @@ function duelBuildPhoto(){
       if(reveal&&emits){ctx.fillStyle=C_TEAL;const sp=1+KE0;const t=anim*2;
         for(let i=0;i<6;i++){const ex=425-((t*90*sp+i*53)%360);const ey=50+i*(140/5)+Math.sin(t*3+i)*6;ctx.beginPath();ctx.arc(ex,ey,5,0,7);ctx.fill();}}
       ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="right";
-      ctx.fillText(T("لون الشعاع هو دليلك على تردده: البنفسجي أعلى ترددًا والأحمر أقل","The beam's colour is your guide to its frequency: violet is the highest frequency, red the lowest"),632,20);
+      fillCap(ctx,T("لون الشعاع هو دليلك على تردده: البنفسجي أعلى ترددًا والأحمر أقل","The beam's colour is your guide to its frequency: violet is the highest frequency, red the lowest"),632,20,"right",17,640);
     }};
 }
 function duelBuildFringe(exp){
@@ -10872,7 +10926,7 @@ function duelBuildFringe(exp){
         ctx.fillStyle=(kind==="xrd"||kind==="electron"||kind==="photon")?`rgba(120,200,255,${I})`:`hsla(${hue},85%,55%,${I})`;
         ctx.fillRect(x,204,3,40);}
       ctx.strokeStyle="#5b6d77";ctx.strokeRect(30,204,580,40);
-      ctx.fillStyle="#9db3ba";ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("شاشة الرصد — النمط بيبان خافت قبل الكشف","Detection screen — the pattern shows dimly before the reveal"),320,262);
+      ctx.fillStyle="#9db3ba";ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("شاشة الرصد — النمط بيبان خافت قبل الكشف","Detection screen — the pattern shows dimly before the reveal"),320,262,"center",17,640);
       if(kind==="photon"&&reveal){ctx.fillStyle="#ffe9a8";const nDots=Math.floor(anim*260);let seed=7;const rand=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
         for(let i=0;i<nDots;i++){const x=rand();if(rand()>intensity(x))continue;ctx.fillRect(30+x*580,208+rand()*32,2.4,2.4);}}
     }};
@@ -10894,8 +10948,8 @@ function duelBuildDecay(exp){
         for(let i=0;i<tot;i++){const cx=70+(i%cols)*21,cy=50+Math.floor(i/cols)*20;
           ctx.fillStyle=aliveSet.has(i)?C_TEAL:"#5b6d77";ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();}
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-        ctx.fillText(T("ذرات العينة: الأخضر = كربون-14 لسه موجود، والرمادي = اضمحل","The sample's atoms: green = carbon-14 still present, grey = decayed"),320,26);
-        ctx.fillText(T("النسبة المتبقية باينة قدامك — عدّ أعمار النصف واضرب في ٥٧٣٠","The remaining fraction is in front of you — count the half-lives and multiply by 5730"),320,272);
+        fillCap(ctx,T("ذرات العينة: الأخضر = كربون-14 لسه موجود، والرمادي = اضمحل","The sample's atoms: green = carbon-14 still present, grey = decayed"),320,26,"center",17,640);
+        fillCap(ctx,T("النسبة المتبقية باينة قدامك — عدّ أعمار النصف واضرب في ٥٧٣٠","The remaining fraction is in front of you — count the half-lives and multiply by 5730"),320,272,"center",17,640);
       }};
   }
   const hlCount=Math.round(rnd(.7,2.6)*10)/10,remainPct=100*Math.pow(.5,hlCount);
