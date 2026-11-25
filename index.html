@@ -7906,6 +7906,13 @@ async function sbEnterWithSession(session){
   ACCOUNTS[email].progress=JSON.parse(JSON.stringify(fp));
   loadProgress(JSON.parse(JSON.stringify(fp)));
   enterApp();
+  /* invite redemption retry at entry: hydration is complete and S now
+     mirrors fp, so if this account registered with an invite code and the
+     inviter was never credited (fp.invitedBy set, fp.invRewarded false),
+     ask the server function to redeem it — in the background, never
+     blocking entry; on 'ok' it marks S.invRewarded and persists the
+     local account state */
+  if(fp.invitedBy&&!fp.invRewarded)sbRedeemInvite();
   /* heavier extras load in the background, then refresh the affected screens */
   sbLoadExtras(uid,role).then(()=>{try{renderAll();}catch(e){}try{syncProfileUI();}catch(e){}try{renderTeacherHome();}catch(e){}}).catch(()=>{});
   }finally{if(window.__sbEnterLock===session.user.id)window.__sbEnterLock=null;}
@@ -8137,8 +8144,11 @@ const _ceSb=completeExp;
 completeExp=function(exp,score,explain){
   _ceSb(exp,score,explain);
   if(sbServerSession()){
-    sbSyncProgress(exp.n);
-    if(S.done&&S.done.size===1)sbCreditInviteReward();
+    /* redemption runs AFTER this completion's progress row has synced —
+       the server function only answers 'ok' once a completed experiment
+       exists server-side — and is retried on every completion until the
+       inviter has been credited (sbRedeemInvite guards the rest) */
+    sbSyncProgress(exp.n).then(()=>sbRedeemInvite()).catch(()=>{});
   }
 };
 const _bumpSb=(typeof bumpExpXp==="function")?bumpExpXp:null;
@@ -8151,32 +8161,31 @@ if(_bumpSb){
     sbProgTimers[n]=setTimeout(()=>sbSyncProgress(n),600);
   };
 }
-/* ---------- invite reward, paid on the server ---------- */
+/* ---------- invite redemption, paid by the server function ----------
+   Crediting the inviter means writing into ANOTHER user's gems ledger,
+   which row-level security forbids from the client — so redemption goes
+   through the security-definer function public.redeem_invite() instead.
+   Called by the invited user's own client, it validates the caller's
+   signup metadata (invited_by code, inv_rewarded flag), requires at least
+   one completed experiment in progress, then atomically marks the invite
+   used, inserts the inviter's +100 gems 'invite' row, and sets the
+   caller's inv_rewarded metadata. Idempotent: it answers 'ok' exactly
+   once, 'already' afterwards, and 'notyet' before the first completion.
+   Every failure and non-'ok' answer is silent — a later sign-in or
+   completion simply retries. */
 let SB_INV_DONE=false;
-async function sbCreditInviteReward(){
+async function sbRedeemInvite(){
   if(!sbServerSession()||SB_INV_DONE)return;
-  const code=S.invitedBy;if(!code)return;
+  if(!S.invitedBy)return;
   if(S.invRewarded){SB_INV_DONE=true;return;}
   try{
-    const found=await sbCall(SB.from("invites").select("*").eq("code",code).limit(1));
-    if(found.error||!found.data||!found.data.length)return;
-    const inv=found.data[0];
-    /* real columns again: the inviter is invites.inviter, a redemption is
-       invites.used_by, and the 5-reward cap is counted on the inviter's own
-       'invite' rows in the gems ledger — the old field names (inviter_id /
-       status / id / exp_id) exist on neither table, so the reward could
-       never actually be paid */
-    if(inv.inviter===SESSION.uid){SB_INV_DONE=true;return;}
-    const cnt=await sbCall(SB.from("gems_ledger").select("amount").eq("user_id",inv.inviter).eq("reason","invite").limit(10));
-    if(!cnt.error&&cnt.data&&cnt.data.length>=5){SB_INV_DONE=true;return;}
-    const pay=await sbCall(SB.from("gems_ledger").insert({user_id:inv.inviter,amount:100,reason:"invite"}));
-    if(pay.error)return; /* not paid — leave unmarked so a later completion retries */
-    /* record the redemption on the code row itself (first redeemer only —
-       a personal code may serve several friends; each invitee's own
-       inv_rewarded flag is what stops a double payment) */
-    try{await sbCall(SB.from("invites").update({used_by:SESSION.uid}).eq("code",code).is("used_by",null));}catch(e){}
-    SB_INV_DONE=true;S.invRewarded=true;
-    try{await sbCall(SB.auth.updateUser({data:{inv_rewarded:true}}));}catch(e){}
+    const r=await sbCall(SB.rpc("redeem_invite"));
+    if(r&&!r.error&&(r.data==="ok"||r.data==="already")){
+      SB_INV_DONE=true;S.invRewarded=true;
+      saveCurrentAccount();
+    }
+    /* 'notyet' or a failed call: leave unmarked so the next completion
+       or sign-in asks again */
   }catch(e){}
 }
 /* ---------- the personal invite code: ONE permanent code per account ----------
