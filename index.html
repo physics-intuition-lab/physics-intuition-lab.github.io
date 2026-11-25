@@ -8404,7 +8404,20 @@ if(SB){
          known gotrue lock/refresh stall in some webviews) or fails once, the
          auth event still delivers the stored session — restore from it, so a
          signed-in user is never stranded on the sign-in screen by a refresh. */
-      if(SB_BOOT_OPEN&&(ev==="INITIAL_SESSION"||ev==="SIGNED_IN")&&sess)sbAutoEnter(sess,SB_BOOT_SCREEN);
+      if((ev==="INITIAL_SESSION"||ev==="SIGNED_IN")&&sess){
+        if(SB_BOOT_OPEN)sbAutoEnter(sess,SB_BOOT_SCREEN);
+        /* Late-arriving session event: if the one-shot boot read concluded
+           "no session" and closed the gate BEFORE the client delivered the
+           stored session through this event, gating the restore on
+           SB_BOOT_OPEN alone loses it for the whole page load and strands a
+           signed-in user on the sign-in screen. sbAutoEnter re-checks that
+           nobody is signed in and that no entry is already in flight, and
+           sbEnterWithSession's per-account lock makes a duplicate entry
+           impossible — so a late event can safely restore the session, and
+           it can never resurrect a signed-out one (sign-out emits
+           SIGNED_OUT, never SIGNED_IN). */
+        else if(typeof SESSION!=="undefined"&&SESSION&&SESSION.mode==="none")sbAutoEnter(sess,null);
+      }
     });
   }catch(e){}
   (async()=>{
