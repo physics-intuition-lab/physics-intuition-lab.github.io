@@ -384,6 +384,9 @@ body.auth{padding-bottom:20px}
 .mpstep .n{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center}
 .mpbal{display:flex;height:16px;border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:8px 0}
 .mpbal .bl{background:var(--blue)}.mpbal .rd{background:var(--red)}
+/* demo estimation track inside the About duel preview (mirrors the duel slider) */
+.pvslider{position:relative;height:8px;border-radius:99px;background:var(--surface2);margin:10px 0 2px}
+.pvslider i{position:absolute;top:50%;left:36%;width:22px;height:22px;border-radius:50%;background:var(--teal);transform:translate(-50%,-50%);box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .mprow{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:6px;font-size:.85rem}
 .infolist{margin:6px 0 4px;padding-inline-start:20px}
 .infolist li{margin-bottom:5px}
@@ -530,7 +533,7 @@ button{touch-action:manipulation}
       <img class="authlogo" src="assets/logo.png" alt="" aria-hidden="true">
       <div class="brandtxt">
         <div class="authname" data-i18n="auth_name">مختبر الحدس الفيزيائي</div>
-        <p class="authtag" data-i18n="auth_tag">توقّع بعينك أولًا… ثم اكشف الحقيقة بالمحاكاة</p>
+        <p class="authtag" data-i18n="auth_tag">٦٠ تجربة تفاعلية بمستوى جامعي — توقّع، جرّب، وقِس حدسك الفيزيائي</p>
       </div>
     </div>
     <div class="authprefs" role="group" aria-label="Theme and language">
@@ -1426,12 +1429,25 @@ function renderStreakCard(){
     ?T("أخدت مكافأة النهاردة خلاص — ارجع بكرة عشان تكمّل السلسلة وما تضيّعش اليوم السابع.","You already claimed today's reward — come back tomorrow to keep the streak alive toward day 7.")
     :T("ادخل كل يوم على التوالي: الأيام ١–٦ XP متصاعد، واليوم السابع ٥٠ جيم. لو غبت يومًا كاملًا بيبدأ العدّاد من الأول.","Sign in on consecutive days: days 1–6 pay escalating XP and day 7 pays 50 gems. Miss one full day and the counter restarts.");
 }
+/* Idempotency guards for the daily claim, independent of S.streak's state:
+   once a local day has been claimed (or a claim is in flight) in this page
+   lifetime, no entry path — sign-in, session restore, recovery, re-entry —
+   can claim it again, even if progress state is reloaded in between. And
+   when the sign-in hydration could not read the server ledgers, the claim
+   is BLOCKED outright (window.__sbStreakBlocked): a blind claim is exactly
+   how a second streak row for the same day used to be written. */
+const _streakClaimedDays=new Set();
+let _streakClaimBusy=false;
 function checkLoginStreak(){
   if(typeof SESSION==="undefined"||!SESSION)return;
   if(SESSION.mode!=="user"&&SESSION.mode!=="owner")return; /* guests excluded entirely: no claims, no saving */
   const today=localDayNum();
+  if(_streakClaimBusy||_streakClaimedDays.has(today)){renderStreakCard();return;}
+  if(typeof window!=="undefined"&&window.__sbStreakBlocked){renderStreakCard();return;}
   const adv=streakAdvance(S.streak,today);
   if(!adv.claimed){renderStreakCard();return;}
+  _streakClaimBusy=true;_streakClaimedDays.add(today);
+  try{
   S.streak={last:today,count:adv.count};
   if(adv.xp)gainXP(adv.xp,"streak");
   if(adv.gems)gainGems(adv.gems,"streak");
@@ -1444,6 +1460,7 @@ function checkLoginStreak(){
   const xc=document.getElementById("xpChip");if(xc)xc.textContent=AR(S.xp)+" XP";
   const rc=document.getElementById("rankChip");if(rc)rc.textContent=T("الرتبة: ","Rank: ")+rk.cur[0];
   showStreakToast(adv);
+  }finally{_streakClaimBusy=false;}
 }
 function weekStartMs(now){const d=new Date(now||Date.now());d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
 function monthStartMs(now){const d=new Date(now||Date.now());return new Date(d.getFullYear(),d.getMonth(),1).getTime();}
@@ -7660,6 +7677,48 @@ async function sbFetchProfile(uid){
   }
   return null;
 }
+/* Ledger/progress reads at sign-in get the same retry discipline as the
+   profile read: a single transient failure used to be swallowed and the
+   account entered with a zeroed balance and an empty streak state — which
+   then CLAIMED the day's streak again and wrote a duplicate ledger row.
+   Returns the rows array, or null when every attempt failed. */
+async function sbReadRows(build){
+  for(let i=0;i<3;i++){
+    try{const r=await sbCall(build());if(r&&!r.error&&Array.isArray(r.data))return r.data;}catch(e){}
+    if(i<2)await new Promise(res=>setTimeout(res,500*(i+1)));
+  }
+  return null;
+}
+/* When sign-in hydration could not read the ledgers, the streak claim stays
+   blocked (window.__sbStreakBlocked) — never claim blind. One background
+   retry a few seconds later re-reads both ledgers: it always restores the
+   streak state and unblocks the claim, and it restores the balances too —
+   but only while the session has earned nothing yet, so live gains are
+   never clobbered. */
+let SB_REHYDRATE_TRIED=false;
+async function sbRehydrateLedgers(uid){
+  if(SB_REHYDRATE_TRIED)return;SB_REHYDRATE_TRIED=true;
+  await new Promise(r=>setTimeout(r,6000));
+  try{
+    if(!sbServerSession()||SESSION.uid!==uid)return;
+    const xlData=await sbReadRows(()=>SB.from("xp_ledger").select("amount,reason,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
+    const glData=await sbReadRows(()=>SB.from("gems_ledger").select("amount,reason,created_at").eq("user_id",uid).limit(4000));
+    if(!xlData||!glData)return;
+    window.__sbStreakBlocked=false;
+    const daySet=new Set();
+    xlData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
+    glData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
+    S.streak=streakStateFromDays(daySet);
+    if(SB_SESSION_GAINS===0){
+      S.xpLog=xlData.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));
+      S.xp=S.xpLog.reduce((s,e)=>s+e.amt,0);
+      S.gems=glData.reduce((s,r)=>s+(r.amount||0),0);
+      try{saveCurrentAccount();}catch(e){}
+    }
+    try{checkLoginStreak();}catch(e){}
+    try{renderAll();}catch(e){}
+  }catch(e){}
+}
 async function sbEnterWithSession(session){
   if(!session||!session.user)return;
   /* Re-entrancy guard: the auth-state event and an explicit sign-in handler
@@ -7684,18 +7743,21 @@ async function sbEnterWithSession(session){
   setGreeting();
   /* ledgers -> balance + dated log (the boards' single source) */
   const fp=freshProgress();
+  window.__sbStreakBlocked=false;SB_SESSION_GAINS=0;SB_REHYDRATE_TRIED=false;
   fp.invitedBy=meta.invited_by||null;fp.invRewarded=!!meta.inv_rewarded;
   try{
     /* the live xp_ledger table has exactly (id, user_id, amount, reason,
        created_at) — naming any other column makes PostgREST reject the whole
        read, which silently zeroed the restored balance on every sign-in */
-    const xl=await sbCall(SB.from("xp_ledger").select("amount,reason,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
-    if(!xl.error&&xl.data){fp.xpLog=xl.data.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));fp.xp=fp.xpLog.reduce((s,e)=>s+e.amt,0);}
+    const xlData=await sbReadRows(()=>SB.from("xp_ledger").select("amount,reason,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
+    if(xlData){fp.xpLog=xlData.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));fp.xp=fp.xpLog.reduce((s,e)=>s+e.amt,0);}
+    else window.__sbStreakBlocked=true; /* ledger unreadable: enter, but never claim the streak blind */
   }catch(e){}
   try{
-    const gl=await sbCall(SB.from("gems_ledger").select("amount,reason,created_at").eq("user_id",uid).limit(4000));
-    if(!gl.error&&gl.data){fp.gems=gl.data.reduce((s,r)=>s+(r.amount||0),0);
-      fp._streakGemDays=gl.data.filter(r=>r.reason==="streak"&&r.created_at).map(r=>localDayNum(new Date(r.created_at).getTime()));}
+    const glData=await sbReadRows(()=>SB.from("gems_ledger").select("amount,reason,created_at").eq("user_id",uid).limit(4000));
+    if(glData){fp.gems=glData.reduce((s,r)=>s+(r.amount||0),0);
+      fp._streakGemDays=glData.filter(r=>r.reason==="streak"&&r.created_at).map(r=>localDayNum(new Date(r.created_at).getTime()));}
+    else window.__sbStreakBlocked=true;
   }catch(e){}
   /* per-experiment progress rows -> rings, bests, done set, curve population.
      Read back in the table's real columns (see sbProgressRow): best_score
@@ -7705,8 +7767,8 @@ async function sbEnterWithSession(session){
      score entitles (clamp(best/2, 20, 50)) + test bonus (4 per correct,
      max 40) = the same 100 the ring counts during play. */
   try{
-    const pr=await sbCall(SB.from("progress").select("*").eq("user_id",uid).order("updated_at",{ascending:true}).limit(200));
-    if(!pr.error&&pr.data){
+    const prData=await sbReadRows(()=>SB.from("progress").select("*").eq("user_id",uid).order("updated_at",{ascending:true}).limit(200));
+    if(prData){const pr={data:prData};
       fp.done=[];fp.best={};fp.expXp={};fp.theoryRead={};fp.quiz={};fp.hist=[];
       let attTotal=0;
       pr.data.forEach(r=>{
@@ -7761,6 +7823,7 @@ async function sbEnterWithSession(session){
     fp.streak=streakStateFromDays(daySet);
   }catch(e){}
   delete fp._streakGemDays;
+  if(window.__sbStreakBlocked)sbRehydrateLedgers(uid);
   ACCOUNTS[email].progress=JSON.parse(JSON.stringify(fp));
   loadProgress(JSON.parse(JSON.stringify(fp)));
   enterApp();
@@ -7818,12 +7881,14 @@ async function sbLoadOwnerExtras(){
 }
 /* ---------- XP / gems: every local gain is mirrored to the server ledger ---------- */
 let SB_XP_QUEUE=[],sbFlushTimer=null,sbFlushFails=0;
+let SB_SESSION_GAINS=0; /* gains since sign-in hydration — a late re-hydration must never clobber them */
 function sbExpCtx(why){if(why==="duel")return null;try{return (typeof curExp!=="undefined"&&curExp)?curExp.n:null;}catch(e){return null;}}
 const _gainSb=gainXP;
 const sbGainProgTimers={};
 gainXP=function(amt,why){
   _gainSb(amt,why);
   if(!sbServerSession())return;
+  SB_SESSION_GAINS++;
   /* a theory read or a graded test changes the per-experiment progress row
      (theory_read / quiz_best) even when the lab itself is never finished in
      this session — persist the row too, debounced so the local quiz/theory
@@ -7839,7 +7904,25 @@ gainXP=function(amt,why){
 };
 async function sbFlushXP(){
   if(!sbServerSession()||!SB_XP_QUEUE.length)return;
-  const items=SB_XP_QUEUE.splice(0,SB_XP_QUEUE.length);
+  let items=SB_XP_QUEUE.splice(0,SB_XP_QUEUE.length);
+  /* streak idempotency AT THE WRITE POINT: a daily streak gain may be
+     inserted only if the server ledger holds no 'streak' row for this
+     account on this local day. This is the last line of defense behind the
+     hydration-derived state and the in-page claim guard — it also covers
+     the flush-retry path, where a first insert whose response was lost to
+     a timeout could otherwise be written a second time. Duplicate streak
+     items inside one batch collapse to the first. */
+  if(items.some(it=>it.why==="streak")){
+    let seen=false;
+    items=items.filter(it=>{if(it.why!=="streak")return true;if(seen)return false;seen=true;return true;});
+    try{
+      const ex=await sbCall(SB.from("xp_ledger").select("created_at").eq("user_id",SESSION.uid).eq("reason","streak").order("created_at",{ascending:false}).limit(10));
+      if(!ex.error&&ex.data&&ex.data.some(r=>r.created_at&&localDayNum(new Date(r.created_at).getTime())===localDayNum())){
+        items=items.filter(it=>it.why!=="streak");
+        if(!items.length)return;
+      }
+    }catch(e){}
+  }
   const rows=[];
   items.forEach(it=>{
     let a=it.amt;
@@ -7874,10 +7957,25 @@ if(_gainGemsSb){
   gainGems=function(amt,why){
     _gainGemsSb(amt,why);
     if(!sbServerSession()||!amt||amt<=0)return;
-    sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:why||"streak"}))
+    if((why||"streak")==="streak"){sbInsertStreakGems(amt);return;}
+    sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:why}))
       .then(r=>{if(r&&r.error&&window.console)console.warn("gems ledger sync:",r.error.message||r.error);})
       .catch(e=>{if(window.console)console.warn("gems ledger sync failed:",e);});
   };
+}
+/* the day-7 streak prize gets the same write-point idempotency as the XP
+   streak rows: never insert a 'streak' gems row when the ledger already
+   holds one for this account on this local day */
+async function sbInsertStreakGems(amt){
+  if(!sbServerSession()||!amt||amt<=0)return;
+  try{
+    const ex=await sbCall(SB.from("gems_ledger").select("created_at").eq("user_id",SESSION.uid).eq("reason","streak").order("created_at",{ascending:false}).limit(10));
+    if(!ex.error&&ex.data&&ex.data.some(r=>r.created_at&&localDayNum(new Date(r.created_at).getTime())===localDayNum()))return;
+  }catch(e){}
+  try{
+    const r=await sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:"streak"}));
+    if(r&&r.error&&window.console)console.warn("gems ledger sync:",r.error.message||r.error);
+  }catch(e){if(window.console)console.warn("gems ledger sync failed:",e);}
 }
 /* ---------- per-experiment progress rows ---------- */
 function sbProgressRow(n){
@@ -7899,9 +7997,41 @@ function sbProgressRow(n){
     quiz_best:(typeof S!=="undefined"&&S.quiz&&S.quiz[n]&&typeof S.quiz[n].best==="number")?S.quiz[n].best:null,
     updated_at:new Date().toISOString()};
 }
+/* ONE progress-row write, deliberately free of any upsert/onConflict: an
+   upsert only lands when the table carries a unique constraint matching the
+   named columns exactly, and when it does not, PostgREST refuses EVERY
+   write with an error this layer used to swallow — the ledgers (plain
+   inserts) landed while progress stayed empty forever. Update-first /
+   insert-if-absent / update-on-duplicate needs nothing but the plain
+   update and insert policies, and verifies each step's result instead of
+   assuming it. */
+async function sbWriteProgressRow(n){
+  if(!sbServerSession()||!n)return false;
+  const row=sbProgressRow(n);
+  const upd=()=>sbCall(SB.from("progress")
+    .update({best_score:row.best_score,attempts:row.attempts,theory_read:row.theory_read,quiz_best:row.quiz_best,updated_at:row.updated_at})
+    .eq("user_id",SESSION.uid).eq("exp_id",n).select("exp_id"));
+  try{
+    const u1=await upd();
+    if(!u1.error&&u1.data&&u1.data.length)return true;
+    const ins=await sbCall(SB.from("progress").insert(row));
+    if(!ins.error)return true;
+    if(ins.error&&(ins.error.code==="23505"||/duplicate|unique|conflict/i.test(ins.error.message||""))){
+      const u2=await upd();
+      if(!u2.error&&u2.data&&u2.data.length)return true;
+    }
+    if(window.console)console.warn("progress write failed for exp "+n+":",(ins.error&&(ins.error.message||ins.error.code))||ins.error);
+    return false;
+  }catch(e){
+    if(window.console)console.warn("progress write failed for exp "+n+":",e);
+    return false;
+  }
+}
 async function sbSyncProgress(n){
   if(!sbServerSession()||!n)return;
-  try{const r=await sbCall(SB.from("progress").upsert(sbProgressRow(n),{onConflict:"user_id,exp_id"}));if(r.error&&window.console)console.warn("progress sync:",r.error.message||r.error);}catch(e){}
+  if(await sbWriteProgressRow(n))return;
+  await new Promise(r=>setTimeout(r,1200));
+  await sbWriteProgressRow(n);
 }
 async function sbSyncAllProgress(){
   if(!sbServerSession())return;
@@ -7912,7 +8042,7 @@ async function sbSyncAllProgress(){
     if(S.best)Object.keys(S.best).forEach(k=>ns.add(+k));
   }catch(e){}
   if(!ns.size)return;
-  try{await sbCall(SB.from("progress").upsert(Array.from(ns).map(n=>sbProgressRow(n)),{onConflict:"user_id,exp_id"}));}catch(e){}
+  for(const n of Array.from(ns))await sbWriteProgressRow(n);
 }
 const _ceSb=completeExp;
 completeExp=function(exp,score,explain){
@@ -9944,16 +10074,30 @@ function renderInfo(){
   if(bb)bb.textContent=loggedIn?T("→ رجوع للرئيسية","← Back to home"):T("→ رجوع لتسجيل الدخول","← Back to sign in");
   const pv=(cap,inner)=>`<div class="pv" aria-hidden="true"><div class="pvcap">${T("معاينة من التطبيق","Preview from the app")} — ${cap}</div>${inner}</div>`;
   const sec=(title,inner)=>`<div class="card"><h2 style="font-size:1.15rem">${title}</h2>${inner}</div>`;
+  /* Previews are built from the app's OWN live data and components wherever
+     they exist — I18N strings, CATALOG rows, RANKS / STREAK_XP / STREAK_GEMS,
+     DUEL_TIME, rankOf() and the very CSS classes the real screens use — so a
+     preview can only drift if the app itself changes its source data. */
+  const iv=k=>{const v=(typeof I18N!=="undefined"&&I18N[k])||null;return v?(LANG==="en"?v[1]:v[0]):"";};
+  const expTitlePv=n=>{const e=(typeof CATALOG!=="undefined")?CATALOG.find(x=>x.n===n):null;return e?(LANG==="en"?((typeof EN_T!=="undefined"&&EN_T[n])||e.t):e.t):"";};
   const logoPv=pv(T("شعار الموقع وصفحة الدخول","The site logo and the sign-in page"),
     `<div class="pvcard"><div class="row" style="gap:10px"><img src="assets/logo.png" alt="" style="width:52px;height:52px;object-fit:contain">
-      <div><b>${T("مختبر الحدس الفيزيائي","Physics Intuition Lab")}</b><div class="small">${T("توقّع بعينك أولًا… ثم اكشف الحقيقة بالمحاكاة","Predict with your eyes first… then reveal the truth by simulation")}</div></div></div></div>`);
+      <div><b>${iv("auth_name")||T("مختبر الحدس الفيزيائي","Physics Intuition Lab")}</b><div class="small">${iv("auth_tag")}</div></div></div></div>`);
+  const eyePv=`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted);flex:0 0 auto" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const fldPv=(lbl,val,ltr)=>`<div class="mpfld"><div class="l">${lbl}</div><div class="b" ${ltr?'dir="ltr" style="justify-content:space-between"':""}>${val}</div></div>`;
   const loginPv=pv(T("نموذج إنشاء حساب جديد","The create-account form"),
     `<div class="pvcard">
-      <div class="mpfld"><div class="l">${T("الاسم الكامل","Full name")}</div><div class="b">${T("اكتب اسمك الكامل","Your full name")}</div></div>
-      <div class="mpfld"><div class="l">${T("البريد الإلكتروني","Email")}</div><div class="b" dir="ltr" style="justify-content:flex-start">name@example.com</div></div>
-      <div class="mpfld"><div class="l">${T("كلمة السر","Password")}</div><div class="b" dir="ltr" style="justify-content:flex-start">••••••••</div></div>
-      <div class="mpbtn">${T("إنشاء الحساب","Create account")}</div>
-      <div class="mpbtn ghost2" style="margin-top:8px">${T("الدخول كزائر — ٥ دقائق","Continue as guest — 5 minutes")}</div>
+      <div class="authtabs"><span class="authtab">${iv("auth_tab_in")}</span><span class="authtab on">${iv("auth_tab_new")}</span></div>
+      ${fldPv(iv("auth_fullname"),iv("auth_fullname_ph"))}
+      ${fldPv(iv("auth_email"),`<span>name@example.com</span>`,true)}
+      ${fldPv(iv("auth_phone"),`<span>01xxxxxxxxx</span>`,true)}
+      ${fldPv(iv("auth_dob"),T("يوم / شهر / سنة","Day / month / year"))}
+      ${fldPv(iv("auth_pass"),`<span>••••••••</span>${eyePv}`,true)}
+      <div class="small" style="margin:-2px 0 8px">${iv("auth_pw_rule")}</div>
+      ${fldPv(iv("auth_pass2"),`<span>••••••••</span>${eyePv}`,true)}
+      ${fldPv(iv("auth_invite_lbl"),`<span>IL-XXXXXX</span>`,true)}
+      <div class="mpbtn">${iv("auth_btn_new")}</div>
+      <div class="mpbtn ghost2" style="margin-top:8px">${iv("auth_guest")}</div>
     </div>`);
   const flowPv=pv(T("رحلة التجربة الواحدة من الأول للآخر","One experiment's journey, start to finish"),
     `<div>
@@ -9962,48 +10106,110 @@ function renderInfo(){
       <div class="mpstep"><span class="n">${AR(3)}</span><span><b>${T("شغّل المحاكاة","Run the simulation")}</b> — ${T("شاهد النتيجة الحقيقية بتتحرك قدامك، وقارنها بتوقعك.","Watch the real result play out in front of you and compare it with your prediction.")}</span></div>
       <div class="mpstep"><span class="n">${AR(4)}</span><span><b>${T("النتيجة والسبب","Result & reason")}</b> — ${T("درجتك، وشرح فيزيائي من أرقام الجولة نفسها ليه الصح كده.","Your score, plus a physical explanation from this round's own numbers of why the truth is what it is.")}</span></div>
     </div>`);
+  const homeAcc=72,homeXp=5240,homeRank=(typeof rankOf==="function")?rankOf(homeXp):{cur:[T("ذهبي","Gold")]};
   const homePv=pv(T("بطاقة الرئيسية: دقة حدسك ورتبتك","The home card: your intuition accuracy and tier"),
-    `<div class="pvcard"><div class="row" style="gap:12px">
-      <svg width="72" height="72" viewBox="0 0 104 104" style="flex:0 0 auto"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--surface2)" stroke-width="10"/><circle cx="52" cy="52" r="44" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="77" transform="rotate(-90 52 52)"/></svg>
-      <div class="grow"><div class="row" style="gap:6px;margin-bottom:6px"><span class="chip">${T("الرتبة: ذهبي","Rank: Gold")}</span><span class="chip">5,240 XP</span></div>
-      <div class="statgrid"><div class="stat"><b>18</b><span>${T("تجربة لعبتها","Experiments played")}</span></div><div class="stat"><b>12 / 60</b><span>${T("تجارب منجزة","Experiments completed")}</span></div></div></div>
-    </div></div>`);
+    `<div class="pvcard hero">
+      <div class="ringbox">
+        <svg width="104" height="104" viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--surface2)" stroke-width="10"/><circle cx="52" cy="52" r="44" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="${(276.5*(1-homeAcc/100)).toFixed(1)}"/></svg>
+        <div class="ringnum"><b>${AR(homeAcc)}${LANG==="en"?"%":"٪"}</b><span>${T("دقة الحدس","Intuition accuracy")}</span></div>
+      </div>
+      <div class="grow">
+        <div class="row" style="margin-bottom:8px"><span class="chip">${T("الرتبة: ","Rank: ")}${homeRank.cur[0]}</span><span class="chip">${AR(homeXp)} XP</span></div>
+        <div class="statgrid"><div class="stat"><b>${AR(18)}</b><span>${T("تجربة لعبتها","Experiments played")}</span></div><div class="stat"><b>${AR(12)} / ${AR(60)}</b><span>${T("تجارب منجزة","Experiments completed")}</span></div></div>
+      </div>
+    </div>`);
+  const expCardPv=n=>{const e=(typeof CATALOG!=="undefined")?CATALOG.find(x=>x.n===n):null;if(!e)return "";
+    return `<div class="pvcard expcard" style="margin-bottom:8px">
+      <div class="expnum">${AR(e.n)}</div>
+      <div class="grow">
+        <div class="row between"><h3 style="margin:0">${LANG==="en"?((typeof EN_T!=="undefined"&&EN_T[e.n])||e.t):e.t}</h3></div>
+        <div><span class="chip l${e.lvl}">${LVL[e.lvl]}</span> <span class="tag">${LANG==="en"?((typeof LAB_EN!=="undefined"&&LAB_EN[e.lab])||e.lab):e.lab}</span><span class="tag">${LANG==="en"?((typeof TYPE_EN!=="undefined"&&TYPE_EN[e.type])||""):((typeof TYPE_NAME!=="undefined"&&TYPE_NAME[e.type])||"")}</span></div>
+        <p class="small" style="margin:4px 0 8px">${LANG==="en"?((typeof EN_G!=="undefined"&&EN_G[e.n])||e.dual||e.goal||""):(e.dual||e.goal||"")}</p>
+        <span class="btn primary sm">${T("افتح التجربة","Open experiment")}</span>
+      </div>
+    </div>`;};
   const expsPv=pv(T("قائمة التجارب والمستويات الثلاثة","The experiment list and the three levels"),
-    `<div>
-      <div class="mprow"><span class="chip l0">${T("سهل","Easy")}</span><span class="grow">${T("الوحدات والأبعاد: معمل التقدير البصري","Units & Dimensions: The Visual Estimation Lab")}</span><span class="tag">${AR(25)} ${T("تجربة","experiments")}</span></div>
-      <div class="mprow"><span class="chip l1">${T("متوسط","Medium")}</span><span class="grow">${T("التأثير الكهروضوئي","The Photoelectric Effect")}</span><span class="tag">${AR(25)} ${T("تجربة","experiments")}</span></div>
-      <div class="mprow"><span class="chip l2">${T("متقدم","Advanced")}</span><span class="grow">${T("حيود الأشعة السينية XRD","X-Ray Diffraction (XRD)")}</span><span class="tag">${AR(10)} ${T("تجارب","experiments")}</span></div>
-    </div>`);
+    `<div class="filters"><span class="fchip on">${iv("f_all")}</span><span class="fchip">${iv("f_easy")}</span><span class="fchip">${iv("f_med")}</span><span class="fchip">${iv("f_adv")}</span></div>
+     ${expCardPv(1)}${expCardPv(33)}${expCardPv(51)}`);
   const theoryPv=pv(T("نظرية تجربة: القانون بصيغته الرياضية","An experiment's theory: the law in mathematical form"),
-    `<div class="pvcard"><b>${T("قانون أوم","Ohm's Law")}</b><div class="formula" data-fx="11" style="margin:6px 0"></div>
-      <div class="small">${T("تحت القانون هتلاقي شرح كل رمز، وحدود القانون وامتى يفشل، ومثالًا محلولًا خطوة بخطوة.","Under the law you will find every symbol explained, the law's limits and when it breaks down, and a worked example step by step.")}</div>
-      <div class="mpbtn ghost2" style="margin-top:8px">${T("نزّل نظرية هذه التجربة PDF","Download this experiment's theory (PDF)")}</div></div>`);
-  const duelPv=pv(T("شاشة المواجهة: أنت الأزرق والبوت الأحمر","The duel screen: you are blue, the bot is red"),
+    `<div class="pvcard"><b>${expTitlePv(11)||T("قانون أوم","Ohm's Law")}</b><div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="11" style="margin:6px 0"></div>
+      <div class="small">${T("قبل القانون: تعريف الفكرة واشتقاقها، وبعده: شرح كل رمز ووحداته وافتراضات القانون وحدوده، ومثال محلول خطوة بخطوة، وربط النظرية بتوقعك في التجربة.","Before the law: the idea defined and derived; after it: every symbol and unit explained, the law's assumptions and limits, a worked example step by step, and the link between the theory and your prediction in the experiment.")}</div>
+      <div style="margin-top:8px"><span class="btn sm">${iv("exp_print_btn")||T("نزّل نظرية هذه التجربة PDF","Download this experiment's theory (PDF)")}</span></div></div>`);
+  const duelSecs=(typeof DUEL_TIME!=="undefined")?DUEL_TIME:30;
+  const duelScenePv=`<div style="direction:ltr;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)"><svg viewBox="0 0 640 300" style="width:100%;height:auto;display:block;color:var(--ink)" role="img" aria-label="${T("مشهد جولة مواجهة: دائرة قانون أوم","Duel round scene: Ohm's law circuit")}">
+      <rect x="70" y="45" width="500" height="150" fill="none" stroke="currentColor" stroke-width="3"/>
+      <rect x="60" y="100" width="8" height="50" fill="currentColor"/><rect x="82" y="112" width="5" height="26" fill="currentColor"/>
+      <text x="52" y="112" font-size="15" font-weight="bold" text-anchor="center" fill="currentColor">+</text>
+      <rect x="49" y="200" width="50" height="25" rx="12" fill="#22303a"/><text x="74" y="217" font-size="14" font-weight="bold" text-anchor="center" fill="#fff">9 V</text>
+      <polyline points="250,45 262,31 286,59 310,31 334,59 358,31 382,59 394,45" fill="none" stroke="var(--red)" stroke-width="3"/>
+      <rect x="281" y="8" width="82" height="25" rx="12" fill="#22303a"/><text x="322" y="25" font-size="14" font-weight="bold" text-anchor="center" fill="#fff">R = 6 Ω</text>
+      <circle cx="570" cy="120" r="24" fill="rgba(245,197,66,.10)" stroke="currentColor" stroke-width="2"/><path d="M553,137 L587,103 M553,103 L587,137" stroke="currentColor" stroke-width="2"/>
+      <text x="570" y="215" font-size="13" text-anchor="center" fill="currentColor">${T("مصباح","Lamp")}</text>
+      <circle cx="150" cy="195" r="24" fill="#fff" stroke="currentColor" stroke-width="3"/>
+      <text x="150" y="200" font-size="15" font-weight="bold" text-anchor="center" fill="currentColor">${LANG==="en"?"?":"؟"}</text>
+      <text x="150" y="232" font-size="11" text-anchor="center" fill="currentColor">${T("أميتر — التيار الكلي","Ammeter — total current")}</text>
+    </svg></div>`;
+  const duelPv=pv(T("شاشة المواجهة أثناء اللعب: مشهد حقيقي ومؤقّت ٣٠ ثانية","The duel screen mid-match: a real scene and the 30-second timer"),
     `<div class="pvcard">
-      <div class="row between"><span class="chip" style="background:#e3ecfd;color:#1d4fa1">${T("أنت","You")} · 240</span><b>${T("ضد","VS")}</b><span class="chip" style="background:#fbe7e4;color:#9c2b21">${T("البوت","Bot")} · 180</span></div>
-      <div class="mpbal"><div class="bl" style="width:57%"></div><div class="rd" style="width:43%"></div></div>
-      <div class="small">${T("شريط التوازن بيميل ناحية الكسبان مع كل جولة — ٥ جولات، وكل جولة ٣٠ ثانية.","The balance bar tilts toward whoever is winning after each round — 5 rounds, 30 seconds each.")}</div>
+      <div class="vs">
+        <div class="side me"><div>${T("أنت","You")}</div><b class="scorebig" style="font-size:1.7rem">${AR(162)}</b></div>
+        <div class="mid">${T("ضد","VS")}</div>
+        <div class="side bot"><div>${T("البوت","Bot")}</div><b class="scorebig" style="font-size:1.7rem">${AR(135)}</b></div>
+      </div>
+      <div class="small" style="text-align:center">${T("الجولة ","Round ")}${AR(3)}${T(" من "," of ")}${AR(5)}</div>
+      <div class="dueldots"><i class="on"></i><i class="on"></i><i class="cur"></i><i></i><i></i></div>
+      <div class="balance"><i style="width:55%"></i><em></em></div>
+      <h3 style="margin:10px 0 2px">${expTitlePv(11)||T("قانون أوم","Ohm's Law")}</h3>
+      <p class="small" style="margin:2px 0 8px">${T("الدايرة قدامك: جهد البطارية مكتوب عليها وقيمة المقاومة مكتوبة على الرسم نفسه، والأميتر متغطي — طبّق قانون أوم بحدسك وخمّن التيار الكلي.","The circuit is in front of you: the battery's voltage is written on it and the resistor's value is written on the drawing itself, and the ammeter is covered — apply Ohm's law by intuition and guess the total current.")}</p>
+      ${duelScenePv}
+      <div class="pvslider"><i></i></div>
+      <div class="duelscale"><b>${AR(0)}</b><span class="du">${T("أمبير","Amperes")}</span><b>${AR(5)}</b></div>
+      <div class="row" style="align-items:center;gap:8px;margin:8px 0"><div class="timerbar" style="flex:1;height:10px"><i style="width:100%"></i></div><span class="duelclock">${AR(duelSecs)}${T(" ث","s")}</span></div>
+      <div class="btn primary block">${T("أكّد التوقع","Confirm prediction")}</div>
+      <div class="small" style="margin-top:8px">${T("شريط التوازن — الأزرق أنت والأحمر البوت وعلامة النص في المنتصف — بيميل ناحية الكسبان مع كل جولة: ٥ جولات، وكل جولة ","The balance bar — blue is you, red is the bot, with the centre mark in the middle — tilts toward whoever is winning after each round: 5 rounds, ")}${AR(duelSecs)}${T(" ثانية."," seconds each.")}</div>
     </div>`);
-  const ladder=RANKS.map((r,i)=>`<div class="tierrow"><span><b>${LANG==="en"?RANK_EN[i]:r[0]}</b></span><span class="chip">${AR(r[1])}+ XP</span></div>`).join("");
+  const ladder=RANKS.map((r,i)=>{const range=RANKS[i+1]?(LANG==="en"?`From ${AR(r[1])} to ${AR(RANKS[i+1][1]-1)} XP`:`من ${AR(r[1])} لـ${AR(RANKS[i+1][1]-1)} XP`):(LANG==="en"?`From ${AR(r[1])} XP and up`:`من ${AR(r[1])} XP وطالع`);return `<div class="tierrow"><span><b>${LANG==="en"?RANK_EN[i]:r[0]}</b> <span class="small">— ${range}</span></span></div>`;}).join("");
   const rankPv=pv(T("سلّم الرتب من البرونزي للأسطوري","The tier ladder, Bronze to Legendary"),`<div class="pvcard">${ladder}</div>`);
-  const streakCells=STREAK_XP.map((x,i)=>`<div class="scell ${i<2?"got":""} ${i===2?"today":""}"><span class="sd">${T("يوم","Day")} ${AR(i+1)}</span><b>${AR(x)} XP</b><span class="sm">${i<2?T("اتاخدت","Claimed"):i===2?T("النهاردة","Today"):""}</span></div>`).join("")
-    +`<div class="scell"><span class="sd">${T("يوم","Day")} ${AR(7)}</span><b>${AR(STREAK_GEMS)} ${T("جيم","gems")}</b><span class="sm"></span></div>`;
-  const streakPv=pv(T("شريط أسبوع تسجيل الدخول المتتالي في الرئيسية","The weekly login-streak strip on Home"),`<div class="pvcard"><b>${T("تسجيل الدخول المتتالي","Daily login streak")}</b><div class="streakweek">${streakCells}</div></div>`);
-  const progPv=pv(T("منحنى تقدم دقة حدسك عبر محاولاتك","Your intuition-accuracy curve across your attempts"),
-    `<div class="pvcard"><svg viewBox="0 0 300 110" style="width:100%;height:auto" role="img"><line x1="14" y1="96" x2="292" y2="96" stroke="var(--line)"/><line x1="14" y1="10" x2="14" y2="96" stroke="var(--line)"/><polyline points="14,84 66,76 118,66 170,50 222,38 286,20" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><circle cx="14" cy="84" r="4" fill="var(--teal)"/><circle cx="286" cy="20" r="4" fill="var(--teal)"/></svg>
-      <div class="small">${T("كل نقطة = متوسط دقة توقعاتك لحد المحاولة دي — المنحنى بيطلع كل ما حدسك يقوى.","Each point is your average prediction accuracy up to that attempt — the curve rises as your intuition sharpens.")}</div></div>`);
+  const streakCells=[0,1,2,3,4,5,6].map(i=>{const reward=(i===6)?(AR(STREAK_GEMS)+" "+T("جيم","gems")):(AR(STREAK_XP[i])+" XP");let cls="scell",mark="";if(i<2){cls+=" got";mark="✓";}if(i===2){cls+=" today";mark=T("اليوم","Today");}return `<div class="${cls}"><span class="sd">${T("يوم ","Day ")}${AR(i+1)}</span><b>${reward}</b><span class="sm">${mark}</span></div>`;}).join("");
+  const streakPv=pv(T("شريط أسبوع تسجيل الدخول المتتالي في الرئيسية","The weekly login-streak strip on Home"),
+    `<div class="pvcard"><div class="row between"><b>${T("تسجيل الدخول المتتالي","Daily login streak")}</b><span class="chip l0">${T("السلسلة: ","Streak: ")}${AR(2)}${T(" يوم"," days")}</span></div>
+      <p class="small" style="margin-top:6px">${T("ادخل كل يوم على التوالي: الأيام ١–٦ XP متصاعد، واليوم السابع ٥٠ جيم. لو غبت يومًا كاملًا بيبدأ العدّاد من الأول.","Sign in on consecutive days: days 1–6 pay escalating XP and day 7 pays 50 gems. Miss one full day and the counter restarts.")}</p>
+      <div class="streakweek">${streakCells}</div></div>`);
+  const progPv=(()=>{const W=620,H=196,PL=36,PR=12,PT=14,PB=24,sample=[38,45,52,49,63,71,68,79];
+    const X=i=>PL+(W-PL-PR)*(i/(sample.length-1)),Y=v=>PT+(H-PT-PB)*(1-v/100);
+    let acc=0;const ra=sample.map((v,i)=>{acc+=v;return acc/(i+1);});
+    const grid=[0,25,50,75,100].map(v=>`<line x1="${PL}" y1="${Y(v)}" x2="${W-PR}" y2="${Y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${PL-6}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)">${AR(v)}</text>`).join("");
+    const pts=ra.map((v,i)=>X(i).toFixed(1)+","+Y(v).toFixed(1)).join(" ");
+    const dots=sample.map((v,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v).toFixed(1)}" r="3" fill="var(--amber)"/>`).join("");
+    const first=Math.round(sample.slice(0,3).reduce((a,b)=>a+b,0)/3),last=Math.round(sample.slice(-3).reduce((a,b)=>a+b,0)/3),d=last-first;
+    return pv(T("منحنى تقدم دقة حدسك عبر محاولاتك","Your intuition-accuracy curve across your attempts"),
+    `<div class="pvcard"><svg class="progchart" viewBox="0 0 ${W} ${H}" role="img">${grid}<polyline points="${pts}" fill="none" stroke="var(--teal)" stroke-width="2.5"/>${dots}<text x="${X(0)}" y="${H-5}" text-anchor="middle" font-size="11" fill="var(--muted)">${T("قبل — أول محاولاتك","Before — your first attempts")}</text><text x="${X(sample.length-1)}" y="${H-5}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--teal)">${T("الآن","Now")}</text></svg>
+      <p class="small">${T("النقاط البرتقالية = نتيجة كل محاولة، والخط = متوسط دقتك التراكمي من أول محاولة لحد دلوقتي.","Orange dots = each attempt's score; the line = your running average accuracy from your first attempt until now.")}</p>
+      <p style="margin-top:6px">${T("متوسط أول محاولاتك: ","Average of your first attempts: ")}<b>${AR(first)}٪</b>${T(" ← متوسط آخر محاولاتك: "," ← average of your latest attempts: ")}<b>${AR(last)}٪</b>${T(" — التطور: "," — development: ")}<b>+${AR(d)}٪</b></p></div>`);})();
+  const czRowPv=(n,i,st)=>{const e=(typeof CATALOG!=="undefined")?CATALOG.find(x=>x.n===n):null;const lvl=e?e.lvl:0;
+    const chip=st==="done"?`<span class="chip l0">${T("أنجزتها","Completed")}</span>`:st==="next"?`<span class="chip l1">${T("التالية","Next")}</span>`:"";
+    return `<div class="owrow"><span class="czbadge ${st==="done"?"done":st==="next"?"next":""}">${st==="done"?"✓":AR(i+1)}</span><span class="grow"><b>${expTitlePv(n)}</b> <span class="chip l${lvl}">${LVL[lvl]}</span> ${chip}</span><span class="btn sm">${T("افتح التجربة","Open experiment")}</span></div>`;};
   const teacherPv=pv(T("مسار كورس معلم مرتب خطوة بخطوة","A teacher's course path, step by ordered step"),
-    `<div class="pvcard"><div class="row between"><b>${T("كورس: مراجعة الحرارة والكهربية","Course: Heat & Electricity review")}</b><span class="chip l0" dir="ltr">IL-XXXXXX</span></div>
-      <div style="margin-top:8px">
-      <div class="mprow"><span class="n chip l0" style="border:none">${AR(1)}</span><span class="grow">${T("مفهوم الحرارة وانتقالها","The Concept of Heat and Heat Transfer")}</span><span class="chip">${T("اتفتحت","Open")}</span></div>
-      <div class="mprow"><span class="n chip l0" style="border:none">${AR(2)}</span><span class="grow">${T("قانون أوم","Ohm's Law")}</span><span class="chip">${T("كمّل من هنا","Continue here")}</span></div>
-      <div class="mprow"><span class="n chip" style="border:none">${AR(3)}</span><span class="grow">${T("التوصيل على التوالي والتوازي","Series and Parallel Connections")}</span><span class="chip">${T("مقفولة لحد ما تخلّص اللي قبلها","Locked until you finish the step before")}</span></div>
-      </div></div>`);
+    `<div class="pvcard">
+      <div class="row between"><b>${T("مراجعة الحرارة والكهربية","Heat & Electricity review")}</b><span class="chip l0">${AR(3)} ${T("تجربة","experiments")}</span></div>
+      <p class="small" style="margin-top:4px">${T("كورس من إعداد:","Course by:")} ${T("معلم الفيزياء","The physics teacher")} · <span class="chip l0">${T("بالكود فقط","Code only")}</span></p>
+      <h3 style="margin-top:12px">${T("تقدّمك في الكورس","Your progress in this course")}</h3>
+      <div class="czbar"><i style="width:33%"></i></div>
+      <p class="small" style="margin-top:6px">${AR(1)} ${T("من","of")} ${AR(3)} ${T("تجارب أنجزتها في الكورس ده.","experiments completed in this course.")}</p>
+      <div class="btn primary block" style="margin-top:8px">${T("كمّل من حيث وقفت: تجربة ","Continue where you left off: experiment ")}${AR(2)} — ${expTitlePv(2)}</div>
+      <h3 style="margin-top:14px">${T("مسار الكورس — بالترتيب","Course path — in order")}</h3>
+      ${czRowPv(2,0,"done")}${czRowPv(11,1,"next")}${czRowPv(12,2,"")}
+    </div>`);
   const setPv=pv(T("الإعدادات: المظهر واللغة والبروفايل","Settings: appearance, language and profile"),
     `<div class="pvcard">
-      <div class="mprow"><span class="grow"><b>${T("المظهر","Appearance")}</b></span><span class="chip">${T("فاتح","Light")}</span><span class="chip">${T("داكن","Dark")}</span></div>
-      <div class="mprow"><span class="grow"><b>${T("اللغة","Language")}</b></span><span class="chip">العربية</span><span class="chip">EN</span></div>
-      <div class="mprow"><span class="grow"><b>${T("البروفايل","Profile")}</b></span><span class="small">${T("صورة واسم مستعار ونبذة قصيرة بتظهر في الترتيب والمواجهات","A picture, nickname and short bio shown on the standings and in duels")}</span></div>
+      <div class="row between" style="align-items:center">
+        <div><b>${T("المظهر واللغة","Appearance & language")}</b><div class="small">${T("زر واحد للثيم وزر واحد للغة — ضغطة واحدة تبدّل، واختيارك بينعكس فورًا في كل الشاشات.","One button for the theme and one for the language — a single tap switches, and your choice applies at once on every screen.")}</div></div>
+        <div style="display:flex;gap:8px;flex:0 0 auto">
+          <span class="authfab"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>
+          <span class="authfab">EN</span>
+        </div>
+      </div>
+      <div class="mprow" style="margin-top:8px"><span class="grow"><b>${T("البروفايل","Profile")}</b><div class="small">${T("صورة واسم مستعار ونبذة قصيرة بتظهر في الترتيب والمواجهات","A picture, nickname and short bio shown on the standings and in duels")}</div></span><span class="btn sm">${T("تعديل الملف الشخصي","Edit profile")}</span></div>
     </div>`);
 
   body.innerHTML=
@@ -10069,7 +10275,7 @@ function renderInfo(){
        </ul>`)
   +sec(T("٨ — كورسات المعلمين","8 — Teachers' courses"),
       teacherPv+
-      `<p>${T("المعلم يقدر يجمع تجارب من الستين في <b>كورس مرتب</b> خاص بطلابه، ويقفله بكلمة سر لو حابب، وبيدّي طلابه <b>كود انضمام</b>. الطالب بيكتب الكود (وكلمة السر لو الكورس مقفول) في منطقة «كورسات المعلمين» في الرئيسية، فينضم مرة واحدة ويتفتح له <b>مسار مرقّم</b> يمشي فيه بالترتيب — كل خطوة بتتفتح بعد اللي قبلها، وبزر «كمّل من حيث وقفت» بيرجع لمكانه بالظبط. والمعلم بيشوف مين انضم له بالاسم.","A teacher can gather experiments from the 60 into a private, <b>ordered course</b> for their students, optionally locked with a password, and gives the students a <b>join code</b>. The student enters the code (and the password if the course is locked) in the “Teachers' courses” area on Home, joins once, and gets a <b>numbered path</b> to walk in order — each step unlocks after the one before it, and “Continue where you left off” returns them to their exact place. The teacher sees who joined, by name.")}</p>`)
+      `<p>${T("المعلم يقدر يجمع تجارب من الستين في <b>كورس مرتب</b> خاص بطلابه، ويقفله بكلمة سر لو حابب، وبيدّي طلابه <b>كود انضمام</b>. الطالب بيكتب الكود (وكلمة السر لو الكورس مقفول) في منطقة «كورسات المعلمين» في الرئيسية، فينضم مرة واحدة ويتفتح له <b>مسار مرقّم</b> يمشي فيه بالترتيب — خطوته التالية مميّزة له، وبزر «كمّل من حيث وقفت» بيرجع لمكانه بالظبط. والمعلم بيشوف مين انضم له بالاسم.","A teacher can gather experiments from the 60 into a private, <b>ordered course</b> for their students, optionally locked with a password, and gives the students a <b>join code</b>. The student enters the code (and the password if the course is locked) in the “Teachers' courses” area on Home, joins once, and gets a <b>numbered path</b> to walk in order — with their next step highlighted for them, and “Continue where you left off” returns them to their exact place. The teacher sees who joined, by name.")}</p>`)
   +sec(T("٩ — الجيمز والدعوات","9 — Gems and invites"),
       `<ul class="infolist">
         <li>${T("<b>الجيمز</b> عملة الموقع الخاصة: بتكسبها من اليوم السابع في الستريك (50 جيم) ومن دعوات الأصدقاء.","<b>Gems</b> are the site's own currency: you earn them from day 7 of the streak (50 gems) and from inviting friends.")}</li>
