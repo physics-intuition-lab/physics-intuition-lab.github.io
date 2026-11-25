@@ -19,7 +19,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.2/dist/umd/supabase.min.js" integrity="sha384-7i/4BYWz4Mn+lJfg2HWfEPfZQ7tmFKF3CTSKlXBpxWjNlLjcg+T6smpHG4gLmU1u" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{
@@ -353,6 +353,42 @@ body.auth{padding-bottom:20px}
 .guestbar.show{display:block}
 .guesttoast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);left:50%;transform:translateX(-50%);z-index:60;background:var(--ink);color:var(--bg);font-size:.85rem;font-weight:600;padding:9px 16px;border-radius:999px;display:none;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:92vw;text-align:center}
 .guesttoast.show{display:block}
+.streaktoast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);left:50%;transform:translateX(-50%);z-index:61;background:var(--teal);color:#fff;font-size:.9rem;font-weight:700;padding:10px 18px;border-radius:999px;display:none;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:92vw;text-align:center}
+.streaktoast.show{display:block}
+.streakweek{display:flex;gap:6px;margin-top:10px}
+.scell{flex:1;min-width:0;text-align:center;border:1px solid var(--line);border-radius:10px;padding:7px 1px;background:var(--surface2);display:flex;flex-direction:column;gap:1px;align-items:center}
+.scell .sd{font-size:.66rem;color:var(--ink);font-weight:600}
+.scell b{font-size:.74rem;white-space:nowrap}
+.scell .sm{font-size:.68rem;min-height:1em;color:var(--teal);font-weight:700}
+.scell.got{background:var(--teal);border-color:var(--teal);color:#fff}
+.scell.got .sd{color:rgba(255,255,255,.75)}
+.scell.got .sm{color:#fff}
+.scell.today{border-color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
+/* ===== INFO (?) BUTTON ON THE LOGIN PAGE + ABOUT SCREEN ===== */
+#scr-login .wrap{padding-bottom:118px}
+.infofab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);inset-inline-start:12px;z-index:55;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px;color:var(--teal-d);font-weight:700;min-height:0}
+.infofab .q{width:54px;height:54px;border-radius:50%;background:var(--surface);border:2px solid var(--teal);color:var(--teal-d);font-size:1.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.22);line-height:1;transition:transform .12s ease}
+.infofab .cap{font-size:.72rem;background:var(--surface);border:1px solid var(--line);padding:1px 8px;border-radius:999px;box-shadow:var(--shadow)}
+.infofab:active .q{transform:scale(.93)}
+@media (prefers-reduced-motion: reduce){.infofab .q{transition:none}}
+/* visual previews of the app's own sections inside the About screen */
+.pv{border:1px solid var(--line);border-radius:12px;background:var(--surface2);padding:10px;margin:10px 0 12px;pointer-events:none;user-select:none}
+.pvcap{font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:8px}
+.pvcard{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+.mpfld{margin-bottom:8px}
+.mpfld .l{font-size:.68rem;color:var(--muted);font-weight:600;margin-bottom:3px}
+.mpfld .b{height:30px;border:1px solid var(--line);border-radius:8px;background:var(--surface);display:flex;align-items:center;padding:0 10px;font-size:.78rem;color:var(--muted)}
+.mpbtn{height:36px;border-radius:10px;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+.mpbtn.ghost2{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.mpstep{display:flex;gap:8px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:.85rem}
+.mpstep .n{flex:0 0 auto;width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+.mpbal{display:flex;height:16px;border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:8px 0}
+.mpbal .bl{background:var(--blue)}.mpbal .rd{background:var(--red)}
+.mprow{display:flex;gap:8px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-bottom:6px;font-size:.85rem}
+.infolist{margin:6px 0 4px;padding-inline-start:20px}
+.infolist li{margin-bottom:5px}
+.tierrow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed var(--line);font-size:.9rem}
+.tierrow:last-child{border-bottom:none}
 .vfcode{letter-spacing:.45em;text-align:center;font-size:1.35rem;font-weight:700}
 .vfcodeshow{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--amber-bg);border:1px dashed var(--amber);border-radius:12px;padding:10px;margin-top:12px;font-size:.95rem}
 .vfcodeshow b{font-size:1.25rem;letter-spacing:.35em;font-variant-numeric:tabular-nums}
@@ -477,6 +513,7 @@ button{touch-action:manipulation}
 <!-- ============ AUTH (official entry: sign in / create account / guest preview) ============ -->
 <div class="guestbar" id="guestBar"></div>
 <div class="guesttoast" id="guestToast"></div>
+<div class="streaktoast" id="streakToast" role="status"></div>
 <section class="screen on" id="scr-login">
   <div class="wrap">
     <div class="brandlock">
@@ -583,7 +620,19 @@ button{touch-action:manipulation}
         <p class="small" style="margin-top:8px" data-i18n="auth_guest_d">الزائر يطّلع على المختبر لمدة ٥ دقائق فقط، ومن غير أي حفظ للتقدم. أنشئ حسابًا ليُحفظ تقدمك ورتبتك وترجع لهما في كل دخول.</p>
       </div>
     </div>
+    <button class="infofab" id="infoFab" type="button" aria-label="عن مختبر الحدس الفيزيائي">
+      <span class="q" aria-hidden="true">؟</span>
+      <span class="cap" data-i18n="info_fab">عن الموقع</span>
+    </button>
     <p class="madeby" dir="ltr">Made by Mohamed Nader Lotfy Abouelnaga</p>
+  </div>
+</section>
+
+<!-- ============ ABOUT / HOW THE LAB WORKS ============ -->
+<section class="screen" id="scr-info">
+  <div class="wrap">
+    <button class="btn sm" id="infoBack" style="margin-bottom:12px">→ رجوع لتسجيل الدخول</button>
+    <div id="infoBody"></div>
   </div>
 </section>
 
@@ -629,6 +678,12 @@ button{touch-action:manipulation}
       <div class="row between"><h2 style="margin:0" data-i18n="home_daily">تحدي اليوم</h2><span class="chip l1" data-i18n="home_daily_chip">+XP إضافي</span></div>
       <p id="dailyText" style="margin-top:6px"></p>
       <button class="btn amber block" id="dailyBtn" data-i18n="home_daily_btn">العب تحدي اليوم</button>
+    </div>
+
+    <div class="card" id="streakCard" style="display:none">
+      <div class="row between"><h2 style="margin:0" id="streakTitle">تسجيل الدخول المتتالي</h2><span class="chip l0" id="streakCount"></span></div>
+      <p class="small" id="streakDesc" style="margin-top:6px"></p>
+      <div class="streakweek" id="streakDays"></div>
     </div>
 
     <div id="homeTeacher" style="display:none">
@@ -874,7 +929,7 @@ button{touch-action:manipulation}
         <li data-i18n="rank_how3">إعادة نفس التجربة: <b>5 XP</b> أساسية كل مرة — ولو كسرت رقمك القياسي الشخصي في التجربة بتاخد كمان <b>مكافأة تحسين</b> بقدر فرق XP الإكمال المستحق عن أفضل نتيجة سابقة لك.</li>
         <li data-i18n="rank_how4">تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.</li>
         <li data-i18n="rank_how5">تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.</li>
-        <li data-i18n="rank_how6">سلسلة الأيام المتتالية (Streak): <b>25 XP</b> كل 7 أيام لعب متتالية.</li>
+        <li data-i18n="rank_how6">تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.</li>
       </ul>
     </div>
 
@@ -1248,7 +1303,7 @@ const TYPE_EN={"units": "Visual estimation + units", "heat": "Interactive heat s
 const EN_T={"1": "Units & Dimensions: The Visual Estimation Lab", "2": "The Concept of Heat and Heat Transfer", "3": "Specific Heat Capacity", "4": "Thermal Conduction", "5": "Thermal Expansion", "6": "Density: Mass and Volume", "7": "Surface Tension", "8": "Viscosity", "9": "Pressure in Liquids", "10": "Boyle's Law for Gases", "11": "Ohm's Law", "12": "Series and Parallel Connections", "13": "The Magnetic Field Around a Wire", "14": "The Electromagnet", "15": "Electromagnetic Induction", "16": "Charging and Discharging a Capacitor", "17": "Kirchhoff's Laws (Simplified)", "18": "Electric Field Lines", "19": "Electric Power", "20": "The Simple Electric Motor", "21": "The Simple Pendulum", "22": "Free Fall", "23": "Friction", "24": "Buoyancy: Archimedes' Principle", "25": "Waves and Sound", "26": "Alternating Current and Reactance", "27": "Resonance in RLC Circuits", "28": "The Transformer", "29": "The Diode and Semiconductors", "30": "The Integrated Digital Lab", "31": "Thin Films: Light Interference", "32": "Measuring Film Thickness from Interference Colours", "33": "The Photoelectric Effect", "34": "The Electron Charge-to-Mass Ratio e/m", "35": "The Franck–Hertz Experiment", "36": "The Rutherford Experiment: The Thin Gold Foil", "37": "The Bohr Model and Line Spectra", "38": "The Transistor as Switch and Amplifier", "39": "Sensors and the Light-Dependent Resistor (LDR)", "40": "Electromagnetic Waves and Polarisation", "41": "The Geiger Counter: Counting Radiation", "42": "Half-Life and Radioactive Decay", "43": "Nuclear Binding Energy", "44": "Alpha, Beta and Gamma Radiation and Penetration", "45": "Diffraction of Light: The Double Slit", "46": "The Diffraction Spectrometer and Wavelength Measurement", "47": "The Laser and Optical Coherence", "48": "Optical Fibres and Total Internal Reflection", "49": "The Earth's Magnetic Field", "50": "The Galvanometer: Measuring Tiny Currents", "51": "X-Ray Diffraction (XRD)", "52": "Radiocarbon Dating", "53": "Single-Photon Self-Interference", "54": "Electron Diffraction", "55": "The Compton Effect", "56": "Superconductivity and the Meissner Effect", "57": "The Scanning Tunnelling Microscope (STM)", "58": "Nanotechnology: Properties at the Nanoscale", "59": "Particle Accelerators", "60": "Quantum Entanglement"};
 const EN_G={"1": "A five-round estimation lab: judge length, mass, volume, temperature and time by eye — with no measuring instrument shown before you predict — plus conversion rounds between the SI, CGS and imperial systems.", "2": "Watch heat travel through a solid body and follow the temperature distribution with your eyes before it is measured.", "3": "Compare two materials heated with the same energy and predict which one ends up hotter.", "4": "Compare the speed of heat conduction in two different metals and predict which conducts faster.", "5": "Predict how much a heated metal rod expands — its original end is marked, and the expansion appears before you with no ruler.", "6": "Predict the density of a mystery cube from its appearance and how deep it will sink in water.", "7": "Predict the largest number of water drops that can sit on a coin before it overflows.", "8": "Watch a small sphere sink in a viscous liquid and predict where it will be after a given time.", "9": "Predict how far water will jet from a hole in a tank, based on the hole's depth.", "10": "Compress a trapped gas to half its volume and predict its new pressure.", "11": "Predict the current in a circuit before the ammeter shows you the number.", "12": "Compare the brightness of two lamps in two different connections and predict the total current.", "13": "See a compass needle beside a current-carrying wire and predict the direction and size of its deflection.", "14": "Predict how many paper clips an electromagnet can lift after its turns are increased.", "15": "Move a magnet inside a coil and predict when the galvanometer deflects most.", "16": "Follow a capacitor charging and predict its voltage after a given time.", "17": "A current splits into two branches — predict the current in the second branch.", "18": "Predict the shape of the field lines between two charges and the position of the zero-field point.", "19": "Compare the consumption of two appliances and predict which costs more on the electricity bill.", "20": "Predict the rotation direction of a coil in a magnetic field when the current reverses.", "21": "Predict the period of a pendulum from the visible length of its string.", "22": "Drop a ball from a visible height and predict when it will reach the ground.", "23": "Predict which surface will stop a sliding box fastest.", "24": "Predict how much of its height a piece of wood will sink below the surface as it floats on water and settles.", "25": "See a vibrating string and predict the frequency of its note from its visible length and tension.", "26": "Compare the reactance of a coil and a capacitor at two frequencies and predict the circuit's behaviour.", "27": "Predict the resonance frequency at which the current is maximum.", "28": "Predict the output voltage of a transformer from its turns ratio.", "29": "Predict the behaviour of a diode under forward and reverse bias.", "30": "Build circuits from AND, OR, NOT, XOR and NAND gates, wire inputs to outputs, and watch the truth table build live — up to a complete application: the half adder.", "31": "See the colours of a soap film and predict the film thickness from its colour.", "32": "From the order of colours on an oil patch, predict the interference order and the film thickness.", "33": "Shine light of different frequencies on a metal and predict: will electrons be emitted, and with what energy?", "34": "Watch an electron beam bend in a magnetic field and predict the radius of its path.", "35": "Follow the current–voltage curve and predict the position of the first drop in current.", "36": "Fire alpha particles at a very thin gold foil and predict the fraction deflected through large angles.", "37": "See the hydrogen emission spectrum and predict the colour of a specific line.", "38": "Predict the collector current from a small base current and the gain factor.", "39": "Predict the resistance of an LDR under medium lighting.", "40": "Rotate a polarising filter in front of polarised light and predict the transmitted intensity.", "41": "Hear and see Geiger counter pulses beside a radioactive sample and predict the count in 10 seconds.", "42": "Follow a sample decaying and predict the amount remaining after a given time.", "43": "Compare the stability of two nuclei and predict which is more stable.", "44": "Predict which radiation will pass through different barriers.", "45": "See a double-slit interference pattern and predict the positions of the bright fringes.", "46": "From the diffraction angle of a colour, predict its wavelength.", "47": "Compare a laser beam with an ordinary lamp and predict how their spreading differs.", "48": "Predict the fate of a ray inside an optical fibre at different angles.", "49": "Predict the dip angle of a free magnetic needle at a place on Earth.", "50": "Predict the deflection of a sensitive galvanometer needle for a very small current.", "51": "From an X-ray diffraction pattern of a crystal, predict the Bragg angle of the first order.", "52": "Predict the age of an ancient wooden artefact from its remaining carbon-14 fraction.", "53": "Photons are sent one by one and accumulate until the interference pattern appears — predict the shape of the final pattern.", "54": "See electron diffraction rings from a crystal and predict the de Broglie wavelength.", "55": "An X-ray photon collides with an electron — predict the size of the wavelength shift.", "56": "See a magnet float above a cooled superconductor and predict the field behaviour inside it.", "57": "Predict the height of a single atom on a surface from the tunnelling current.", "58": "Compare the behaviour of gold nanoparticles with ordinary gold and predict their colour.", "59": "Predict the path radius of a very fast proton in a ring accelerator magnet.", "60": "Measure one photon of an entangled pair and predict the measurement result of its distant twin."};
 const EN_D={"1": "Closest estimate across different quantities (length/mass/volume/temperature/time) and the correct conversion between systems.", "2": "Position of the heat front inside the rod after a given time.", "3": "Choosing the material that ends up hotter after heating.", "4": "Ranking materials by how fast heat reaches the far end.", "5": "Position of the rod's end after heating — visual estimation with no ruler.", "6": "The sinking depth of the cube in water.", "7": "Choosing the closest number of water drops on the coin.", "8": "Position of the sphere after a given time inside the tube.", "9": "The distance reached by the water jet from the hole.", "10": "Choosing the new pressure after compressing the volume.", "11": "The ammeter reading before it is revealed.", "12": "The ammeter reading in the parallel connection.", "13": "Direction and size of the compass needle's deflection.", "14": "Choosing the closest number of clips after doubling the turns.", "15": "Choosing the case with the largest induced current.", "16": "The capacitor voltage after a known charging time (relative to the RC time constant).", "17": "Choosing the current in the second branch.", "18": "Position of the zero-field point on the line between the charges.", "19": "Choosing the appliance with the higher running cost.", "20": "The rotation direction after reversing the current.", "21": "The period of one full oscillation of the pendulum.", "22": "The time for the ball to reach the ground.", "23": "Choosing the surface that stops the box fastest.", "24": "The submerged fraction of the floating wood piece's height.", "25": "The fundamental frequency of the string.", "26": "Choosing how reactance behaves with frequency.", "27": "The resonance frequency on the frequency axis.", "28": "Choosing the correct output voltage.", "29": "Choosing the case in which current flows.", "30": "Predicting the circuit output for given inputs before the result is revealed.", "31": "Position of the first colour band on the wavelength strip.", "32": "Position of the second-order interference colour.", "33": "Whether emission occurs, and the maximum electron energy.", "34": "The radius of the electron beam's circular path.", "35": "Choosing the voltage of the first current drop.", "36": "The fraction of particles deflected by more than 90 degrees.", "37": "Choosing the colour of the spectral line.", "38": "Choosing the correct collector current.", "39": "The LDR resistance under the shown lighting.", "40": "Choosing the light intensity at 45 degrees.", "41": "The number of counts recorded in the counting time.", "42": "The fraction of the sample remaining after the shown time.", "43": "Choosing the most stable nucleus.", "44": "Choosing the radiation able to cross the barrier.", "45": "Position of the second-order bright fringe.", "46": "Position of the spectral line on the wavelength scale.", "47": "Choosing the property that distinguishes the laser.", "48": "Choosing the fate of the ray at a large angle.", "49": "The needle's dip angle from the horizontal.", "50": "The needle deflection as a percentage of full scale.", "51": "The Bragg angle of the first diffraction peak.", "52": "The sample's age from its remaining carbon fraction.", "53": "Position of the first side peak in the accumulated interference pattern.", "54": "Position of the first diffraction ring.", "55": "The wavelength shift after scattering at a known angle.", "56": "Choosing the magnetic field behaviour inside the superconductor.", "57": "The height of the atomic bump on the scan line.", "58": "Choosing the colour of the gold nanoparticle solution.", "59": "The radius of curvature of the proton's path.", "60": "Choosing the measurement result of the twin photon."};
-const I18N={"nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.", "<b>5 rounds</b> from the level you choose — each round is a scene with no numbers or data: blind estimation by eye only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>20 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["سلسلة الأيام المتتالية (Streak): <b>25 XP</b> كل 7 أيام لعب متتالية.", "Daily streak: <b>25 XP</b> for every 7 consecutive days of play."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
+const I18N={"info_fab": ["عن الموقع", "About"], "nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.", "<b>5 rounds</b> from the level you choose — each round is a scene with no numbers or data: blind estimation by eye only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>20 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.", "Daily login streak: sign in every day for escalating XP (<b>10, 15, 20, 25, 30, 40</b>) on days 1–6 and <b>50 gems</b> on day 7 — miss a full day and the counter restarts."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
 </script>
 
 <script>
@@ -1286,6 +1341,99 @@ function gainXP(amt,why){
   S.xpLog.push({t:Date.now(),amt:amt,why:why||"lab"});
   if(S.xpLog.length>4000){const cut=Date.now()-62*86400000;S.xpLog=S.xpLog.filter(e=>e.t===0||e.t>=cut);}
 }
+function gainGems(amt,why){
+  if(!amt||amt<=0)return;
+  S.gems=(S.gems||0)+amt;
+}
+/* ================= DAILY LOGIN STREAK =================
+   A repeating 7-day cycle for REGISTERED users (guests are excluded — nothing
+   is saved for them): signing in on consecutive calendar days (the user's own
+   local day) pays escalating XP on cycle days 1–6 (10/15/20/25/30/40) and
+   50 gems on day 7, then a new weekly cycle begins while the run continues.
+   Missing one full day restarts the counter at day 1. The reward is granted
+   ONCE per day, at the first sign-in / session restore of that day, through
+   gainXP/gainGems — so for server accounts it lands in the xp_ledger /
+   gems_ledger and counts on the boards, and the streak state itself is
+   rebuilt from those very ledger rows on the next sign-in (see the Supabase
+   section): the ledger is the record, there is no second source to drift.
+   This REPLACES the old flat "+25 XP per 7 consecutive play days" bonus that
+   used to ride inside completeExp — that bonus is gone, no double-paying. */
+/* ===== LOGIN STREAK ENGINE (pure) ===== */
+const STREAK_XP=[10,15,20,25,30,40];
+const STREAK_GEMS=50;
+function localDayNum(ts){const d=new Date(ts==null?Date.now():ts);return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);}
+function streakAdvance(st,today){
+  st=(st&&typeof st==="object")?st:{last:null,count:0};
+  if(st.last===today)return {claimed:false,count:st.count||0,cycleDay:st.count?((st.count-1)%7)+1:0,xp:0,gems:0};
+  const count=(st.last===today-1)?(st.count||0)+1:1;
+  const cycleDay=((count-1)%7)+1;
+  return {claimed:true,count:count,cycleDay:cycleDay,xp:cycleDay<7?STREAK_XP[cycleDay-1]:0,gems:cycleDay===7?STREAK_GEMS:0};
+}
+function streakStateFromDays(daySet){
+  if(!daySet||!daySet.size)return {last:null,count:0};
+  let last=-Infinity;daySet.forEach(d=>{if(d>last)last=d;});
+  let count=0,d=last;while(daySet.has(d)){count++;d--;}
+  return {last:last,count:count};
+}
+/* ===== /LOGIN STREAK ENGINE (pure) ===== */
+let _streakToastTimer=null;
+function showStreakToast(adv){
+  const t=document.getElementById("streakToast");if(!t)return;
+  t.textContent=adv.gems
+    ?T("يوم ","Day ")+AR(adv.count)+T(" على التوالي — أكملت أسبوعًا كاملًا: +"," in a row — a full week complete: +")+AR(adv.gems)+T(" جيم"," gems")
+    :T("يوم ","Day ")+AR(adv.count)+T(" على التوالي: +"," in a row: +")+AR(adv.xp)+" XP";
+  t.classList.add("show");
+  if(_streakToastTimer)clearTimeout(_streakToastTimer);
+  _streakToastTimer=setTimeout(()=>{t.classList.remove("show");},4500);
+}
+function renderStreakCard(){
+  const card=document.getElementById("streakCard");if(!card)return;
+  const registered=(typeof SESSION!=="undefined"&&SESSION&&(SESSION.mode==="user"||SESSION.mode==="owner"));
+  if(!registered){card.style.display="none";return;}
+  card.style.display="";
+  const title=document.getElementById("streakTitle");if(title)title.textContent=T("تسجيل الدخول المتتالي","Daily login streak");
+  const today=localDayNum();
+  const st=(S.streak&&typeof S.streak==="object")?S.streak:{last:null,count:0};
+  const claimedToday=st.last===today;
+  const alive=claimedToday||st.last===today-1;
+  const effCount=alive?(st.count||0):0;
+  const filled=claimedToday?((effCount-1)%7)+1:(effCount%7);
+  const todayIdx=claimedToday?filled-1:filled;
+  const cells=[];
+  for(let i=0;i<7;i++){
+    const reward=(i===6)?(AR(STREAK_GEMS)+" "+T("جيم","gems")):(AR(STREAK_XP[i])+" XP");
+    let cls="scell",mark="";
+    if(i<filled){cls+=" got";mark="✓";}
+    if(i===todayIdx){cls+=" today";if(!mark)mark=T("اليوم","Today");}
+    cells.push('<div class="'+cls+'"><span class="sd">'+T("يوم ","Day ")+AR(i+1)+'</span><b>'+reward+'</b><span class="sm">'+mark+'</span></div>');
+  }
+  const daysEl=document.getElementById("streakDays");if(daysEl)daysEl.innerHTML=cells.join("");
+  const cntEl=document.getElementById("streakCount");
+  if(cntEl)cntEl.textContent=effCount>0?(T("السلسلة: ","Streak: ")+AR(effCount)+T(" يوم"," days")):T("ابدأ سلسلتك اليوم","Start your streak today");
+  const desc=document.getElementById("streakDesc");
+  if(desc)desc.textContent=claimedToday
+    ?T("أخدت مكافأة النهاردة خلاص — ارجع بكرة عشان تكمّل السلسلة وما تضيّعش اليوم السابع.","You already claimed today's reward — come back tomorrow to keep the streak alive toward day 7.")
+    :T("ادخل كل يوم على التوالي: الأيام ١–٦ XP متصاعد، واليوم السابع ٥٠ جيم. لو غبت يومًا كاملًا بيبدأ العدّاد من الأول.","Sign in on consecutive days: days 1–6 pay escalating XP and day 7 pays 50 gems. Miss one full day and the counter restarts.");
+}
+function checkLoginStreak(){
+  if(typeof SESSION==="undefined"||!SESSION)return;
+  if(SESSION.mode!=="user"&&SESSION.mode!=="owner")return; /* guests excluded entirely: no claims, no saving */
+  const today=localDayNum();
+  const adv=streakAdvance(S.streak,today);
+  if(!adv.claimed){renderStreakCard();return;}
+  S.streak={last:today,count:adv.count};
+  if(adv.xp)gainXP(adv.xp,"streak");
+  if(adv.gems)gainGems(adv.gems,"streak");
+  try{saveCurrentAccount();}catch(e){}
+  /* persist the claim to the server ledger immediately — a fast refresh must
+     not be able to claim the same day twice */
+  if(typeof sbFlushXP==="function"){try{sbFlushXP();}catch(e){}}
+  renderStreakCard();
+  const rk=rankOf(S.xp);
+  const xc=document.getElementById("xpChip");if(xc)xc.textContent=AR(S.xp)+" XP";
+  const rc=document.getElementById("rankChip");if(rc)rc.textContent=T("الرتبة: ","Rank: ")+rk.cur[0];
+  showStreakToast(adv);
+}
 function weekStartMs(now){const d=new Date(now||Date.now());d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime();}
 function monthStartMs(now){const d=new Date(now||Date.now());return new Date(d.getFullYear(),d.getMonth(),1).getTime();}
 function xpEarnedSince(ms){if(!Array.isArray(S.xpLog))return 0;let s=0;for(const e of S.xpLog)if(e&&e.t>=ms)s+=e.amt||0;return s;}
@@ -1304,6 +1452,7 @@ function showScreen(id){
   window.scrollTo(0,0);
   if(id==="scr-home")renderHome();
   if(id==="scr-rank")renderRank();
+  if(id==="scr-info"&&typeof renderInfo==="function")renderInfo();
   stopTimers();
 }
 $$("[data-nav]").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.nav)));
@@ -1337,6 +1486,7 @@ function renderHome(){
       <span class="small">${T("أنجزت","Completed")} ${AR(dn)} ${T("من","of")} ${AR(tot)}</span></span><span>‹</span></button>`;
   }).join("");
   $$("#homeLevels .lvlcard").forEach(b=>b.onclick=()=>{setLvlFilter(+b.dataset.lvl);showScreen("scr-exps");});
+  try{renderStreakCard();}catch(e){}
 }
 
 /* ================= EXPERIMENTS LIST ================= */
@@ -1526,8 +1676,9 @@ function completeExp(exp,score,explain){
     notes.push(T("تحدي اليوم: +","Daily challenge: +")+AR(db)+" XP"+(score>80?T(" (منها 50 مكافأة دقة فوق 80٪)"," (including 50 bonus for accuracy above 80%)"):""));
   }
   if(S.days&&typeof S.days.add==="function")S.days.add(todayNum());
-  let run=0,dd=todayNum();while(S.days.has(dd)){run++;dd--;}
-  if(run>=7&&run%7===0&&S.streakAwardedFor!==run){S.streakAwardedFor=run;gained+=25;notes.push(T("مكافأة سلسلة ","Streak bonus — ")+AR(run)+T(" أيام متتالية: +25 XP"," consecutive days: +25 XP"));}
+  /* the old flat "+25 XP per 7 consecutive play days" bonus is REMOVED: the
+     daily LOGIN streak (checkLoginStreak) is the one streak system now —
+     escalating XP on days 1–6 and 50 gems on day 7, no double-paying. */
   window.__gainParts={completion:completionGain,bonus:gained-completionGain,replay:isReplay,improve:improve,improveFrom:prevBest};
   S.attempts++;S.accSum+=score;gainXP(gained,"lab");S.done.add(exp.n);S.lastExp=exp.n;
   /* an invited friend's FIRST completed experiment pays the inviter 100 gems, once */
@@ -4416,6 +4567,9 @@ function applyLang(l){
   // re-rendered in the new language (it is written by applyTheme from LANG).
   const _al=(id,ar,en2)=>{const e2=document.getElementById(id);if(e2)e2.setAttribute("aria-label",en?en2:ar);};
   _al("invAddBtn","دعوة صديق جديد","Invite a new friend");
+  _al("infoFab","عن مختبر الحدس الفيزيائي","About the Physics Intuition Lab");
+  const _fq=document.querySelector("#infoFab .q");if(_fq)_fq.textContent=en?"?":"؟";
+  if(typeof renderInfo==="function")renderInfo();
   _al("expSearch","بحث في التجارب","Search experiments");
   _al("thSearch","بحث في النظرية","Search theory");
   _al("expBack","رجوع","Back");
@@ -4485,7 +4639,7 @@ completeExp=function(exp,score,explain){
         :'<div class="xrow"><span>'+T("إكمال التجربة — دقة ","Experiment completion — accuracy ")+AR(score)+T("٪","%")+'</span><b>+'+AR(gp.completion)+' XP</b></div>');
       if(gp.improve)rows.push('<div class="xrow"><span>'+T("مكافأة كسر رقمك القياسي في التجربة (أفضل سابق: ","Personal-best improvement bonus (previous best: ")+AR(gp.improveFrom||0)+T("٪)","%)")+'</span><b>+'+AR(gp.improve)+' XP</b></div>');
       if(teRec)rows.push('<div class="xrow"><span>'+T("اختبار التجربة (Bonus)","Experiment test (bonus)")+'</span><b>+'+AR(teRec)+' XP</b></div>');
-      if(gp.bonus)rows.push('<div class="xrow"><span>'+T("مكافآت — تحدي اليوم / سلسلة الأيام","Bonuses — daily challenge / streak")+'</span><b>+'+AR(gp.bonus)+' XP</b></div>');
+      if(gp.bonus)rows.push('<div class="xrow"><span>'+T("مكافآت — تحدي اليوم","Bonuses — daily challenge")+'</span><b>+'+AR(gp.bonus)+' XP</b></div>');
       /* insertAdjacentHTML — NEVER fb.innerHTML += here: re-serializing the
          feedback box would destroy the onclick handlers the base completeExp
          just wired onto «إعادة التجربة / التجربة التالية / القائمة», leaving
@@ -6140,7 +6294,7 @@ auth_pw_rule:["كلمة السر: ٨ أحرف على الأقل — وخليط �
 const ACCOUNTS={};
 let PENDING_REG=null;
 let SESSION={mode:"none",email:null,guestLeft:0,guestTimer:null,expired:false};
-function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},streak:{last:null,count:0,bonusClaimed:false},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,expXp:{}};}
+function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},streak:{last:null,count:0},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,expXp:{}};}
 /* S.theoryRead MUST stay a real Set at runtime: enterLab() and the progress-ring
    wrapper call .has()/.add() on it. Stored progress is JSON, where a Set serializes
    to {} — so every load rehydrates whatever shape was stored (Set / array of ids /
@@ -6150,7 +6304,7 @@ function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{}
    "S.theoryRead.has is not a function" before the lab screen could ever show.) */
 function theoryReadSet(v){const s=new Set();if(!v)return s;if(typeof v.has==="function"&&typeof v.forEach==="function"){v.forEach(x=>s.add(+x||x));return s;}if(Array.isArray(v)){v.forEach(x=>s.add(+x||x));return s;}if(typeof v==="object"){Object.keys(v).forEach(k=>{if(v[k])s.add(+k||k);});}return s;}
 function loadProgress(p){p=p||{};S.xp=p.xp||0;S.xpLog=Array.isArray(p.xpLog)?p.xpLog.filter(e=>e&&typeof e.amt==="number").map(e=>({t:+e.t||0,amt:e.amt,why:e.why||"lab"})):[];
-  if(S.xp>0&&!S.xpLog.length)S.xpLog=[{t:0,amt:S.xp,why:"balance"}]; /* pre-ledger balance: counts in the all-time total only */S.best=p.best||{};S.theoryRead=theoryReadSet(p.theoryRead);S.theoryXP=p.theoryXP||{};S.quiz=p.quiz||{};S.gems=p.gems||0;S.invitesUsed=p.invitesUsed||0;S.daily=p.daily||{date:null,done:false};S.streak=p.streak||{last:null,count:0,bonusClaimed:false};S.duelWins=p.duelWins||0;S.invites=Array.isArray(p.invites)?p.invites:[];S.invitedBy=p.invitedBy||null;S.pcode=p.pcode||null;S.invRewarded=!!p.invRewarded;S.hist=Array.isArray(p.hist)?p.hist.filter(h=>h&&typeof h.sc==="number"):[];S.done=new Set(Array.isArray(p.done)?p.done.map(n=>+n):[]);S.attempts=p.attempts||0;S.accSum=p.accSum||0;if(p.lastExp)S.lastExp=p.lastExp;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===todayNum())?todayNum():-1);S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;if(typeof expXpMap==="object"&&expXpMap){for(const k in expXpMap)delete expXpMap[k];if(p.expXp)for(const k in p.expXp)expXpMap[k]=Math.min(100,p.expXp[k]||0);}}
+  if(S.xp>0&&!S.xpLog.length)S.xpLog=[{t:0,amt:S.xp,why:"balance"}]; /* pre-ledger balance: counts in the all-time total only */S.best=p.best||{};S.theoryRead=theoryReadSet(p.theoryRead);S.theoryXP=p.theoryXP||{};S.quiz=p.quiz||{};S.gems=p.gems||0;S.invitesUsed=p.invitesUsed||0;S.daily=p.daily||{date:null,done:false};S.streak=(p.streak&&typeof p.streak==="object")?{last:(typeof p.streak.last==="number"?p.streak.last:null),count:(+p.streak.count||0)}:{last:null,count:0};S.duelWins=p.duelWins||0;S.invites=Array.isArray(p.invites)?p.invites:[];S.invitedBy=p.invitedBy||null;S.pcode=p.pcode||null;S.invRewarded=!!p.invRewarded;S.hist=Array.isArray(p.hist)?p.hist.filter(h=>h&&typeof h.sc==="number"):[];S.done=new Set(Array.isArray(p.done)?p.done.map(n=>+n):[]);S.attempts=p.attempts||0;S.accSum=p.accSum||0;if(p.lastExp)S.lastExp=p.lastExp;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===todayNum())?todayNum():-1);S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;if(typeof expXpMap==="object"&&expXpMap){for(const k in expXpMap)delete expXpMap[k];if(p.expXp)for(const k in p.expXp)expXpMap[k]=Math.min(100,p.expXp[k]||0);}}
 function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n]=true;});return JSON.parse(JSON.stringify({xp:S.xp,xpLog:Array.isArray(S.xpLog)?S.xpLog:[],best:S.best,done:Array.from(S.done||[]),attempts:S.attempts||0,accSum:S.accSum||0,lastExp:S.lastExp,theoryRead:tr,theoryXP:S.theoryXP,quiz:S.quiz,gems:S.gems,invitesUsed:(Array.isArray(S.invites)?S.invites.length:(S.invitesUsed||0)),invites:Array.isArray(S.invites)?S.invites:[],invitedBy:S.invitedBy||null,pcode:S.pcode||null,invRewarded:!!S.invRewarded,hist:Array.isArray(S.hist)?S.hist:[],daily:(S.dailyDay===todayNum()?{day:todayNum(),done:true}:(S.daily||{date:null,done:false})),streak:S.streak,duelWins:S.duelWins,dailyDay:(typeof S.dailyDay==="number"?S.dailyDay:-1),days:Array.from(S.days||[]),streakAwardedFor:S.streakAwardedFor||0,expXp:(typeof expXpMap==="object"&&expXpMap)?Object.assign({},expXpMap):{}}));}
 function saveCurrentAccount(){if((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&ACCOUNTS[SESSION.email])ACCOUNTS[SESSION.email].progress=snapProgress();}
 function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
@@ -6171,6 +6325,10 @@ function enterApp(){
   else stopGuest();
   updateGuestBar();
   refreshAccountUI();
+  /* daily login streak: first entry of a new local day claims that day's
+     reward (registered sessions only — checkLoginStreak itself excludes
+     guests, who save nothing) */
+  try{checkLoginStreak();}catch(e){}
 }
 function showGuestToast(){
   const t=document.getElementById("guestToast");if(!t)return;
@@ -6379,6 +6537,7 @@ wireAuth();
 const _showScreenAuth=showScreen;
 showScreen=function(id){
   if(id==="scr-login"){saveCurrentAccount();if(SESSION.mode!=="guest")stopGuest();document.body.classList.add("auth");}
+  else if(id==="scr-info"&&SESSION.mode==="none")document.body.classList.add("auth");
   else document.body.classList.remove("auth");
   _showScreenAuth(id);
   if(id==="scr-login")wireAuth();
@@ -7475,8 +7634,9 @@ async function sbEnterWithSession(session){
     if(!xl.error&&xl.data){fp.xpLog=xl.data.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));fp.xp=fp.xpLog.reduce((s,e)=>s+e.amt,0);}
   }catch(e){}
   try{
-    const gl=await sbCall(SB.from("gems_ledger").select("amount").eq("user_id",uid).limit(4000));
-    if(!gl.error&&gl.data)fp.gems=gl.data.reduce((s,r)=>s+(r.amount||0),0);
+    const gl=await sbCall(SB.from("gems_ledger").select("amount,reason,created_at").eq("user_id",uid).limit(4000));
+    if(!gl.error&&gl.data){fp.gems=gl.data.reduce((s,r)=>s+(r.amount||0),0);
+      fp._streakGemDays=gl.data.filter(r=>r.reason==="streak"&&r.created_at).map(r=>localDayNum(new Date(r.created_at).getTime()));}
   }catch(e){}
   /* per-experiment progress rows -> rings, bests, done set, curve population */
   try{
@@ -7505,6 +7665,17 @@ async function sbEnterWithSession(session){
       fp.invitesUsed=fp.invites.length;
     }
   }catch(e){}
+  /* login-streak state rebuilt from the ledgers themselves: every past daily
+     claim left exactly one 'streak' row — in xp_ledger on cycle days 1–6, in
+     gems_ledger on day 7 — so the current run is the run of consecutive local
+     days ending at the latest claim. No separate streak storage to drift. */
+  try{
+    const daySet=new Set();
+    (fp.xpLog||[]).forEach(e=>{if(e&&e.why==="streak"&&e.t)daySet.add(localDayNum(e.t));});
+    (fp._streakGemDays||[]).forEach(d=>daySet.add(d));
+    fp.streak=streakStateFromDays(daySet);
+  }catch(e){}
+  delete fp._streakGemDays;
   ACCOUNTS[email].progress=JSON.parse(JSON.stringify(fp));
   loadProgress(JSON.parse(JSON.stringify(fp)));
   enterApp();
@@ -7589,6 +7760,19 @@ async function sbFlushXP(){
     if(sbFlushFails<3){SB_XP_QUEUE=items.concat(SB_XP_QUEUE);sbFlushTimer=setTimeout(()=>sbFlushXP(),4000);}
     else if(window.console)console.warn("XP ledger sync failed:",e);
   }
+}
+/* ---------- gems: every local gain is mirrored to the server ledger ----------
+   (the login streak's day-7 prize is the first own-gain; the row's reason is
+   what lets the next sign-in rebuild the streak state from the ledger.) */
+const _gainGemsSb=(typeof gainGems==="function")?gainGems:null;
+if(_gainGemsSb){
+  gainGems=function(amt,why){
+    _gainGemsSb(amt,why);
+    if(!sbServerSession()||!amt||amt<=0)return;
+    sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:why||"streak",exp_id:null}))
+      .then(r=>{if(r&&r.error&&window.console)console.warn("gems ledger sync:",r.error.message||r.error);})
+      .catch(e=>{if(window.console)console.warn("gems ledger sync failed:",e);});
+  };
 }
 /* ---------- per-experiment progress rows ---------- */
 function sbProgressRow(n){
@@ -9522,6 +9706,163 @@ confirmDuel=function(timedOut){
 };
 /* test hooks (used by the 60/60 duel verification): build + paint every round */
 window.__duelTest={build:duelBuildRound,builders:{marker:duelBuildMarker,choice:duelBuildChoice,units:duelBuildUnits,heat:duelBuildHeat,circuit:duelBuildCircuit,digital:duelBuildDigital,geiger:duelBuildGeiger,photo:duelBuildPhoto,fringe:duelBuildFringe,decay:duelBuildDecay}};
+</script>
+<script>
+"use strict";
+/* ================= ABOUT SCREEN — opened by the (?) button on the LOGIN page.
+   Every app section is explained in order, each with a visual preview built
+   from the app's own components/styles and an explanation under it. Rendered
+   fresh on every open and on every language switch (T() throughout), so the
+   page is always in the current language. ================= */
+function renderInfo(){
+  const body=document.getElementById("infoBody");if(!body)return;
+  const loggedIn=(typeof SESSION!=="undefined"&&SESSION.mode&&SESSION.mode!=="none");
+  const bb=document.getElementById("infoBack");
+  if(bb)bb.textContent=loggedIn?T("→ رجوع للرئيسية","← Back to home"):T("→ رجوع لتسجيل الدخول","← Back to sign in");
+  const pv=(cap,inner)=>`<div class="pv" aria-hidden="true"><div class="pvcap">${T("معاينة من التطبيق","Preview from the app")} — ${cap}</div>${inner}</div>`;
+  const sec=(title,inner)=>`<div class="card"><h2 style="font-size:1.15rem">${title}</h2>${inner}</div>`;
+  const logoPv=pv(T("شعار الموقع وصفحة الدخول","The site logo and the sign-in page"),
+    `<div class="pvcard"><div class="row" style="gap:10px"><img src="assets/logo.png" alt="" style="width:52px;height:52px;object-fit:contain">
+      <div><b>${T("مختبر الحدس الفيزيائي","Physics Intuition Lab")}</b><div class="small">${T("توقّع بعينك أولًا… ثم اكشف الحقيقة بالمحاكاة","Predict with your eyes first… then reveal the truth by simulation")}</div></div></div></div>`);
+  const loginPv=pv(T("نموذج إنشاء حساب جديد","The create-account form"),
+    `<div class="pvcard">
+      <div class="mpfld"><div class="l">${T("الاسم الكامل","Full name")}</div><div class="b">${T("اكتب اسمك الكامل","Your full name")}</div></div>
+      <div class="mpfld"><div class="l">${T("البريد الإلكتروني","Email")}</div><div class="b" dir="ltr" style="justify-content:flex-start">name@example.com</div></div>
+      <div class="mpfld"><div class="l">${T("كلمة السر","Password")}</div><div class="b" dir="ltr" style="justify-content:flex-start">••••••••</div></div>
+      <div class="mpbtn">${T("إنشاء الحساب","Create account")}</div>
+      <div class="mpbtn ghost2" style="margin-top:8px">${T("الدخول كزائر — ٥ دقائق","Continue as guest — 5 minutes")}</div>
+    </div>`);
+  const flowPv=pv(T("رحلة التجربة الواحدة من الأول للآخر","One experiment's journey, start to finish"),
+    `<div>
+      <div class="mpstep"><span class="n">${AR(1)}</span><span><b>${T("الهدف والنظرية","Goal & theory")}</b> — ${T("اقرأ هدف التجربة ونظريتها كاملة: الفكرة، والقانون بصيغته الرياضية، وشرح رموزه.","Read the experiment's goal and its full theory: the idea, the law in mathematical form, and its symbols explained.")}</span></div>
+      <div class="mpstep"><span class="n">${AR(2)}</span><span><b>${T("توقّع بعينك","Predict with your eyes")}</b> — ${T("قدّم تقديرك قبل ما تشوف أي رقم أو أداة قياس تكشف الإجابة.","Give your estimate before you see any number or measuring tool that would give the answer away.")}</span></div>
+      <div class="mpstep"><span class="n">${AR(3)}</span><span><b>${T("شغّل المحاكاة","Run the simulation")}</b> — ${T("شاهد النتيجة الحقيقية بتتحرك قدامك، وقارنها بتوقعك.","Watch the real result play out in front of you and compare it with your prediction.")}</span></div>
+      <div class="mpstep"><span class="n">${AR(4)}</span><span><b>${T("النتيجة والسبب","Result & reason")}</b> — ${T("درجتك، وشرح فيزيائي من أرقام الجولة نفسها ليه الصح كده.","Your score, plus a physical explanation from this round's own numbers of why the truth is what it is.")}</span></div>
+    </div>`);
+  const homePv=pv(T("بطاقة الرئيسية: دقة حدسك ورتبتك","The home card: your intuition accuracy and tier"),
+    `<div class="pvcard"><div class="row" style="gap:12px">
+      <svg width="72" height="72" viewBox="0 0 104 104" style="flex:0 0 auto"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--surface2)" stroke-width="10"/><circle cx="52" cy="52" r="44" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="77" transform="rotate(-90 52 52)"/></svg>
+      <div class="grow"><div class="row" style="gap:6px;margin-bottom:6px"><span class="chip">${T("الرتبة: ذهبي","Rank: Gold")}</span><span class="chip">5,240 XP</span></div>
+      <div class="statgrid"><div class="stat"><b>18</b><span>${T("تجربة لعبتها","Experiments played")}</span></div><div class="stat"><b>12 / 60</b><span>${T("تجارب منجزة","Experiments completed")}</span></div></div></div>
+    </div></div>`);
+  const expsPv=pv(T("قائمة التجارب والمستويات الثلاثة","The experiment list and the three levels"),
+    `<div>
+      <div class="mprow"><span class="chip l0">${T("سهل","Easy")}</span><span class="grow">${T("الوحدات والأبعاد: معمل التقدير البصري","Units & Dimensions: The Visual Estimation Lab")}</span><span class="tag">${AR(25)} ${T("تجربة","experiments")}</span></div>
+      <div class="mprow"><span class="chip l1">${T("متوسط","Medium")}</span><span class="grow">${T("التأثير الكهروضوئي","The Photoelectric Effect")}</span><span class="tag">${AR(25)} ${T("تجربة","experiments")}</span></div>
+      <div class="mprow"><span class="chip l2">${T("متقدم","Advanced")}</span><span class="grow">${T("حيود الأشعة السينية XRD","X-Ray Diffraction (XRD)")}</span><span class="tag">${AR(10)} ${T("تجارب","experiments")}</span></div>
+    </div>`);
+  const theoryPv=pv(T("نظرية تجربة: القانون بصيغته الرياضية","An experiment's theory: the law in mathematical form"),
+    `<div class="pvcard"><b>${T("قانون أوم","Ohm's Law")}</b><div class="formula" data-fx="11" style="margin:6px 0"></div>
+      <div class="small">${T("تحت القانون هتلاقي شرح كل رمز، وحدود القانون وامتى يفشل، ومثالًا محلولًا خطوة بخطوة.","Under the law you will find every symbol explained, the law's limits and when it breaks down, and a worked example step by step.")}</div>
+      <div class="mpbtn ghost2" style="margin-top:8px">${T("نزّل نظرية هذه التجربة PDF","Download this experiment's theory (PDF)")}</div></div>`);
+  const duelPv=pv(T("شاشة المواجهة: أنت الأزرق والبوت الأحمر","The duel screen: you are blue, the bot is red"),
+    `<div class="pvcard">
+      <div class="row between"><span class="chip" style="background:#e3ecfd;color:#1d4fa1">${T("أنت","You")} · 240</span><b>${T("ضد","VS")}</b><span class="chip" style="background:#fbe7e4;color:#9c2b21">${T("البوت","Bot")} · 180</span></div>
+      <div class="mpbal"><div class="bl" style="width:57%"></div><div class="rd" style="width:43%"></div></div>
+      <div class="small">${T("شريط التوازن بيميل ناحية الكسبان مع كل جولة — ٥ جولات، وكل جولة ٢٠ ثانية.","The balance bar tilts toward whoever is winning after each round — 5 rounds, 20 seconds each.")}</div>
+    </div>`);
+  const ladder=RANKS.map((r,i)=>`<div class="tierrow"><span><b>${LANG==="en"?RANK_EN[i]:r[0]}</b></span><span class="chip">${AR(r[1])}+ XP</span></div>`).join("");
+  const rankPv=pv(T("سلّم الرتب من البرونزي للأسطوري","The tier ladder, Bronze to Legendary"),`<div class="pvcard">${ladder}</div>`);
+  const streakCells=STREAK_XP.map((x,i)=>`<div class="scell ${i<2?"got":""} ${i===2?"today":""}"><span class="sd">${T("يوم","Day")} ${AR(i+1)}</span><b>${AR(x)} XP</b><span class="sm">${i<2?T("اتاخدت","Claimed"):i===2?T("النهاردة","Today"):""}</span></div>`).join("")
+    +`<div class="scell"><span class="sd">${T("يوم","Day")} ${AR(7)}</span><b>${AR(STREAK_GEMS)} ${T("جيم","gems")}</b><span class="sm"></span></div>`;
+  const streakPv=pv(T("شريط أسبوع تسجيل الدخول المتتالي في الرئيسية","The weekly login-streak strip on Home"),`<div class="pvcard"><b>${T("تسجيل الدخول المتتالي","Daily login streak")}</b><div class="streakweek">${streakCells}</div></div>`);
+  const progPv=pv(T("منحنى تقدم دقة حدسك عبر محاولاتك","Your intuition-accuracy curve across your attempts"),
+    `<div class="pvcard"><svg viewBox="0 0 300 110" style="width:100%;height:auto" role="img"><line x1="14" y1="96" x2="292" y2="96" stroke="var(--line)"/><line x1="14" y1="10" x2="14" y2="96" stroke="var(--line)"/><polyline points="14,84 66,76 118,66 170,50 222,38 286,20" fill="none" stroke="var(--teal)" stroke-width="3" stroke-linecap="round"/><circle cx="14" cy="84" r="4" fill="var(--teal)"/><circle cx="286" cy="20" r="4" fill="var(--teal)"/></svg>
+      <div class="small">${T("كل نقطة = متوسط دقة توقعاتك لحد المحاولة دي — المنحنى بيطلع كل ما حدسك يقوى.","Each point is your average prediction accuracy up to that attempt — the curve rises as your intuition sharpens.")}</div></div>`);
+  const teacherPv=pv(T("مسار كورس معلم مرتب خطوة بخطوة","A teacher's course path, step by ordered step"),
+    `<div class="pvcard"><div class="row between"><b>${T("كورس: مراجعة الحرارة والكهربية","Course: Heat & Electricity review")}</b><span class="chip l0" dir="ltr">IL-XXXXXX</span></div>
+      <div style="margin-top:8px">
+      <div class="mprow"><span class="n chip l0" style="border:none">${AR(1)}</span><span class="grow">${T("مفهوم الحرارة وانتقالها","The Concept of Heat and Heat Transfer")}</span><span class="chip">${T("اتفتحت","Open")}</span></div>
+      <div class="mprow"><span class="n chip l0" style="border:none">${AR(2)}</span><span class="grow">${T("قانون أوم","Ohm's Law")}</span><span class="chip">${T("كمّل من هنا","Continue here")}</span></div>
+      <div class="mprow"><span class="n chip" style="border:none">${AR(3)}</span><span class="grow">${T("التوصيل على التوالي والتوازي","Series and Parallel Connections")}</span><span class="chip">${T("مقفولة لحد ما تخلّص اللي قبلها","Locked until you finish the step before")}</span></div>
+      </div></div>`);
+  const setPv=pv(T("الإعدادات: المظهر واللغة والبروفايل","Settings: appearance, language and profile"),
+    `<div class="pvcard">
+      <div class="mprow"><span class="grow"><b>${T("المظهر","Appearance")}</b></span><span class="chip">${T("فاتح","Light")}</span><span class="chip">${T("داكن","Dark")}</span></div>
+      <div class="mprow"><span class="grow"><b>${T("اللغة","Language")}</b></span><span class="chip">العربية</span><span class="chip">EN</span></div>
+      <div class="mprow"><span class="grow"><b>${T("البروفايل","Profile")}</b></span><span class="small">${T("صورة واسم مستعار ونبذة قصيرة بتظهر في الترتيب والمواجهات","A picture, nickname and short bio shown on the standings and in duels")}</span></div>
+    </div>`);
+
+  body.innerHTML=
+  `<h1 style="margin-bottom:2px">${T("عن مختبر الحدس الفيزيائي","About the Physics Intuition Lab")}</h1>
+   <p class="small" style="margin-bottom:14px">${T("كل ما تحتاج تعرفه عن الموقع: هدفه، وإزاي تسجّل، وإزاي بيشتغل خطوة بخطوة، وأقسامه ونظامه — بالترتيب، ومعاينة بصرية لكل قسم.","Everything you need to know about the site: its goal, how to sign up, how it works step by step, its sections and its system — in order, with a visual preview of each section.")}</p>`
+  +sec(T("١ — ما هو مختبر الحدس الفيزيائي؟ وما هدفه؟","1 — What is the Physics Intuition Lab, and what is its goal?"),
+      logoPv+
+      `<p>${T("مختبر الحدس الفيزيائي موقع تعليمي تفاعلي هدفه يبني عندك <b>حدسًا فيزيائيًا</b> حقيقيًا: القدرة على تقدير المقادير الفيزيائية <b>بعينك</b> — طول، كتلة، زمن، حرارة، تيار، طاقة — قبل ما تقيسها بأي أداة، زي ما المهندس والفيزيائي الخبير بيعمل بالظبط.","The Physics Intuition Lab is an interactive educational site whose goal is to build real <b>physical intuition</b> in you: the ability to estimate physical quantities <b>with your eyes</b> — length, mass, time, temperature, current, energy — before measuring them with any instrument, exactly as an experienced engineer or physicist does.")}</p>
+       <p>${T("الفكرة إن القياس الحقيقي بيبدأ من العين: لو حدسك مدرّب، هتلاحظ فورًا لو قراءة جهاز غلط أو نتيجة غير منطقية. عشان كده كل تجربة هنا بتجبرك <b>تتوقّع الأول</b> وبعدين تشوف الحقيقة بالمحاكاة — ومع التكرار، دقة حدسك بتتقاس وبتتحسّن فعلًا، وده باين في منحنى تقدمك.","The idea is that real measurement starts with the eye: with a trained intuition you instantly notice a wrong instrument reading or an illogical result. That is why every experiment here makes you <b>predict first</b> and only then reveals the truth by simulation — and with repetition, your intuition accuracy is measured and genuinely improves, as your progress curve shows.")}</p>
+       <p>${T("الموقع تعليمي وتفاعلي وتحدٍّ في نفس الوقت: نظرية أكاديمية كاملة بقوانينها الرياضية، ومعامل محاكاة تفاعلية، واختبارات، ومواجهات، وترتيب ورتب — من مستوى الصفر لحد موضوعات متقدمة زي حيود الأشعة السينية والتشابك الكمومي.","The site is educational, interactive and challenging at once: complete academic theory with its mathematical laws, interactive simulation labs, tests, duels, standings and tiers — from absolute zero up to advanced topics such as X-ray diffraction and quantum entanglement.")}</p>`)
+  +sec(T("٢ — إزاي تسجّل وتدخل؟","2 — How do you sign up and sign in?"),
+      loginPv+
+      `<ol class="infolist">
+        <li><b>${T("إنشاء حساب جديد:","Create a new account:")}</b> ${T("من تبويب «إنشاء حساب جديد» اكتب اسمك الكامل وبريدك الإلكتروني ورقم تليفونك وتاريخ ميلادك وكلمة سر (٨ أحرف على الأقل) وكرّرها للتأكيد — ولو صديق دعاك، اكتب كود دعوته في خانته الاختيارية.","From the “Create new account” tab, enter your full name, email, phone number, date of birth and a password (at least 8 characters), then repeat it to confirm — and if a friend invited you, put their invite code in its optional field.")}</li>
+        <li><b>${T("تأكيد البريد:","Email verification:")}</b> ${T("هيوصلك كود تحقق من ٦ أرقام على بريدك — اكتبه في خطوة التأكيد وسيُفعَّل حسابك فورًا.","A 6-digit verification code arrives in your email — enter it in the verification step and your account is activated at once.")}</li>
+        <li><b>${T("تسجيل الدخول بعد كده:","Signing in afterwards:")}</b> ${T("بالبريد الإلكتروني وكلمة السر بس. ولو نسيت كلمة السر، رابط «نسيت كلمة السر؟» بيخليك تعيّن واحدة جديدة.","With your email and password only. If you forget the password, the “Forgot password?” link lets you set a new one.")}</li>
+        <li><b>${T("الدخول كزائر:","Continuing as a guest:")}</b> ${T("زر «الدخول كزائر» بيدّيك معاينة ٥ دقائق للمختبر من غير حساب — لكن من غير أي حفظ للتقدم. الحساب المسجّل بس هو اللي تقدمه ورتبته ونقاطه بتتحفظ وترجع لها في كل دخول ومن أي جهاز.","The “Continue as guest” button gives you a 5-minute preview of the lab with no account — but with no progress saved at all. Only a registered account has its progress, tier and points saved and restored at every sign-in, from any device.")}</li>
+       </ol>`)
+  +sec(T("٣ — إزاي الموقع بيشتغل؟ خطوة بخطوة","3 — How does the site work? Step by step"),
+      flowPv+
+      `<ol class="infolist">
+        <li>${T("اختر مستواك من الرئيسية: سهل أو متوسط أو متقدم — أو كمّل من حيث وقفت بزر «كمّل من حيث وقفت».","Pick your level on Home: Easy, Medium or Advanced — or resume with the “Continue where you left off” button.")}</li>
+        <li>${T("افتح أي تجربة: الشاشة الأولى فيها <b>هدف التجربة</b> وتحته <b>النظريتها كاملة</b> — الفكرة ببساطة، والقانون بصيغته الرياضية الصحيحة، وشرح رموزه وحدوده، وأمثلة محلولة. وتقدر تنزّل النظرية PDF وتقرأها في البيت من غير نت.","Open any experiment: the first screen shows the <b>experiment's goal</b> and, under it, its <b>complete theory</b> — the idea in clear words, the law in its correct mathematical form, its symbols and limits explained, and worked examples. You can also download the theory as a PDF and read it at home offline.")}</li>
+        <li>${T("بعد ما تفهم، ادخل <b>المعمل التفاعلي</b> في شاشة لوحده: هتشوف مشهد التجربة والمعطيات اللي تحتاجها للتقدير — لكن من غير أداة القياس اللي تكشف الإجابة. اسحب علامة توقعك أو اختر إجابتك.","Once you understand, enter the <b>interactive lab</b> on its own screen: you see the experiment's scene and the givens you need for estimating — but never the measuring tool that would reveal the answer. Drag your prediction marker or choose your answer.")}</li>
+        <li>${T("شغّل المحاكاة: النتيجة الحقيقية بتتحرك قدامك، وبتاخد درجة على قرب توقعك وشرحًا فيزيائيًا — من أرقام جولتك نفسها — ليه الصح كده وليه توقعك كان قريب أو بعيد.","Run the simulation: the real result plays out in front of you, you are scored on how close your prediction was, and you get a physical explanation — from your own round's numbers — of why the truth is what it is and why your prediction was close or far.")}</li>
+        <li>${T("بعد ما تخلّص التجربة، فيه <b>اختبار اختياري منفصل</b> (١٠ أسئلة عشوائية من بنك أسئلة التجربة) بيمنحك XP إضافيًا في أول محاولة — واللعب نفسه من غير أي أسئلة مخلوطة فيه.","After finishing an experiment, there is an <b>optional separate test</b> (10 random questions from the experiment's question bank) that awards bonus XP on your first attempt — the simulation itself never mixes questions into play.")}</li>
+        <li>${T("كل اللي بتعمله بيتحوّل لـ XP ورتب وتقدم محفوظ في حسابك — وده موضوع القسم الخامس تحت.","Everything you do turns into XP, tiers and progress saved to your account — see section 5 below.")}</li>
+       </ol>`)
+  +sec(T("٤ — أقسام الموقع","4 — The site's sections"),
+      `<h3>${T("الرئيسية","Home")}</h3>`+homePv+
+      `<p>${T("أول شاشة بعد الدخول: حلقة دقة حدسك، رتبتك ورصيد XP، كام تجربة لعبت وأنجزت من الستين، زر «كمّل من حيث وقفت»، بطاقة تحدي اليوم، شريط الستريك الأسبوعي، وكورسات معلميك لو منضم لها — ومنها بتختار مستواك وتدخل أي قسم.","The first screen after sign-in: your intuition-accuracy ring, your tier and XP balance, how many of the 60 experiments you played and completed, the “Continue where you left off” button, the daily-challenge card, the weekly streak strip, and your teachers' courses if you joined any — and from it you pick your level and enter every section.")}</p>
+       <h3 style="margin-top:14px">${T("التجارب — ٦٠ تجربة في ٣ مستويات","Experiments — 60 experiments in 3 levels")}</h3>`+expsPv+
+       `<p>${T("سهل (٢٥): أساسيات الحرارة وخواص المادة والكهربية والمغناطيسية — أولها معمل تقدير بصري كامل للوحدات والأبعاد والتحويل بين أنظمة SI وCGS والإنجليزي. متوسط (٢٥): تعمّق في الكهربية والإلكترونيات والمختبر الرقمي والأغشية الرقيقة والفيزياء الذرية والنووية. متقدم (١٠): موضوعات نادرة — حيود الأشعة السينية، التأريخ بالكربون المشع، تداخل الفوتون الواحد، الموصلية الفائقة، مجهر المسح النفقي، مسرّعات الجسيمات، والتشابك الكمومي. كل تجربة مختلفة تمامًا عن التانية، ولكل واحدة بحث وفلاتر حسب المستوى.","Easy (25): the basics of heat, properties of matter, electricity and magnetism — starting with a complete visual-estimation lab for units, dimensions and conversions between the SI, CGS and imperial systems. Medium (25): deeper electricity, electronics, the digital lab, thin films, atomic and nuclear physics. Advanced (10): rare topics — X-ray diffraction, radiocarbon dating, single-photon interference, superconductivity, the scanning tunnelling microscope, particle accelerators and quantum entanglement. Every experiment is completely distinct, and the list has search and level filters.")}</p>
+       <h3 style="margin-top:14px">${T("النظرية","Theory")}</h3>`+theoryPv+
+       `<p>${T("قسم مستقل فيه نظرية كل تجربة من الستين لوحدها: افتح أي موضوع واقرأه كاملًا من غير ما تدخل المعمل، أو نزّل نظرية تجربة واحدة — أو النظرية كلها — في ملف PDF منسّق للقراءة والمذاكرة من غير نت.","A standalone section holding each of the 60 experiments' theory on its own: open any topic and read it in full without entering the lab, or download one experiment's theory — or all of the theory — as a formatted PDF for offline reading and study.")}</p>
+       <h3 style="margin-top:14px">${T("منحنى التقدم","Progress Curve")}</h3>`+progPv+
+       `<p>${T("شاشة بتوريك حدسك كان فين وبقى فين: منحنى دقة توقعاتك عبر كل محاولاتك من أول محاولة لآخرها، وتقدمك في كل مهارة لوحدها — عشان تشوف بعينك إن التقدير بالعين مهارة بتتبني فعلًا.","A screen that shows where your intuition started and where it is now: the curve of your prediction accuracy across all your attempts, and your progress in each skill separately — so you can see with your own eyes that estimating by eye is a skill that truly gets built.")}</p>
+       <h3 style="margin-top:14px">${T("الإعدادات","Settings")}</h3>`+setPv+
+       `<p>${T("من الإعدادات: بدّل المظهر (فاتح/داكن) واللغة (العربية أو الإنجليزية — والتبديل بيقلب كل المحتوى: النظريات العميقة والأسئلة والنتائج، مش الواجهة بس)، وعدّل بروفايلك (صورة واسم مستعار ونبذة)، وادعُ أصحابك واكسب جيمز، وقيّم الموقع، وثبّت التطبيق على موبايلك.","From Settings: switch the appearance (light/dark) and the language (Arabic or English — switching flips all of the content: the deep theories, questions and results, not just the interface), edit your profile (picture, nickname and bio), invite friends and earn gems, rate the site, and install the app on your phone.")}</p>`)
+  +sec(T("٥ — نظام الـ XP والرتب","5 — The XP and tiers system"),
+      rankPv+
+      `<p><b>${T("إزاي تكسب XP؟","How do you earn XP?")}</b></p>
+       <ul class="infolist">
+        <li>${T("قراءة النظرية كاملة وفتح المعمل: <b>10 XP</b> — مرة واحدة لكل تجربة.","Reading the full theory and opening the lab: <b>10 XP</b> — once per experiment.")}</li>
+        <li>${T("إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك.","Completing a training experiment: <b>20–50 XP</b> by your prediction accuracy.")}</li>
+        <li>${T("إعادة نفس التجربة: <b>5 XP</b> أساسية + مكافأة لو كسرت رقمك الشخصي الأفضل فيها — فالعب وجرّب بحرية.","Replaying an experiment: <b>5 XP</b> base + a bonus if you beat your personal best in it — so play and retry freely.")}</li>
+        <li>${T("اختبار التجربة الاختياري بعد إكمالها: XP إضافي على كل إجابة صحيحة في أول محاولة.","The optional experiment test after completing it: bonus XP for each correct answer on your first attempt.")}</li>
+        <li>${T("تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> لو دقتك فوق 80٪.","The daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> if your accuracy is above 80%.")}</li>
+        <li>${T("مواجهات 1 ضد 1: الفوز <b>60 XP</b> والخسارة <b>15 XP</b> — والستريك اليومي تحت.","1v1 duels: winning earns <b>60 XP</b>, losing <b>15 XP</b> — and the daily streak is below.")}</li>
+       </ul>
+       <p>${T("الـ XP بيتحسب في ترتيب الأسبوع والشهر وكل الأوقات بين اللاعبين، وكل تجربة ليها حلقة تقدم خاصة بيها بتوضح كسبت منها كام من 100 XP.","Your XP counts toward the weekly, monthly and all-time standings among players, and every experiment has its own progress ring showing how much of its 100 XP you earned.")}</p>`)
+  +sec(T("٦ — تسجيل الدخول المتتالي (الستريك)","6 — The daily login streak"),
+      streakPv+
+      `<p>${T("ادخل كل يوم من غير ما تفوّت يوم، والمكافآت بتكبر في دورة ٧ أيام بتتكرر: الأيام ١–٦ بتدي XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>)، واليوم السابع بيدّي <b>50 جيم</b>. المكافأة بتتاخد مرة واحدة في اليوم عند أول دخول، وبتتسجل في حسابك وبتتحسب في الترتيب زي أي XP.","Sign in every day without missing one, and the rewards grow in a repeating 7-day cycle: days 1–6 give escalating XP (<b>10, 15, 20, 25, 30, 40</b>), and day 7 gives <b>50 gems</b>. The reward is claimed once per day at your first sign-in, is recorded in your account, and counts toward the standings like any XP.")}</p>
+       <p><b>${T("خد بالك:","Watch out:")}</b> ${T("لو غبت يومًا كاملًا، العدّاد بيرجع لليوم ١ من الأول. شريط الأسبوع في الرئيسية دايمًا موريك أنت في أنهي يوم، وإيه اللي أخدته وإيه اللي جاي.","If you miss a full day, the counter restarts at day 1. The weekly strip on Home always shows which day you are on, what you claimed, and what is coming.")}</p>`)
+  +sec(T("٧ — مواجهات 1 ضد 1","7 — 1v1 duels"),
+      duelPv+
+      `<ul class="infolist">
+        <li>${T("أنت <b>الأزرق</b> وخصمك (البوت حاليًا) <b>الأحمر</b>، والماتش <b>٥ جولات</b> من تجارب المستوى اللي تختاره — أي تجربة من تجارب المستوى ممكن تطلع لك.","You are <b>blue</b> and your opponent (the bot, for now) is <b>red</b>; a match is <b>5 rounds</b> drawn from the level you choose — any of that level's experiments can come up.")}</li>
+        <li>${T("كل جولة بتعرض <b>مشهد التجربة الحقيقي وسؤال تقديرها</b>، لكن من غير أي أرقام أو معطيات: تقدير أعمى بعينك بس، وكل جولة <b>٢٠ ثانية</b>.","Each round shows the <b>experiment's real scene and its estimation question</b>, but with no numbers or givens at all: blind estimation by eye only, and each round lasts <b>20 seconds</b>.")}</li>
+        <li>${T("نقاط الجولة: ٩٠٪ على قرب توقعك من الصح و١٠٪ على السرعة — بنفس السماحية الموحّدة على كل التجارب مهما اختلف مقياسها، ولازم تحط توقع أصلًا عشان تاخد أي نقطة.","Round points: 90% for how close your prediction is and 10% for speed — with the same unified tolerance on every experiment whatever its scale, and you must place a prediction to earn any points at all.")}</li>
+        <li>${T("شريط التوازن في النص بيميل لحظيًا ناحية الكسبان، والفائز بالماتش بياخد <b>60 XP</b> والخاسر <b>15 XP</b>.","The balance bar in the middle tilts live toward whoever is winning; the match winner earns <b>60 XP</b> and the loser <b>15 XP</b>.")}</li>
+       </ul>`)
+  +sec(T("٨ — كورسات المعلمين","8 — Teachers' courses"),
+      teacherPv+
+      `<p>${T("المعلم يقدر يجمع تجارب من الستين في <b>كورس مرتب</b> خاص بطلابه، ويقفله بكلمة سر لو حابب، وبيدّي طلابه <b>كود انضمام</b>. الطالب بيكتب الكود (وكلمة السر لو الكورس مقفول) في منطقة «كورسات المعلمين» في الرئيسية، فينضم مرة واحدة ويتفتح له <b>مسار مرقّم</b> يمشي فيه بالترتيب — كل خطوة بتتفتح بعد اللي قبلها، وبزر «كمّل من حيث وقفت» بيرجع لمكانه بالظبط. والمعلم بيشوف مين انضم له بالاسم.","A teacher can gather experiments from the 60 into a private, <b>ordered course</b> for their students, optionally locked with a password, and gives the students a <b>join code</b>. The student enters the code (and the password if the course is locked) in the “Teachers' courses” area on Home, joins once, and gets a <b>numbered path</b> to walk in order — each step unlocks after the one before it, and “Continue where you left off” returns them to their exact place. The teacher sees who joined, by name.")}</p>`)
+  +sec(T("٩ — الجيمز والدعوات","9 — Gems and invites"),
+      `<ul class="infolist">
+        <li>${T("<b>الجيمز</b> عملة الموقع الخاصة: بتكسبها من اليوم السابع في الستريك (50 جيم) ومن دعوات الأصدقاء.","<b>Gems</b> are the site's own currency: you earn them from day 7 of the streak (50 gems) and from inviting friends.")}</li>
+        <li>${T("من الإعدادات، زر «+» بيولّد دعوة لصديق ببريد معين؛ لما صديقك يسجّل عن طريق دعوتك بتكسب <b>100 جيم</b> — بحد أقصى ٥ دعوات.","From Settings, the “+” button creates an invite for a specific friend's email; when your friend registers through your invite you earn <b>100 gems</b> — up to 5 invites.")}</li>
+        <li>${T("الجيمز هتتصرف في <b>متجر</b> المحتوى الخاص القادم: حزم تجارب ونظرية إضافية وأنماط تحدٍّ خاصة — ورصيدك محفوظ في حسابك من دلوقتي.","Gems will be spent in the upcoming premium-content <b>store</b>: extra experiment and theory packs and special challenge modes — and your balance is already saved in your account.")}</li>
+       </ul>
+       <p style="margin-top:12px">${T("جاهز تبني حدسك؟ ارجع لصفحة الدخول، أنشئ حسابك، وابدأ بأول تجربة: الوحدات والأبعاد.","Ready to build your intuition? Head back to the sign-in page, create your account, and start with the first experiment: Units & Dimensions.")}</p>
+       <button class="btn primary block" id="infoCta" style="margin-top:8px">${loggedIn?T("ابدأ اللعب","Start playing"):T("ارجع لصفحة الدخول وابدأ","Back to sign-in and start")}</button>`);
+  const cta=document.getElementById("infoCta");
+  if(cta)cta.onclick=()=>showScreen(loggedIn?"scr-home":"scr-login");
+  if(window.katex||document.querySelector("#infoBody .formula"))typesetMath(body);
+}
+const _ifab=document.getElementById("infoFab");
+if(_ifab)_ifab.onclick=()=>showScreen("scr-info");
+const _ibk=document.getElementById("infoBack");
+if(_ibk)_ibk.onclick=()=>showScreen((typeof SESSION!=="undefined"&&SESSION.mode!=="none")?"scr-home":"scr-login");
 </script>
 </body>
 </html>
