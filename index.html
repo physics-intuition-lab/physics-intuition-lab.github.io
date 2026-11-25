@@ -7696,11 +7696,47 @@ async function sbReadRows(build){
    but only while the session has earned nothing yet, so live gains are
    never clobbered. */
 let SB_REHYDRATE_TRIED=false;
+/* Merge server progress rows into the LIVE session state — used when the
+   sign-in progress read failed and is retried in the background. Only
+   experiments this session has not touched yet are filled in (the local
+   state of anything already played/read/tested here is newer by
+   definition); the row interpretation matches sign-in hydration exactly
+   (0 = "not yet": completion is best_score > 0 or attempts > 0, a taken
+   test is quiz_best > 0). */
+function sbMergeProgressRows(rows){
+  if(!Array.isArray(rows))return;
+  rows.forEach(r=>{
+    if(!r||!r.exp_id)return;
+    const n=r.exp_id;
+    const hasBest=(typeof r.best_score==="number"&&(r.best_score>0||(typeof r.attempts==="number"&&r.attempts>0)));
+    const hasQuiz=(typeof r.quiz_best==="number"&&r.quiz_best>0);
+    const localTheory=(typeof S!=="undefined"&&S.theoryRead&&typeof S.theoryRead.has==="function"&&S.theoryRead.has(n));
+    const localDone=(typeof S!=="undefined"&&S.done&&typeof S.done.has==="function"&&S.done.has(n));
+    const localQuiz=(typeof S!=="undefined"&&S.quiz&&!!S.quiz[n]);
+    if(localTheory||localDone||localQuiz)return;
+    if(r.theory_read&&S.theoryRead&&typeof S.theoryRead.add==="function")S.theoryRead.add(n);
+    if(hasQuiz)S.quiz[n]={best:r.quiz_best,bonus:Math.min(40,4*r.quiz_best)};
+    if(hasBest){
+      S.done.add(n);S.best[n]=r.best_score;
+      if(Array.isArray(S.hist)&&!S.hist.some(h=>h&&h.n===n)){S.hist.push({n:n,sc:r.best_score});S.accSum=(S.accSum||0)+r.best_score;S.attempts=(S.attempts||0)+((typeof r.attempts==="number"&&r.attempts>0)?r.attempts:1);}
+    }
+    const ring=(r.theory_read?10:0)+(hasBest?Math.max(20,Math.min(50,Math.round(r.best_score/2))):0)+(hasQuiz?Math.min(40,4*r.quiz_best):0);
+    if(ring>0&&typeof expXpMap!=="undefined"&&expXpMap)expXpMap[n]=Math.max(expXpMap[n]||0,Math.min(100,ring));
+  });
+  try{saveCurrentAccount();}catch(e){}
+}
 async function sbRehydrateLedgers(uid){
   if(SB_REHYDRATE_TRIED)return;SB_REHYDRATE_TRIED=true;
   await new Promise(r=>setTimeout(r,6000));
   try{
     if(!sbServerSession()||SESSION.uid!==uid)return;
+    /* a failed sign-in PROGRESS read is retried here too — without this,
+       one transient failure at entry zeroed the completions for the whole
+       session (0/60) even when the ledgers themselves recovered */
+    if(window.__sbProgressBlocked){
+      const prData=await sbReadRows(()=>SB.from("progress").select("*").eq("user_id",uid).order("updated_at",{ascending:true}).limit(200));
+      if(prData){window.__sbProgressBlocked=false;sbMergeProgressRows(prData);try{renderAll();}catch(e){}}
+    }
     const xlData=await sbReadRows(()=>SB.from("xp_ledger").select("amount,reason,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
     const glData=await sbReadRows(()=>SB.from("gems_ledger").select("amount,reason,created_at").eq("user_id",uid).limit(4000));
     if(!xlData||!glData)return;
@@ -7743,7 +7779,7 @@ async function sbEnterWithSession(session){
   setGreeting();
   /* ledgers -> balance + dated log (the boards' single source) */
   const fp=freshProgress();
-  window.__sbStreakBlocked=false;SB_SESSION_GAINS=0;SB_REHYDRATE_TRIED=false;
+  window.__sbStreakBlocked=false;window.__sbProgressBlocked=false;SB_SESSION_GAINS=0;SB_REHYDRATE_TRIED=false;
   fp.invitedBy=meta.invited_by||null;fp.invRewarded=!!meta.inv_rewarded;
   try{
     /* the live xp_ledger table has exactly (id, user_id, amount, reason,
@@ -7772,16 +7808,22 @@ async function sbEnterWithSession(session){
       fp.done=[];fp.best={};fp.expXp={};fp.theoryRead={};fp.quiz={};fp.hist=[];
       let attTotal=0;
       pr.data.forEach(r=>{
-        const n=r.exp_id,hasBest=(typeof r.best_score==="number");
+        /* rows are written with 0 for "not yet" (see sbProgressRow), so a
+           completed lab reads back as best_score > 0 or attempts > 0, and
+           a taken test as quiz_best > 0 — a theory-only row (0 / 0 /
+           theory_read) must NOT come back as a completion or a taken test */
+        const n=r.exp_id,hasBest=(typeof r.best_score==="number"&&(r.best_score>0||(typeof r.attempts==="number"&&r.attempts>0)));
+        const hasQuiz=(typeof r.quiz_best==="number"&&r.quiz_best>0);
         if(hasBest){fp.done.push(n);fp.best[n]=r.best_score;fp.hist.push({n:n,sc:r.best_score});}
         if(r.theory_read)fp.theoryRead[n]=true;
-        if(typeof r.quiz_best==="number")fp.quiz[n]={best:r.quiz_best,bonus:Math.min(40,4*r.quiz_best)};
-        const ring=(r.theory_read?10:0)+(hasBest?Math.max(20,Math.min(50,Math.round(r.best_score/2))):0)+(typeof r.quiz_best==="number"?Math.min(40,4*r.quiz_best):0);
+        if(hasQuiz)fp.quiz[n]={best:r.quiz_best,bonus:Math.min(40,4*r.quiz_best)};
+        const ring=(r.theory_read?10:0)+(hasBest?Math.max(20,Math.min(50,Math.round(r.best_score/2))):0)+(hasQuiz?Math.min(40,4*r.quiz_best):0);
         if(ring>0)fp.expXp[n]=Math.min(100,ring);
         attTotal+=(typeof r.attempts==="number")?r.attempts:(hasBest?1:0);
       });
       fp.attempts=attTotal;fp.accSum=fp.hist.reduce((s,h)=>s+h.sc,0);
     }
+    else window.__sbProgressBlocked=true; /* progress unreadable: enter, but re-read it in the background (sbRehydrateLedgers) instead of showing 0/60 all session */
   }catch(e){}
   /* my invite codes as stored on the server. The live invites table is
      exactly (code, inviter, used_by, created_at) — the old read named
@@ -7823,7 +7865,7 @@ async function sbEnterWithSession(session){
     fp.streak=streakStateFromDays(daySet);
   }catch(e){}
   delete fp._streakGemDays;
-  if(window.__sbStreakBlocked)sbRehydrateLedgers(uid);
+  if(window.__sbStreakBlocked||window.__sbProgressBlocked)sbRehydrateLedgers(uid);
   ACCOUNTS[email].progress=JSON.parse(JSON.stringify(fp));
   loadProgress(JSON.parse(JSON.stringify(fp)));
   enterApp();
@@ -7984,17 +8026,27 @@ function sbProgressRow(n){
      named three columns that do not exist (xp_earned / best_accuracy /
      completed), so PostgREST rejected every upsert and NO experiment
      progress ever reached the server — a sign-out brought everything back
-     as untouched. Completion is carried by best_score: a finished lab
-     always has one, a theory-only visit has theory_read instead. */
+     as untouched.
+     EVERY column is sent with a concrete value at EVERY sync stage: the
+     numeric columns are NOT NULL on the server, so a theory-stage sync
+     (no lab score yet) or a lab sync (no test yet) that sent null for
+     best_score / quiz_best was refused with Postgres 23502 and the row
+     never landed — the API logs show exactly that rejection. "Not yet"
+     is therefore carried by 0: a finished lab always has attempts >= 1
+     (forced below) and usually a positive best_score, a theory-only
+     visit has attempts 0 with theory_read set, and sign-in hydration
+     reads completion back as (best_score > 0 || attempts > 0) and a
+     taken test as quiz_best > 0 — the same distinctions the nulls used
+     to carry, with no null ever on the wire. */
   const hasBest=(typeof S!=="undefined"&&S.best&&typeof S.best[n]==="number");
   let att=0;
   try{if(Array.isArray(S.hist))att=S.hist.filter(h=>h&&h.n===n).length;}catch(e){}
   if(hasBest&&att<1)att=1;
   return {user_id:SESSION.uid,exp_id:n,
-    best_score:hasBest?S.best[n]:null,
+    best_score:hasBest?S.best[n]:0,
     attempts:att,
     theory_read:!!(typeof S!=="undefined"&&S.theoryRead&&typeof S.theoryRead.has==="function"&&S.theoryRead.has(n)),
-    quiz_best:(typeof S!=="undefined"&&S.quiz&&S.quiz[n]&&typeof S.quiz[n].best==="number")?S.quiz[n].best:null,
+    quiz_best:(typeof S!=="undefined"&&S.quiz&&S.quiz[n]&&typeof S.quiz[n].best==="number")?S.quiz[n].best:0,
     updated_at:new Date().toISOString()};
 }
 /* ONE progress-row write, deliberately free of any upsert/onConflict: an
@@ -8126,28 +8178,38 @@ async function sbPersistPersonalCode(){
       try{const r=await sbCall(SB.auth.updateUser({data:{pcode:S.pcode}}));SB_PCODE_META_DONE=!(r&&r.error);}catch(e){}
     }
     if(!SB_PCODE_ON_SERVER){
-      const ins=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
-      if(!ins.error){SB_PCODE_ON_SERVER=true;try{if(SB_INV_CODES)SB_INV_CODES.add(S.pcode);}catch(e){}}
-      else{
-        /* the insert was refused — most often because the code row already
-           exists. That is success when the row is THIS account's own. */
-        try{
-          const ex=await sbCall(SB.from("invites").select("inviter").eq("code",S.pcode).limit(1));
-          if(!ex.error&&ex.data&&ex.data.length){
-            if(ex.data[0].inviter===SESSION.uid)SB_PCODE_ON_SERVER=true;
-            else{
-              /* the derived code belongs to another account (hash collision):
-                 mint a fresh random code, store it in both homes instead,
-                 and re-render so the card shows the final code */
-              S.pcode=newInviteCode();saveCurrentAccount();SB_PCODE_META_DONE=false;
-              try{const r2=await sbCall(SB.auth.updateUser({data:{pcode:S.pcode}}));SB_PCODE_META_DONE=!(r2&&r2.error);}catch(e){}
-              const ins2=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
-              if(!ins2.error)SB_PCODE_ON_SERVER=true;
-              if(typeof renderInvites==="function")renderInvites();
-            }
-          }
-        }catch(e){}
+      /* EXISTENCE BEFORE INSERTION: the server may already hold this code
+         (written by an earlier session whose sign-in read-back failed, so
+         the cached code set above came back empty). POSTing it again only
+         earns a duplicate-key 409 in the API logs on every login — the
+         row is therefore looked up FIRST, and a row that is already this
+         account's own IS the persisted state: done, silently, no POST. */
+      let held=null;
+      try{const ex=await sbCall(SB.from("invites").select("inviter").eq("code",S.pcode).limit(1));if(!ex.error&&ex.data)held=ex.data;}catch(e){}
+      if(held&&held.length&&held[0].inviter===SESSION.uid){
+        SB_PCODE_ON_SERVER=true;try{if(SB_INV_CODES)SB_INV_CODES.add(S.pcode);}catch(e){}
+      }else if(held&&held.length){
+        /* the derived code belongs to another account (hash collision):
+           mint a fresh random code, store it in both homes instead,
+           and re-render so the card shows the final code */
+        S.pcode=newInviteCode();saveCurrentAccount();SB_PCODE_META_DONE=false;
+        try{const r2=await sbCall(SB.auth.updateUser({data:{pcode:S.pcode}}));SB_PCODE_META_DONE=!(r2&&r2.error);}catch(e){}
+        const ins2=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
+        if(!ins2.error)SB_PCODE_ON_SERVER=true;
+        if(typeof renderInvites==="function")renderInvites();
+      }else if(held){
+        /* confirmed absent — the one case that may insert */
+        const ins=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
+        if(!ins.error){SB_PCODE_ON_SERVER=true;try{if(SB_INV_CODES)SB_INV_CODES.add(S.pcode);}catch(e){}}
+        else{
+          /* refused anyway (a race or a policy): verify ownership once —
+             our own row means the code is persisted, whatever the POST said */
+          try{const ex2=await sbCall(SB.from("invites").select("inviter").eq("code",S.pcode).limit(1));
+            if(!ex2.error&&ex2.data&&ex2.data.length&&ex2.data[0].inviter===SESSION.uid)SB_PCODE_ON_SERVER=true;}catch(e){}
+        }
       }
+      /* held===null: the existence read itself failed — stay unmarked and
+         let a later render retry, rather than POST blind into a 409. */
     }
     if(SB_PCODE_META_DONE&&SB_PCODE_ON_SERVER)SB_PCODE_DONE=true;
   }finally{SB_PCODE_BUSY=false;}
@@ -8166,6 +8228,9 @@ if(_riSb){
     const last=Array.isArray(S.invites)?S.invites[S.invites.length-1]:null;
     if(last&&!last._sb){
       last._sb=true;
+      /* a code the sign-in read-back already found on the server is never
+         re-inserted (that POST could only come back a duplicate-key 409) */
+      if(SB_INV_CODES&&SB_INV_CODES.has(last.code))return;
       sbCall(SB.from("invites").insert({code:last.code,inviter:SESSION.uid})).catch(()=>{});
     }
   });
