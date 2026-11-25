@@ -7641,7 +7641,10 @@ async function sbEnterWithSession(session){
   const fp=freshProgress();
   fp.invitedBy=meta.invited_by||null;fp.invRewarded=!!meta.inv_rewarded;
   try{
-    const xl=await sbCall(SB.from("xp_ledger").select("amount,reason,exp_id,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
+    /* the live xp_ledger table has exactly (id, user_id, amount, reason,
+       created_at) — naming any other column makes PostgREST reject the whole
+       read, which silently zeroed the restored balance on every sign-in */
+    const xl=await sbCall(SB.from("xp_ledger").select("amount,reason,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(4000));
     if(!xl.error&&xl.data){fp.xpLog=xl.data.map(r=>({t:new Date(r.created_at).getTime()||0,amt:r.amount||0,why:r.reason||"lab"}));fp.xp=fp.xpLog.reduce((s,e)=>s+e.amt,0);}
   }catch(e){}
   try{
@@ -7649,36 +7652,41 @@ async function sbEnterWithSession(session){
     if(!gl.error&&gl.data){fp.gems=gl.data.reduce((s,r)=>s+(r.amount||0),0);
       fp._streakGemDays=gl.data.filter(r=>r.reason==="streak"&&r.created_at).map(r=>localDayNum(new Date(r.created_at).getTime()));}
   }catch(e){}
-  /* per-experiment progress rows -> rings, bests, done set, curve population */
+  /* per-experiment progress rows -> rings, bests, done set, curve population.
+     Read back in the table's real columns (see sbProgressRow): best_score
+     marks a completed lab, theory_read the theory visit, quiz_best the best
+     test score. The per-experiment ring has no column of its own, so it is
+     rebuilt from its exact components — theory 10 + the completion the best
+     score entitles (clamp(best/2, 20, 50)) + test bonus (4 per correct,
+     max 40) = the same 100 the ring counts during play. */
   try{
-    const pr=await sbCall(SB.from("progress").select("*").eq("user_id",uid).limit(200));
+    const pr=await sbCall(SB.from("progress").select("*").eq("user_id",uid).order("updated_at",{ascending:true}).limit(200));
     if(!pr.error&&pr.data){
-      fp.done=[];fp.best={};fp.expXp={};fp.theoryRead={};
+      fp.done=[];fp.best={};fp.expXp={};fp.theoryRead={};fp.quiz={};fp.hist=[];
+      let attTotal=0;
       pr.data.forEach(r=>{
-        if(r.completed)fp.done.push(r.exp_id);
-        if(typeof r.best_accuracy==="number")fp.best[r.exp_id]=r.best_accuracy;
-        if(r.xp_earned)fp.expXp[r.exp_id]=Math.min(100,r.xp_earned);
-        if(r.xp_earned>0)fp.theoryRead[r.exp_id]=true;
+        const n=r.exp_id,hasBest=(typeof r.best_score==="number");
+        if(hasBest){fp.done.push(n);fp.best[n]=r.best_score;fp.hist.push({n:n,sc:r.best_score});}
+        if(r.theory_read)fp.theoryRead[n]=true;
+        if(typeof r.quiz_best==="number")fp.quiz[n]={best:r.quiz_best,bonus:Math.min(40,4*r.quiz_best)};
+        const ring=(r.theory_read?10:0)+(hasBest?Math.max(20,Math.min(50,Math.round(r.best_score/2))):0)+(typeof r.quiz_best==="number"?Math.min(40,4*r.quiz_best):0);
+        if(ring>0)fp.expXp[n]=Math.min(100,ring);
+        attTotal+=(typeof r.attempts==="number")?r.attempts:(hasBest?1:0);
       });
-      fp.hist=pr.data.filter(r=>r.completed&&typeof r.best_accuracy==="number").map(r=>({n:r.exp_id,sc:r.best_accuracy}));
-      fp.attempts=pr.data.length;fp.accSum=fp.hist.reduce((s,h)=>s+h.sc,0);
+      fp.attempts=attTotal;fp.accSum=fp.hist.reduce((s,h)=>s+h.sc,0);
     }
   }catch(e){}
-  /* my invites (directed + my permanent personal code) */
+  /* my invite codes as stored on the server. The live invites table is
+     exactly (code, inviter, used_by, created_at) — the old read named
+     inviter_id / friend_email / status / id, none of which exist, so it
+     failed on every sign-in. A code row carries no per-friend email to
+     rebuild the directed-invite list from (that list lives in-session);
+     what must survive sign-in is WHICH codes the server already holds, so
+     the persist step never re-inserts a code it just read back. The
+     personal code itself is restored by the metadata step below. */
   try{
-    const iv=await sbCall(SB.from("invites").select("*").eq("inviter_id",uid).order("created_at",{ascending:true}).limit(50));
-    if(!iv.error&&iv.data){
-      fp.invites=[];fp.pcode=null;
-      iv.data.forEach(r=>{
-        if(r.status==="personal"||!r.friend_email){if(!fp.pcode)fp.pcode=r.code;}
-        else fp.invites.push({email:r.friend_email,code:r.code,rewarded:r.status==="completed"||r.status==="rewarded",_sb:true,sid:r.id});
-      });
-      fp.invitesUsed=fp.invites.length;
-      /* remember whether the personal-code row truly exists on the server,
-         so the persist step never re-inserts a duplicate of a code it just
-         read back */
-      try{SB_PCODE_ON_SERVER=!!fp.pcode;}catch(e){}
-    }
+    const iv=await sbCall(SB.from("invites").select("code,inviter,used_by,created_at").eq("inviter",uid).order("created_at",{ascending:true}).limit(50));
+    if(!iv.error&&iv.data){try{SB_INV_CODES=new Set(iv.data.map(r=>r.code));}catch(e){}}
   }catch(e){}
   /* The personal invite code has a SECOND server home: the account's own
      auth metadata — the same channel that already carries invited_by and
@@ -7767,12 +7775,22 @@ async function sbLoadOwnerExtras(){
 let SB_XP_QUEUE=[],sbFlushTimer=null,sbFlushFails=0;
 function sbExpCtx(why){if(why==="duel")return null;try{return (typeof curExp!=="undefined"&&curExp)?curExp.n:null;}catch(e){return null;}}
 const _gainSb=gainXP;
+const sbGainProgTimers={};
 gainXP=function(amt,why){
   _gainSb(amt,why);
-  if(!sbServerSession()||!amt||amt<=0)return;
+  if(!sbServerSession())return;
+  /* a theory read or a graded test changes the per-experiment progress row
+     (theory_read / quiz_best) even when the lab itself is never finished in
+     this session — persist the row too, debounced so the local quiz/theory
+     state has settled before it is read */
+  if(why==="theory"||why==="test"){
+    const n=sbExpCtx(why);
+    if(n){if(sbGainProgTimers[n])clearTimeout(sbGainProgTimers[n]);sbGainProgTimers[n]=setTimeout(()=>sbSyncProgress(n),700);}
+  }
+  if(!amt||amt<=0)return;
   SB_XP_QUEUE.push({amt:amt,why:why||"lab",exp:sbExpCtx(why)});
   if(sbFlushTimer)clearTimeout(sbFlushTimer);
-  sbFlushTimer=setTimeout(()=>sbFlushXP(),900);
+  sbFlushTimer=setTimeout(()=>sbFlushXP(),400);
 };
 async function sbFlushXP(){
   if(!sbServerSession()||!SB_XP_QUEUE.length)return;
@@ -7780,8 +7798,11 @@ async function sbFlushXP(){
   const rows=[];
   items.forEach(it=>{
     let a=it.amt;
-    while(a>500){rows.push({user_id:SESSION.uid,amount:500,reason:it.why,exp_id:it.exp});a-=500;}
-    if(a>0)rows.push({user_id:SESSION.uid,amount:a,reason:it.why,exp_id:it.exp});
+    /* only the table's real columns may be sent: one unknown key in the
+       payload makes PostgREST reject the entire insert, so no XP ever
+       landed on the server while exp_id was attached here */
+    while(a>500){rows.push({user_id:SESSION.uid,amount:500,reason:it.why});a-=500;}
+    if(a>0)rows.push({user_id:SESSION.uid,amount:a,reason:it.why});
   });
   try{
     const r=await sbCall(SB.from("xp_ledger").insert(rows));
@@ -7793,6 +7814,13 @@ async function sbFlushXP(){
     else if(window.console)console.warn("XP ledger sync failed:",e);
   }
 }
+/* never strand queued XP in memory: when the tab is hidden or the page is
+   being closed, push the queue and the progress rows out immediately —
+   gains made seconds before a close or a sign-out must still land */
+try{
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden"){try{sbFlushXP();}catch(e){}}});
+  window.addEventListener("pagehide",()=>{try{sbFlushXP();sbSyncAllProgress();}catch(e){}});
+}catch(e){}
 /* ---------- gems: every local gain is mirrored to the server ledger ----------
    (the login streak's day-7 prize is the first own-gain; the row's reason is
    what lets the next sign-in rebuild the streak state from the ledger.) */
@@ -7801,16 +7829,30 @@ if(_gainGemsSb){
   gainGems=function(amt,why){
     _gainGemsSb(amt,why);
     if(!sbServerSession()||!amt||amt<=0)return;
-    sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:why||"streak",exp_id:null}))
+    sbCall(SB.from("gems_ledger").insert({user_id:SESSION.uid,amount:amt,reason:why||"streak"}))
       .then(r=>{if(r&&r.error&&window.console)console.warn("gems ledger sync:",r.error.message||r.error);})
       .catch(e=>{if(window.console)console.warn("gems ledger sync failed:",e);});
   };
 }
 /* ---------- per-experiment progress rows ---------- */
 function sbProgressRow(n){
-  return {user_id:SESSION.uid,exp_id:n,xp_earned:Math.min(100,(typeof expXpMap!=="undefined"&&expXpMap)?(expXpMap[n]||0):0),
-    best_accuracy:(typeof S!=="undefined"&&S.best&&typeof S.best[n]==="number")?S.best[n]:null,
-    completed:!!(typeof S!=="undefined"&&S.done&&S.done.has(n)),updated_at:new Date().toISOString()};
+  /* the live progress table has exactly (user_id, exp_id, best_score,
+     attempts, theory_read, quiz_best, updated_at). The previous row shape
+     named three columns that do not exist (xp_earned / best_accuracy /
+     completed), so PostgREST rejected every upsert and NO experiment
+     progress ever reached the server — a sign-out brought everything back
+     as untouched. Completion is carried by best_score: a finished lab
+     always has one, a theory-only visit has theory_read instead. */
+  const hasBest=(typeof S!=="undefined"&&S.best&&typeof S.best[n]==="number");
+  let att=0;
+  try{if(Array.isArray(S.hist))att=S.hist.filter(h=>h&&h.n===n).length;}catch(e){}
+  if(hasBest&&att<1)att=1;
+  return {user_id:SESSION.uid,exp_id:n,
+    best_score:hasBest?S.best[n]:null,
+    attempts:att,
+    theory_read:!!(typeof S!=="undefined"&&S.theoryRead&&typeof S.theoryRead.has==="function"&&S.theoryRead.has(n)),
+    quiz_best:(typeof S!=="undefined"&&S.quiz&&S.quiz[n]&&typeof S.quiz[n].best==="number")?S.quiz[n].best:null,
+    updated_at:new Date().toISOString()};
 }
 async function sbSyncProgress(n){
   if(!sbServerSession()||!n)return;
@@ -7855,13 +7897,20 @@ async function sbCreditInviteReward(){
     const found=await sbCall(SB.from("invites").select("*").eq("code",code).limit(1));
     if(found.error||!found.data||!found.data.length)return;
     const inv=found.data[0];
-    if(inv.inviter_id===SESSION.uid){SB_INV_DONE=true;return;}
-    const cnt=await sbCall(SB.from("invites").select("id").eq("inviter_id",inv.inviter_id).in("status",["completed","rewarded"]));
+    /* real columns again: the inviter is invites.inviter, a redemption is
+       invites.used_by, and the 5-reward cap is counted on the inviter's own
+       'invite' rows in the gems ledger — the old field names (inviter_id /
+       status / id / exp_id) exist on neither table, so the reward could
+       never actually be paid */
+    if(inv.inviter===SESSION.uid){SB_INV_DONE=true;return;}
+    const cnt=await sbCall(SB.from("gems_ledger").select("amount").eq("user_id",inv.inviter).eq("reason","invite").limit(10));
     if(!cnt.error&&cnt.data&&cnt.data.length>=5){SB_INV_DONE=true;return;}
-    const pay=await sbCall(SB.from("gems_ledger").insert({user_id:inv.inviter_id,amount:100,reason:"invite",exp_id:null}));
+    const pay=await sbCall(SB.from("gems_ledger").insert({user_id:inv.inviter,amount:100,reason:"invite"}));
     if(pay.error)return; /* not paid — leave unmarked so a later completion retries */
-    if(inv.friend_email){try{await sbCall(SB.from("invites").update({status:"completed"}).eq("id",inv.id));}catch(e){}}
-    else{try{await sbCall(SB.from("invites").insert({inviter_id:inv.inviter_id,friend_email:SESSION.email,code:code,status:"completed"}));}catch(e){}}
+    /* record the redemption on the code row itself (first redeemer only —
+       a personal code may serve several friends; each invitee's own
+       inv_rewarded flag is what stops a double payment) */
+    try{await sbCall(SB.from("invites").update({used_by:SESSION.uid}).eq("code",code).is("used_by",null));}catch(e){}
     SB_INV_DONE=true;S.invRewarded=true;
     try{await sbCall(SB.auth.updateUser({data:{inv_rewarded:true}}));}catch(e){}
   }catch(e){}
@@ -7881,6 +7930,7 @@ async function sbCreditInviteReward(){
    just read back is never re-inserted (the old wrapper re-inserted on every
    page load and churned on the duplicate-key error forever). */
 let SB_PCODE_DONE=false,SB_PCODE_ON_SERVER=false,SB_PCODE_META_DONE=false,SB_PCODE_BUSY=false;
+let SB_INV_CODES=null; /* every invite code the server already holds for this account (filled at sign-in) */
 function sbDerivedCode(){
   if(!sbServerSession()||!SESSION.uid)return null;
   const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789",s=String(SESSION.uid);
@@ -7894,26 +7944,29 @@ async function sbPersistPersonalCode(){
   if(!sbServerSession()||!S.pcode||SB_PCODE_DONE||SB_PCODE_BUSY)return;
   SB_PCODE_BUSY=true;
   try{
+    /* the sign-in read-back already knows every code the server holds for
+       this account — if this one is among them, the row step is done */
+    if(!SB_PCODE_ON_SERVER&&SB_INV_CODES&&SB_INV_CODES.has(S.pcode))SB_PCODE_ON_SERVER=true;
     if(!SB_PCODE_META_DONE){
       try{const r=await sbCall(SB.auth.updateUser({data:{pcode:S.pcode}}));SB_PCODE_META_DONE=!(r&&r.error);}catch(e){}
     }
     if(!SB_PCODE_ON_SERVER){
-      const ins=await sbCall(SB.from("invites").insert({inviter_id:SESSION.uid,friend_email:"",code:S.pcode,status:"personal"})).catch(e=>({error:e}));
-      if(!ins.error)SB_PCODE_ON_SERVER=true;
+      const ins=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
+      if(!ins.error){SB_PCODE_ON_SERVER=true;try{if(SB_INV_CODES)SB_INV_CODES.add(S.pcode);}catch(e){}}
       else{
         /* the insert was refused — most often because the code row already
            exists. That is success when the row is THIS account's own. */
         try{
-          const ex=await sbCall(SB.from("invites").select("inviter_id").eq("code",S.pcode).limit(1));
+          const ex=await sbCall(SB.from("invites").select("inviter").eq("code",S.pcode).limit(1));
           if(!ex.error&&ex.data&&ex.data.length){
-            if(ex.data[0].inviter_id===SESSION.uid)SB_PCODE_ON_SERVER=true;
+            if(ex.data[0].inviter===SESSION.uid)SB_PCODE_ON_SERVER=true;
             else{
               /* the derived code belongs to another account (hash collision):
                  mint a fresh random code, store it in both homes instead,
                  and re-render so the card shows the final code */
               S.pcode=newInviteCode();saveCurrentAccount();SB_PCODE_META_DONE=false;
               try{const r2=await sbCall(SB.auth.updateUser({data:{pcode:S.pcode}}));SB_PCODE_META_DONE=!(r2&&r2.error);}catch(e){}
-              const ins2=await sbCall(SB.from("invites").insert({inviter_id:SESSION.uid,friend_email:"",code:S.pcode,status:"personal"})).catch(e=>({error:e}));
+              const ins2=await sbCall(SB.from("invites").insert({code:S.pcode,inviter:SESSION.uid})).catch(e=>({error:e}));
               if(!ins2.error)SB_PCODE_ON_SERVER=true;
               if(typeof renderInvites==="function")renderInvites();
             }
@@ -7938,7 +7991,7 @@ if(_riSb){
     const last=Array.isArray(S.invites)?S.invites[S.invites.length-1]:null;
     if(last&&!last._sb){
       last._sb=true;
-      sbCall(SB.from("invites").insert({inviter_id:SESSION.uid,friend_email:last.email,code:last.code,status:"pending"})).then(r=>{if(!r.error&&r.data&&r.data[0])last.sid=r.data[0].id;}).catch(()=>{});
+      sbCall(SB.from("invites").insert({code:last.code,inviter:SESSION.uid})).catch(()=>{});
     }
   });
 })();
@@ -8049,11 +8102,17 @@ const _ssSb=showScreen;
 showScreen=function(id){
   _ssSb(id);
   if(id==="scr-login"&&sbServerSession()){
-    sbFlushXP();
-    sbSyncAllProgress();
+    /* start the final writes FIRST, while SESSION still names the account
+       (both builders read SESSION.uid synchronously), and only sign the
+       server session out once they have settled — signing out in the same
+       tick raced the flush, and the ledger insert could land after the
+       token was revoked and be refused, losing the session's last gains.
+       The guard keeps a fast re-login from being signed out by this
+       delayed call. */
+    const _flushOut=Promise.allSettled([sbFlushXP(),sbSyncAllProgress()]);
     SESSION={mode:"none",email:null,guestLeft:0,guestTimer:null,expired:false};
     window.__sbEnterLock=null;
-    try{SB.auth.signOut();}catch(e){}
+    _flushOut.then(()=>{if(!SESSION||!SESSION.server){try{SB.auth.signOut();}catch(e){}}});
     try{loadProgress(freshProgress());}catch(e){}
     CURRENT_USER.name="محمد";CURRENT_USER.nameEn="Mohamed";
     try{setGreeting();}catch(e){}
