@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
 <link rel="icon" type="image/png" href="assets/logo.png" />
-<link rel="manifest" href="manifest.webmanifest" />
+<link rel="manifest" href="assets/manifest.webmanifest" />
 <meta name="theme-color" content="#0b766e" />
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0c1417" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="مختبر الحدس" />
-<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <title>مختبر الحدس الفيزيائي</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -6141,9 +6141,11 @@ function wireAuth(){
   if(rs)rs.addEventListener("click",()=>{
     if(!PENDING_REG)return;
     if(PENDING_REG.server){sbDoResend();return;}
+    if(typeof sbResendLeft==="function"&&sbResendLeft()>0){authMsg("vfMsg",T("انتظر "+AR(sbResendLeft())+" ثانية قبل طلب كود جديد.","Wait "+sbResendLeft()+" seconds before requesting a new code."));return;}
     PENDING_REG.code=newVerifyCode();
     const shown=document.getElementById("vfCodeShown");if(shown)shown.textContent=PENDING_REG.code;
     authMsg("vfMsg",T("تم إرسال كود تحقق جديد إلى بريدك الإلكتروني.","A new verification code has been sent to your email."),true);
+    if(typeof sbStartResendCooldown==="function")sbStartResendCooldown(30);
   });
   const bk=document.getElementById("linkBackRegister");
   if(bk)bk.addEventListener("click",()=>authTab("new"));
@@ -7118,9 +7120,21 @@ window.__sbOn=function(){return !!SB;};
 window.__sbRecoverySession=false;
 function sbServerSession(){return !!(SB&&typeof SESSION!=="undefined"&&SESSION&&SESSION.server&&SESSION.uid);}
 function sbCall(p){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("sb-timeout")),15000))]);}
+function sbParseWaitSeconds(m){
+  const mm=/after\s+(\d+)\s*second/i.exec(m||"");
+  return mm?Math.max(1,parseInt(mm[1],10)||0):0;
+}
+function sbIsRateLimit(err){
+  const m=(err&&((err.message||"")+" "+(err.code||"")+" "+(err.name||"")))||"";
+  return /rate.?limit|over_email_send|over_request|too many|only request this after/i.test(m);
+}
 function sbErrText(err){
   const m=(err&&(err.message||err.msg))||String(err||"");
   if(/failed to fetch|network|sb-timeout|load failed/i.test(m))return T("تعذّر الاتصال بالسيرفر — تحقق من اتصالك بالإنترنت وحاول مرة أخرى.","Could not reach the server — check your internet connection and try again.");
+  if(sbIsRateLimit(err)){
+    const sec=sbParseWaitSeconds(m);
+    return T("اتبعت أكواد كتير في وقت قصير، فخدمة البريد واقفة الإرسال مؤقتًا. "+(sec?("حاول تاني بعد "+AR(sec)+" ثانية. "):"انتظر دقيقة وحاول تاني. ")+"ولو وصلك كود قبل كده، اكتب أحدث كود في بريدك — ممكن يكون لسه صالح.","Too many codes were requested in a short time, so the mail service has paused sending. "+(sec?("Try again in "+sec+" seconds. "):"Wait a minute and try again. ")+"If a code already reached you, enter the latest one in your inbox — it may still be valid.");
+  }
   if(/email_address_invalid|invalid email/i.test(m))return T("صيغة البريد الإلكتروني غير صحيحة.","The email address is not valid.");
   if(/password/i.test(m)&&/weak|short|least/i.test(m))return T("كلمة السر ضعيفة — اجعلها ٨ أحرف على الأقل وخليطًا من الحروف والأرقام.","The password is too weak — use at least 8 characters with a mix of letters and numbers.");
   if(LANG==="en"&&m)return m;
@@ -7128,6 +7142,28 @@ function sbErrText(err){
 }
 function sbBusy(id,on){const b=document.getElementById(id);if(b){b.disabled=!!on;b.style.opacity=on?.6:1;}}
 function sbHideShownCode(){const w=document.querySelector(".vfcodeshow");if(w)w.style.display="none";}
+/* ---------- resend cooldown: one shared 60s gate for every code send ----------
+   The button itself counts down and stays disabled, so a second send can never
+   be fired while the mail service would reject it anyway. */
+let SB_RESEND_LEFT=0,SB_RESEND_TIMER=null;
+function sbResendLeft(){return SB_RESEND_LEFT;}
+function sbResendTick(){
+  const b=document.getElementById("linkResend");if(!b)return;
+  if(SB_RESEND_LEFT>0){
+    b.disabled=true;b.style.opacity=.55;
+    b.textContent=T("إعادة الإرسال بعد "+AR(SB_RESEND_LEFT)+" ث","Resend available in "+SB_RESEND_LEFT+"s");
+  }else{
+    b.disabled=false;b.style.opacity=1;
+    b.textContent=T("إعادة إرسال الكود","Resend code");
+    if(SB_RESEND_TIMER){clearInterval(SB_RESEND_TIMER);SB_RESEND_TIMER=null;}
+  }
+}
+function sbStartResendCooldown(sec){
+  SB_RESEND_LEFT=Math.max(5,Math.round(sec||60));
+  sbResendTick();
+  if(SB_RESEND_TIMER)clearInterval(SB_RESEND_TIMER);
+  SB_RESEND_TIMER=setInterval(()=>{SB_RESEND_LEFT--;if(SB_RESEND_LEFT<0)SB_RESEND_LEFT=0;sbResendTick();},1000);
+}
 /* ---------- auth flows (called from the sign-in screen's own handlers) ---------- */
 async function sbDoSignUp(){
   const pr=PENDING_REG;if(!pr)return;
@@ -7142,7 +7178,7 @@ async function sbDoSignUp(){
     }
     if(data&&data.session){await sbEnterWithSession(data.session);return;}
     /* email confirmation is on: the 6-digit code went to the user's inbox */
-    authTab("verify");sbHideShownCode();
+    authTab("verify");sbHideShownCode();sbStartResendCooldown(60);
     authMsg("vfMsg",T("تم إنشاء حسابك — وصلك كود تحقق مكوّن من ٦ أرقام على بريدك الإلكتروني. اكتبه هنا لإتمام التسجيل.","Your account was created — a 6-digit verification code was sent to your email. Enter it here to finish signing up."),true);
   }catch(e){authMsg(msgId,sbErrText(e));}
   finally{sbBusy(btnId,false);}
@@ -7153,7 +7189,12 @@ async function sbDoVerify(code){
   try{
     const type=pr.recovery?"recovery":"signup";
     const {data,error}=await sbCall(SB.auth.verifyOtp({email:pr.email,token:code,type:type}));
-    if(error||!data||!data.session){authMsg("vfMsg",T("كود التحقق غير صحيح أو انتهت صلاحيته — تأكد من أحدث كود وصلك على بريدك وحاول مرة أخرى.","The verification code is incorrect or has expired — check the latest code in your inbox and try again."));return;}
+    if(error||!data||!data.session){
+      const em=((error&&(error.message||""))+" "+((error&&error.code)||""));
+      if(/otp_expired|expired/i.test(em))authMsg("vfMsg",T("الكود ده انتهت صلاحيته — صلاحية الكود ساعة واحدة من وقت إرساله. دوس «إعادة إرسال الكود» واكتب أحدث كود يوصلك.","This code has expired — a code stays valid for one hour after it is sent. Tap Resend code and enter the newest code that arrives."));
+      else authMsg("vfMsg",T("كود التحقق غير صحيح — تأكد إنك كاتب أحدث كود وصلك على بريدك (٦ أرقام) وحاول مرة أخرى.","The verification code is incorrect — make sure you are entering the latest 6-digit code from your inbox and try again."));
+      return;
+    }
     if(pr.recovery){
       const up=await sbCall(SB.auth.updateUser({password:pr.newPass}));
       if(up.error){authMsg("vfMsg",sbErrText(up.error));return;}
@@ -7163,13 +7204,28 @@ async function sbDoVerify(code){
   }catch(e){authMsg("vfMsg",sbErrText(e));}
   finally{sbBusy("btnVerify",false);}
 }
+let SB_RESEND_BUSY=false;
 async function sbDoResend(){
   const pr=PENDING_REG;if(!pr||!pr.server)return;
+  if(SB_RESEND_BUSY)return;
+  if(SB_RESEND_LEFT>0){authMsg("vfMsg",T("لسه بدري على إعادة الإرسال — انتظر "+AR(SB_RESEND_LEFT)+" ثانية وحاول تاني، أو اكتب أحدث كود وصلك على بريدك.","Too soon to resend — wait "+SB_RESEND_LEFT+" seconds and try again, or enter the latest code already in your inbox."));return;}
+  SB_RESEND_BUSY=true;
+  const b=document.getElementById("linkResend");if(b){b.disabled=true;b.style.opacity=.6;}
   try{
-    if(pr.recovery)await sbCall(SB.auth.resetPasswordForEmail(pr.email));
-    else await sbCall(SB.auth.resend({type:"signup",email:pr.email}));
-    authMsg("vfMsg",T("تم إرسال كود جديد إلى بريدك الإلكتروني.","A new code has been sent to your email."),true);
-  }catch(e){authMsg("vfMsg",sbErrText(e));}
+    /* Supabase auth calls RESOLVE with {data,error} on API rejections (rate
+       limit, invalid request…) — they do not throw. The old code never read
+       .error, so every rejection still showed «تم إرسال كود جديد». */
+    const r=pr.recovery?await sbCall(SB.auth.resetPasswordForEmail(pr.email))
+                       :await sbCall(SB.auth.resend({type:"signup",email:pr.email}));
+    if(r&&r.error){
+      authMsg("vfMsg",sbErrText(r.error));
+      sbStartResendCooldown(sbIsRateLimit(r.error)?(sbParseWaitSeconds(r.error.message)||60):30);
+      return;
+    }
+    authMsg("vfMsg",T("تم إرسال كود جديد إلى بريدك الإلكتروني — بص في صندوق الوارد ومجلد الرسائل المزعجة (Spam)، واكتب أحدث كود يوصلك.","A new code has been sent to your email — check your inbox and the Spam folder, and enter the latest code that arrives."),true);
+    sbStartResendCooldown(60);
+  }catch(e){authMsg("vfMsg",sbErrText(e));sbStartResendCooldown(30);}
+  finally{SB_RESEND_BUSY=false;sbResendTick();}
 }
 async function sbDoSignIn(email,pass){
   sbBusy("btnSignin",true);
@@ -7179,9 +7235,18 @@ async function sbDoSignIn(email,pass){
       const code=error.code||"",m=error.message||"";
       if(code==="email_not_confirmed"||/not confirmed/i.test(m)){
         PENDING_REG={server:true,verifyOnly:true,email:email};
-        try{await sbCall(SB.auth.resend({type:"signup",email:email}));}catch(e){}
+        let sentOk=false,waitSec=0,rateLimited=false;
+        try{const rr=await sbCall(SB.auth.resend({type:"signup",email:email}));if(rr&&rr.error){rateLimited=sbIsRateLimit(rr.error);waitSec=sbParseWaitSeconds(rr.error.message);}else sentOk=true;}catch(e){}
         authTab("verify");sbHideShownCode();
-        authMsg("vfMsg",T("حسابك موجود لكن بريدك لسه مش مؤكَّد — بعتنا لك كود تحقق جديد من ٦ أرقام على بريدك، اكتبه هنا للدخول.","Your account exists but your email is not verified yet — we sent a fresh 6-digit code to your inbox; enter it here to sign in."),true);
+        if(sentOk){
+          sbStartResendCooldown(60);
+          authMsg("vfMsg",T("حسابك موجود لكن بريدك لسه مش مؤكَّد — بعتنا لك كود تحقق جديد من ٦ أرقام على بريدك، اكتبه هنا للدخول.","Your account exists but your email is not verified yet — we sent a fresh 6-digit code to your inbox; enter it here to sign in."),true);
+        }else if(rateLimited){
+          sbStartResendCooldown(waitSec||60);
+          authMsg("vfMsg",T("حسابك موجود لكن بريدك لسه مش مؤكَّد، والإرسال واقف مؤقتًا عشان اتبعت أكواد كتير في وقت قصير — اكتب أحدث كود وصلك على بريدك قبل كده، أو استنى العدّاد يخلص ودوس «إعادة إرسال الكود».","Your account exists but your email is not verified yet, and sending is paused because too many codes were requested in a short time — enter the latest code already in your inbox, or wait for the countdown to finish and tap Resend code."));
+        }else{
+          authMsg("vfMsg",T("حسابك موجود لكن بريدك لسه مش مؤكَّد، ومعرفناش نبعت كود جديد دلوقتي — اكتب أحدث كود وصلك على بريدك قبل كده، أو جرّب «إعادة إرسال الكود» بعد لحظات.","Your account exists but your email is not verified yet, and we could not send a new code just now — enter the latest code already in your inbox, or try Resend code in a moment."));
+        }
         return;
       }
       if(code==="invalid_credentials"||/invalid login/i.test(m)){
@@ -7199,8 +7264,9 @@ async function sbDoRecoverSend(){
   const pr=PENDING_REG;if(!pr)return;
   sbBusy("btnRecover",true);
   try{
-    await sbCall(SB.auth.resetPasswordForEmail(pr.email));
-    authTab("verify");sbHideShownCode();
+    const rr=await sbCall(SB.auth.resetPasswordForEmail(pr.email));
+    if(rr&&rr.error){authMsg("rcMsg",sbErrText(rr.error));return;}
+    authTab("verify");sbHideShownCode();sbStartResendCooldown(60);
     authMsg("vfMsg",T("لو البريد ده مسجّل عندنا، وصلك كود استرجاع مكوّن من ٦ أرقام على بريدك الإلكتروني — اكتبه هنا وبعده هيتفعّل الدخول بكلمة السر الجديدة اللي اخترتها.","If this email is registered with us, a 6-digit recovery code was sent to your inbox — enter it here and your new password takes effect."),true);
   }catch(e){authMsg("rcMsg",sbErrText(e));}
   finally{sbBusy("btnRecover",false);}
@@ -7597,12 +7663,6 @@ if(SB){
     }
   }catch(e){}
 }
-</script>
-
-<script>
-/* Standalone deployment: register the service worker (root scope). Updates use
-   network-first for the document, so a new deploy reaches everyone on next open. */
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 </script>
 </body>
 </html>
