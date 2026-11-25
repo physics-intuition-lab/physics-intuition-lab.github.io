@@ -1240,7 +1240,7 @@ html[dir="ltr"] .feedback{line-height:1.75}
         </div>
         <p class="small" style="margin-top:8px;text-align:center" data-i18n="inv_my_d">أي صديق يسجّل بكودك الشخصي أو من رابطك ويكمل أول تجربة له يضيف لك 100 💠 — وتُحتسب الدعوة ضمن حد الدعوات الخمس لحسابك.</p>
       </div>
-      <div class="invrow" style="margin-top:8px"><span id="invUsedLbl">دعوات مستخدمة: 0 من 5</span><span class="gembal"><span data-i18n="set_inv_gems">رصيد الجيمز:</span> <b id="invGemBal">0</b> 💠</span></div>
+      <div class="invrow" style="margin-top:8px"><span id="invUsedLbl" data-i18n="set_inv_used">دعوات مستخدمة: 0 من 5</span><span class="gembal"><span data-i18n="set_inv_gems">رصيد الجيمز:</span> <b id="invGemBal">0</b> 💠</span></div>
       <div id="invForm" style="display:none;margin-top:12px">
         <label class="fldlbl" data-i18n="inv_email_lbl">بريد الصديق الإلكتروني</label>
         <input class="fld" id="invEmail" type="email" dir="ltr" placeholder="friend@example.com">
@@ -1315,12 +1315,12 @@ html[dir="ltr"] .feedback{line-height:1.75}
       </div>
       <p class="small" id="owAnnMsg" style="margin-top:6px"></p>
       <h3 style="margin-top:14px" data-i18n="ow_acc_h">حسابات هذه الجلسة</h3>
-      <p class="small">من هنا تمنح أي حساب دور «معلم» أو ترجعه طالبًا — المعلم يحصل على «مساحة المعلم» لبناء كورسات مخصصة وطلب تجارب جديدة.</p>
+      <p class="small" data-i18n="ow_acc_d">من هنا تمنح أي حساب دور «معلم» أو ترجعه طالبًا — المعلم يحصل على «مساحة المعلم» لبناء كورسات مخصصة وطلب تجارب جديدة.</p>
       <div id="owAccList"></div>
-      <h3 style="margin-top:14px">طلبات التجارب</h3>
-      <p class="small">طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».</p>
+      <h3 style="margin-top:14px" data-i18n="ow_req_h">طلبات التجارب</h3>
+      <p class="small" data-i18n="ow_req_d">طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».</p>
       <div id="owReqList"></div>
-      <p class="small" id="owCourseFlowP" style="margin-top:8px">كده بيتم الربط: المعلم يبعت طلب تجربة من مساحته ← أنت تنشئ له كورسًا خاصًا من الطلب ده بالتجارب اللي تختارها ← الكورس بيظهر في مساحة المعلم وفي منطقة «كورسات المعلمين» بالرئيسية ← المعلم يبعت كود الانضمام (ويحط كلمة سر لو حابب من «إدارة» الكورس) ← طلابه بينضموا بالكود ويمشوا في التجارب بالترتيب.</p>
+      <p class="small" id="owCourseFlowP" data-i18n="ow_flow_p" style="margin-top:8px">كده بيتم الربط: المعلم يبعت طلب تجربة من مساحته ← أنت تنشئ له كورسًا خاصًا من الطلب ده بالتجارب اللي تختارها ← الكورس بيظهر في مساحة المعلم وفي منطقة «كورسات المعلمين» بالرئيسية ← المعلم يبعت كود الانضمام (ويحط كلمة سر لو حابب من «إدارة» الكورس) ← طلابه بينضموا بالكود ويمشوا في التجارب بالترتيب.</p>
       <div id="owCourseBuilder"></div>
       <h3 style="margin-top:14px" data-i18n="ow_fb_h">تقييمات وآراء المستخدمين</h3>
       <p class="small" data-i18n="ow_fb_d">كل التقييمات الواردة من قسم «قيّمنا» في الإعدادات — الأحدث أولًا.</p>
@@ -1803,6 +1803,15 @@ function renderExps(){
     if(slot){const dn=S.done.has(+card.dataset.n);const want=dn?'<span class="chip l0">'+T("أُنجزت ✓","Done ✓")+"</span>":"";if(slot.innerHTML!==want)slot.innerHTML=want;}
   });
   const em=document.getElementById("expEmpty");if(em)em.style.display=shown?"none":"";
+  /* catalog header count = VISIBLE experiments (total minus owner-hidden),
+     never a fixed total — it follows the site config the moment it applies */
+  try{
+    const visN=CATALOG.length-((typeof ADMIN!=="undefined"&&ADMIN.hidden)?ADMIN.hidden.size:0);
+    const sub=document.querySelector('#scr-exps [data-i18n="exps_sub"]');
+    if(sub)sub.textContent=(LANG==="en"?(visN+" experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."):(AR(visN)+" تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده."));
+    const fall=document.querySelector('#lvlFilters [data-lvl="all"]');
+    if(fall)fall.textContent=(LANG==="en"?("All ("+visN+")"):("الكل ("+AR(visN)+")"));
+  }catch(e){}
 }
 renderExps();
 
@@ -2358,7 +2367,7 @@ const MARKER_MODELS={
 16(){const R=pk([5,10,20,47]),C=pk([47,100,220,470]);const tau=R*1000*C*1e-6;const k=pk([0.5,0.8,1,1.5,2,3]);const t=Math.round(k*tau*100)/100;const tv=Math.round(100*(1-Math.exp(-t/tau))*10)/10;
   return {task:T("مكثّف بيتشحن من بطارية عبر مقاومة. احسب الثابت الزمني τ = RC من المعطيات وقارن زمن الشحن بيه، وبعدين خمّن جهد المكثّف كنسبة من جهد البطارية.","A capacitor is charging from a battery through a resistor. Work out the time constant τ = RC from the givens and compare the charging time with it, then predict the capacitor's voltage as a percentage of the battery's."),
    givens:[["المقاومة R","Resistance R",ND(R)+" kΩ"],["السعة C","Capacitance C",ND(C)+" µF"],["زمن الشحن t","Charging time t",ND(t)+" s"],["جهد البطارية (المرجع)","Battery voltage (the reference)",["١٠٠٪","100%"]]],
-   trueVal:tv,
+   trueVal:tv,paint:{tauK:k},
    why(g){const core=T(`الثابت الزمني τ = RC = ${NV(tau)} ثانية، فالزمن المعطى = ${NV(t/tau)} × τ. والجهد V = V₀(1 − e^(−t/τ)) = ${NV(tv,1)}٪ من البطارية — دي الحقيقة، وتوقعك ${NV(g,1)}٪.`,`The time constant τ = RC = ${NV(tau)} s, so the given time = ${NV(t/tau)} × τ. The voltage V = V₀(1 − e^(−t/τ)) = ${NV(tv,1)}% of the battery — that is the truth, and your prediction was ${NV(g,1)}%.`);
     const dir=g>tv+10?T("قدّرت الجهد أكبر: الشحن أسي بيتباطأ — أول ثابت زمني بيوصّل لـ63٪ بس، وكل ثابت زمني بعده بيقرّبك من الكامل بنص المسافة المتبقية تقريبًا، فالكمال بييجي ببطء.","You overestimated the voltage: charging is a slowing exponential — the first time constant reaches only 63%, and each further one closes roughly half the remaining gap, so full charge comes slowly."):g<tv-10?T("قدّرت الجهد أقل: الشحن بيبدأ سريعًا جدًا — أغلب الجهد بييجي في أول ثابت زمني أو اتنين، مش بيتوزع بالتساوي على الزمن.","You underestimated the voltage: charging starts very fast — most of the voltage arrives within the first time constant or two, not spread evenly over time."):T("توقعك قريب — قرأت منحنى الشحن الأسي قراءة صحيحة.","Your prediction was close — you read the exponential charging curve correctly.");
     return core+" "+dir;}}},
@@ -3956,11 +3965,11 @@ function drawDuelMarker(anim,reveal){
     tri(D.guess,C_BLUE,T("أنت","You"),0);
     if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
   };
-  try{drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);
+  try{window.__duelPaint=(D.R&&D.R.conv)||null;drawScene(D.exp,ctx,640,250,anim,D.guess,D.truePct,reveal);
     /* the model's own givens, printed on the scene as apparatus data — a
        duel hides the givens PANEL, never the values the scene is built from */
     if(D.R&&D.R.sceneData&&D.R.sceneData.length&&typeof duelBand==="function")duelBand(ctx,D.R.sceneData,640);}
-  finally{drawAxis=_da;}
+  finally{drawAxis=_da;window.__duelPaint=null;}
 }
 $("#duelStart").onclick=()=>{
   if(duelMode!=="bot")return;
@@ -4960,6 +4969,7 @@ function applyLang(l){
   // screen itself leaves nothing behind in the old language.
   if(typeof renderInvites==="function")renderInvites();
   if(typeof renderOwnerBits==="function")renderOwnerBits();
+  if(typeof renderRateUs==="function")renderRateUs();
   renderHome();renderExps();renderTheory($("#thSearch").value.trim());renderRank();
   if(curExp){
     const n=curExp.n;
@@ -6708,6 +6718,11 @@ function refreshAccountUI(){
 }
 function enterApp(){
   document.body.classList.remove("auth");
+  /* site config re-resolves on EVERY entry (sign-in, session restore, guest):
+     values the owner changed while this client was away — announcement,
+     hidden experiments, duels switch — apply to the first rendered screen,
+     with no reload. */
+  try{if(typeof sbLoadSiteConfig==="function")sbLoadSiteConfig(true);}catch(e){}
   showScreen("scr-home");renderAll();
   if(SESSION.mode==="guest")startGuestCountdown();
   else stopGuest();
@@ -7024,6 +7039,10 @@ ow_ann_ph:["مثال: تحدي الأسبوع بدأ — جرّب تجربة ا�
 ow_ann_save:["نشر الإعلان","Publish announcement"],
 ow_ann_clear:["مسح الإعلان","Clear announcement"],
 ow_acc_h:["حسابات هذه الجلسة","Accounts in this session"],
+ow_acc_d:["من هنا تمنح أي حساب دور «معلم» أو ترجعه طالبًا — المعلم يحصل على «مساحة المعلم» لبناء كورسات مخصصة وطلب تجارب جديدة.","From here you can give any account the Teacher role or return it to a student — a teacher gets the Teacher Space for building custom courses and requesting new experiments."],
+ow_req_h:["طلبات التجارب","Experiment requests"],
+ow_req_d:["طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».","New experiment requests that teachers sent you from the Teacher Space."],
+ow_flow_p:["كده بيتم الربط: المعلم يبعت طلب تجربة من مساحته ← أنت تنشئ له كورسًا خاصًا من الطلب ده بالتجارب اللي تختارها ← الكورس بيظهر في مساحة المعلم وفي منطقة «كورسات المعلمين» بالرئيسية ← المعلم يبعت كود الانضمام (ويحط كلمة سر لو حابب من «إدارة» الكورس) ← طلابه بينضموا بالكود ويمشوا في التجارب بالترتيب.","How it connects: the teacher sends an experiment request from his space → you create a private course for him from that request with the experiments you pick → the course appears in his Teacher Space and in the Teacher courses area on Home → the teacher sends the join code (and can set a password from the course's Manage panel) → his students join with the code and follow the experiments in order."],
 ow_exp_h:["إظهار / إخفاء التجارب عن الطلاب","Show / hide experiments from students"],
 ow_exp_d:["التجربة المخفية تختفي فورًا من قوائم التجارب والنظرية عند الطلاب، وتبقى ظاهرة لك هنا وفي قوائمك مع علامة «مخفية».","A hidden experiment disappears at once from students' experiment and theory lists, and stays visible to you here and in your lists, marked “Hidden”."],
 ow_reset_h:["تصفير تقدم الجلسة","Reset session progress"],
@@ -9235,7 +9254,18 @@ function applySiteConfig(map){
   applyDuelsVisibility();
   try{renderOwnerBits();}catch(e){}
 }
-async function sbLoadSiteConfig(){
+function sbRerenderCurrentScreen(){
+  /* A site-config (re)resolution landing after the first render must take
+     effect on the screen the user is looking at RIGHT NOW — the announcement
+     banner, the hidden-experiments filtering and the duels switch — with no
+     reload. renderAll() repaints every static screen; the two screens with
+     their own renderers get theirs re-run too. */
+  try{renderAll();}catch(e){}
+  try{if(typeof currentScreen!=="undefined"&&currentScreen==="scr-course"&&typeof renderCourseScreen==="function")renderCourseScreen();}catch(e){}
+  try{if(typeof currentScreen!=="undefined"&&currentScreen==="scr-teacher"&&typeof renderTeacherSpace==="function")renderTeacherSpace();}catch(e){}
+}
+async function sbLoadSiteConfig(force){
+  if(force)window.__siteCfg.loaded=false;
   if(window.__siteCfg.loaded||CFG_LOADING)return window.__siteCfg.loaded;
   if(!(window.__sbOn&&__sbOn()))return false;
   CFG_LOADING=true;
@@ -9243,8 +9273,11 @@ async function sbLoadSiteConfig(){
     const r=await sbCall(SB.from("site_config").select("key,value"));
     if(r&&r.error)throw r.error;
     const map={};((r&&r.data)||[]).forEach(row=>{map[row.key]=row.value;});
+    const reapply=!!window.__siteCfg.applied;
     applySiteConfig(map);
     window.__siteCfg.loaded=true;
+    window.__siteCfg.applied=true;
+    if(reapply)sbRerenderCurrentScreen();
     return true;
   }catch(e){return false;}
   finally{CFG_LOADING=false;}
@@ -9411,14 +9444,14 @@ function czZone(){
       return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR(dn)} / ${AR(tot)} ${T("منجزة","done")}</span></div><p class="small" style="margin-top:4px">${T("كورس:","Course by:")} ${escHTML(c.byName||"")}</p><div class="czbar" style="margin-top:8px"><i style="width:${tot?Math.round(dn/tot*100):0}%"></i></div><div class="row" style="margin-top:10px;gap:8px"><button class="btn primary grow" data-course="${escHTML(czKey(c))}">${T("افتح الكورس","Open the course")}</button><button class="btn sm" data-czleave="${escHTML(e.key)}">${T("مغادرة","Leave")}</button></div></div>`;
     }).join("")):"";
     en.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
-    en.querySelectorAll("[data-czleave]").forEach(b=>{b.onclick=()=>{const gone=czByKey(b.dataset.czleave);S.enrolledCourses=(S.enrolledCourses||[]).filter(x=>x.key!==b.dataset.czleave);czPersistEnroll();try{if(gone&&gone.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.from("course_members").delete().eq("course_id",gone.sid).eq("student_id",SESSION.uid).then(()=>{},()=>{});}catch(e){}czZone();};});
+    en.querySelectorAll("[data-czleave]").forEach(b=>{b.onclick=()=>{const gone=czByKey(b.dataset.czleave);S.enrolledCourses=(S.enrolledCourses||[]).filter(x=>x.key!==b.dataset.czleave);czPersistEnroll();try{if(gone&&gone.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.from("course_members").delete().eq("course_id",gone.sid).eq("user_id",SESSION.uid).then(r=>{if(r&&r.error)console.error("[course-leave] course_members delete failed:",r.error);},e=>{console.error("[course-leave] course_members delete failed:",e);});}catch(e){}czZone();};});
   }
 }
 renderTeacherHome=function(){try{czZone();}catch(e){}};
 /* ---------- join by code (+ password) ---------- */
 (function(){
   const b=document.getElementById("jcJoin");if(!b)return;
-  b.onclick=()=>{
+  b.onclick=async()=>{
     const msg=document.getElementById("jcMsg");
     const say=t=>{if(msg)msg.textContent=t;};
     if(!((SESSION.mode==="user"||SESSION.mode==="owner"))){say(T("الانضمام للكورسات محتاج حساب مسجل — الزائر ما بيتحفظلوش تقدم.","Joining a course needs a registered account — guest progress is not saved."));return;}
@@ -9436,12 +9469,32 @@ renderTeacherHome=function(){try{czZone();}catch(e){}};
       if(!pw){say(T("الكورس ده مقفول بكلمة سر — اكتب كلمة السر اللي اداهالك معلمك.","This course is locked with a password — enter the password your teacher gave you."));return;}
       if(czHash(pw+"|"+(c.passSalt||c.code||""))!==c.passH){say(T("كلمة السر غلط — راجعها مع معلمك وحاول تاني.","Wrong password — check it with your teacher and try again."));return;}
     }
+    /* SERVER MODE: the membership row in course_members IS the enrolment —
+       under RLS the student can only see the course's quizzes once that row
+       exists, so the join is complete only when the insert lands. The real
+       result is checked: a duplicate-key conflict means the row is already
+       there (already a member — fine); any other failure is logged with the
+       server's true error and the join does NOT complete. */
+    const onServer=c.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB&&typeof sbCall==="function";
+    if(onServer){
+      say(T("بنثبّت انضمامك على السيرفر…","Recording your membership on the server…"));
+      let joined=false,joinErr=null;
+      try{
+        const r=await sbCall(SB.from("course_members").insert({course_id:c.sid,user_id:SESSION.uid}));
+        if(r&&r.error)joinErr=r.error;else joined=true;
+      }catch(e){joinErr=e;}
+      if(!joined&&joinErr){
+        const dup=String((joinErr&&joinErr.code)||"")==="23505"||/duplicate|unique/i.test(String((joinErr&&joinErr.message)||joinErr));
+        if(dup)joined=true;
+        else console.error("[course-join] course_members insert failed:",joinErr);
+      }
+      if(!joined){
+        say(T("ما قدرناش نثبّت انضمامك على السيرفر — راجع اتصالك وحاول تاني.","We could not record your membership on the server — check your connection and try again."));
+        return;
+      }
+    }
     S.enrolledCourses.push({key:key,code:c.code||code,title:c.title||"",byName:c.byName||""});
     czPersistEnroll();
-    /* record the membership on the server too (course_members) so the teacher
-       sees this student in his member count from any device — best-effort:
-       the local enrolment above already stands if the table is unreachable. */
-    try{if(c.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.from("course_members").insert({course_id:c.sid,student_id:SESSION.uid}).then(()=>{},()=>{});}catch(e){}
     const pwEl2=document.getElementById("jcPass");if(pwEl2)pwEl2.value="";
     say(T("انضممت للكورس بنجاح — فتحته لك دلوقتي.","You joined the course — opening it now."));
     czZone();
@@ -9679,27 +9732,43 @@ async function czServerExtras(uid,role){
      on a fresh device, and give teachers/owner the true member count of each
      of their courses. Best-effort — local state already covers this device. */
   try{
-    const mem=await sbCall(SB.from("course_members").select("course_id").eq("student_id",uid).limit(500));
+    const mem=await sbCall(SB.from("course_members").select("course_id").eq("user_id",uid).limit(500));
+    const srvIds=new Set();
+    if(mem.error)console.error("[course-hydrate] course_members load failed:",mem.error);
     if(!mem.error&&mem.data)mem.data.forEach(row=>{
+      srvIds.add(row.course_id);
       const c=czAll().find(x=>x.sid===row.course_id);
       if(c&&!czEnrolled(czKey(c)))S.enrolledCourses.push({key:czKey(c),code:c.code||"",title:c.title||"",byName:c.byName||""});
     });
+    /* self-heal: a course joined locally whose server membership row is
+       missing (e.g. joined before memberships were persisted) gets its row
+       inserted now, so RLS-gated content (the course's quizzes) opens up. */
+    for(const e of (S.enrolledCourses||[])){
+      const c=czByKey(e.key);
+      if(c&&c.sid&&!srvIds.has(c.sid)){
+        try{
+          const r=await sbCall(SB.from("course_members").insert({course_id:c.sid,user_id:uid}));
+          if(r&&r.error&&String(r.error.code||"")!=="23505"&&!/duplicate|unique/i.test(String(r.error.message||"")))console.error("[course-hydrate] course_members self-heal insert failed:",r.error);
+          else srvIds.add(c.sid);
+        }catch(he){console.error("[course-hydrate] course_members self-heal insert failed:",he);}
+      }
+    }
   }catch(e){}
   try{
     if(role==="teacher"||role==="owner"){
       const mine=czAll().filter(c=>c.sid&&(role==="owner"||czMine(c)));
       if(mine.length){
-        const rows=await sbCall(SB.from("course_members").select("course_id,student_id").in("course_id",mine.map(c=>c.sid)).limit(2000));
+        const rows=await sbCall(SB.from("course_members").select("course_id,user_id").in("course_id",mine.map(c=>c.sid)).limit(2000));
         if(!rows.error&&rows.data){const cnt={};rows.data.forEach(r=>{cnt[r.course_id]=(cnt[r.course_id]||0)+1;});mine.forEach(c=>{c._srvMembers=cnt[c.sid]||0;});
           /* member identities for the teacher's member list: names + profile
              pictures from the profiles table, so a teacher sees WHO joined —
              with a face where the student set one. Best-effort only. */
           try{
-            const uids=[...new Set(rows.data.map(r=>r.student_id).filter(Boolean))];
+            const uids=[...new Set(rows.data.map(r=>r.user_id).filter(Boolean))];
             if(uids.length){
               const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url").in("id",uids.slice(0,500)));
               if(!pr.error&&pr.data){const pmap={};pr.data.forEach(p=>{pmap[p.id]=p;});
-                mine.forEach(c=>{c._srvStudents=rows.data.filter(r=>r.course_id===c.sid).map(r=>{const p=pmap[r.student_id];return p?{name:((p.nickname||"").trim())||((p.display_name||"").trim())||"",pic:p.avatar_url||"",nick:(p.nickname||"").trim()}:null;}).filter(Boolean);});}
+                mine.forEach(c=>{c._srvStudents=rows.data.filter(r=>r.course_id===c.sid).map(r=>{const p=pmap[r.user_id];return p?{name:((p.nickname||"").trim())||((p.display_name||"").trim())||"",pic:p.avatar_url||"",nick:(p.nickname||"").trim()}:null;}).filter(Boolean);});}
             }
           }catch(e){}
         }
@@ -9766,27 +9835,29 @@ function gsThermo(ctx,x,yT,yB,frac,col,dash){
 }
 const GSCENE_PAINT={
 3(ctx,w,h,anim,g,tp,reveal){ // specific heat: equal masses, same heat — water +10°, iron = ?
-  gsCap(ctx,w,T("كتلتان متساويتان على نفس النار — المية طلعت ١٠ درجات بس","Two equal masses on the same flame — the water rose only 10 degrees"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("كتلتان متساويتان على نفس النار — المية طلعت "+P.dTw+" درجات، والمعدن؟","Two equal masses on the same flame — the water rose "+P.dTw+" degrees, and the metal?"):T("كتلتان متساويتان على نفس النار — المية طلعت ١٠ درجات بس","Two equal masses on the same flame — the water rose only 10 degrees"));
   const by=196;
   ctx.fillStyle="#8a5a2b";ctx.fillRect(70,by,150,10);ctx.fillRect(390,by,150,10);
   gsFlame(ctx,145,by,1);gsFlame(ctx,465,by,1);
   ctx.fillStyle="rgba(29,111,209,.45)";ctx.fillRect(95,120,100,66);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(90,112,110,74);
   gsTxt(ctx,T("ماء","Water"),145,204,{s:12});
-  gsThermo(ctx,238,96,168,.083,C_BLUE,false);gsTxt(ctx,"+10°",238,84,{s:11,c:C_BLUE});
+  gsThermo(ctx,238,96,168,P?P.dTw/120:.083,C_BLUE,false);gsTxt(ctx,"+"+(P?P.dTw:10)+"°",238,84,{s:11,c:C_BLUE});
   ctx.fillStyle="#5b6d77";ctx.fillRect(415,128,100,58);ctx.strokeStyle=C_INK;ctx.strokeRect(415,128,100,58);
   ctx.fillStyle="rgba(224,60,0,"+(reveal?.25+.55*tp*anim:.18)+")";ctx.fillRect(415,128,100,58);
-  gsTxt(ctx,T("حديد","Iron"),465,204,{s:12});
+  gsTxt(ctx,P?(LANG==="en"?P.metalEn:P.metalAr):T("حديد","Iron"),465,204,{s:12});
   if(!reveal&&g!=null)gsThermo(ctx,556,96,168,g,C_RED,true);
   if(reveal)gsThermo(ctx,556,96,168,tp*anim,C_RED,false);
   if(!reveal&&g==null)gsTxt(ctx,LANG==="en"?"?":"؟",556,84,{b:1,s:15,c:C_RED});
-  gsTxt(ctx,T("حرارة الحديد؟","Iron's rise?"),556,204,{s:12,c:C_RED});
+  gsTxt(ctx,P?T("حرارة المعدن؟","Metal's rise?"):T("حرارة الحديد؟","Iron's rise?"),556,204,{s:12,c:C_RED});
 },
 7(ctx,w,h,anim,g,tp,reveal){ // drops mounding on a coin
   gsCap(ctx,w,T("قطرات مية بتتكوّم على عملة معدنية — التوتر السطحي ماسكها","Water drops mounding on a coin — surface tension holds them"));
+  const P=window.__duelPaint||null;const CR=P?P.coinD/25:1;
   const cx=320,cy=168;
-  ctx.fillStyle="#d9a441";ctx.beginPath();ctx.ellipse(cx,cy,170,26,0,0,7);ctx.fill();ctx.strokeStyle="#a8742a";ctx.lineWidth=2;ctx.stroke();
-  ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(cx,cy-4,150,18,0,0,7);ctx.fill();
-  const dome=(frac,col,dash)=>{const dh=4+frac*52;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.fillStyle="rgba(90,160,230,.30)";ctx.beginPath();ctx.ellipse(cx,cy-8,120,-dh,0,Math.PI,0);ctx.closePath();if(!dash)ctx.fill();ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
+  ctx.fillStyle="#d9a441";ctx.beginPath();ctx.ellipse(cx,cy,170*CR,26,0,0,7);ctx.fill();ctx.strokeStyle="#a8742a";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(cx,cy-4,150*CR,18,0,0,7);ctx.fill();
+  const dome=(frac,col,dash)=>{const dh=4+frac*52;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.fillStyle="rgba(90,160,230,.30)";ctx.beginPath();ctx.ellipse(cx,cy-8,120*CR,-dh,0,Math.PI,0);ctx.closePath();if(!dash)ctx.fill();ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
   dome(.16,"rgba(29,111,209,.7)",false);
   if(!reveal&&g!=null)dome(g,C_BLUE,true);
   if(reveal)dome(tp*anim,"rgba(29,111,209,.9)",false);
@@ -9794,13 +9865,15 @@ const GSCENE_PAINT={
   gsTxt(ctx,T("قطّارة","Dropper"),cx+44,52,{s:11});
 },
 10(ctx,w,h,anim,g,tp,reveal){ // Boyle: syringe compressed to half — new pressure?
-  gsCap(ctx,w,T("محقنة اتقفلت واتضغطت لنص الحجم بالظبط — الحرارة ثابتة","A sealed syringe compressed to exactly half its volume — temperature fixed"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("محقنة اتقفلت واتضغطت لـ"+P.fracAr+" الحجم بالظبط — الحرارة ثابتة","A sealed syringe compressed to exactly "+P.fracEn+" of its volume — temperature fixed"):T("محقنة اتقفلت واتضغطت لنص الحجم بالظبط — الحرارة ثابتة","A sealed syringe compressed to exactly half its volume — temperature fixed"));
   const y=104,bx0=70,bx1=430;
   ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(bx0,y,360,44);
-  ctx.fillStyle="rgba(245,197,66,.4)";ctx.fillRect(bx0+3,y+3,177,38);
-  ctx.fillStyle="#46525a";ctx.fillRect(250,y-4,26,52);ctx.fillRect(276,y+16,110,12);
-  gsTxt(ctx,T("المكبس عند النص","Piston at half"),330,88,{s:11});
-  gsTxt(ctx,T("غاز محبوس","Trapped gas"),160,168,{s:12});
+  ctx.fillStyle="rgba(245,197,66,.4)";ctx.fillRect(bx0+3,y+3,Math.round(354*(P?P.ratio:.5)),38);
+  const px=bx0+Math.round(360*(P?P.ratio:.5));
+  ctx.fillStyle="#46525a";ctx.fillRect(px,y-4,26,52);ctx.fillRect(px+26,y+16,110,12);
+  gsTxt(ctx,P?T("المكبس عند "+P.fracAr,"Piston at "+P.fracEn):T("المكبس عند النص","Piston at half"),px+80,88,{s:11});
+  gsTxt(ctx,T("غاز محبوس","Trapped gas"),bx0+Math.round(177*(P?P.ratio:.5)),168,{s:12});
   ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(430,y+22);ctx.lineTo(492,116);ctx.stroke();
   gsMeter(ctx,540,116,40,g,tp,reveal,anim,T("الضغط","Pressure"));
 },
@@ -9818,18 +9891,20 @@ const GSCENE_PAINT={
   ctx.strokeStyle="#b87333";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(cx,6);ctx.lineTo(cx,44);ctx.moveTo(cx,192);ctx.lineTo(cx,206);ctx.stroke();
   ctx.fillStyle="#b87333";ctx.beginPath();ctx.moveTo(cx,44);ctx.lineTo(cx-7,58);ctx.lineTo(cx+7,58);ctx.fill();
   gsTxt(ctx,T("التيار ↑","Current ↑"),cx+52,26,{s:11});
+  if(window.__duelPaint)gsTxt(ctx,"I = "+window.__duelPaint.amps+" A",cx+52,44,{b:1,s:12,c:C_RED});
 },
 14(ctx,w,h,anim,g,tp,reveal){ // electromagnet: 200 turns — how many clips?
-  gsCap(ctx,w,T("مغناطيس كهربائي بـ٢٠٠ لفة — هيشيل كام مشبك؟ (١٠٠ لفة شالت ٦)","An electromagnet with 200 turns — how many clips? (100 turns lifted 6)"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("مغناطيس كهربائي بـ"+P.n2+" لفة — هيشيل كام مشبك؟ ("+P.n1+" لفة شالت "+P.clips1+")","An electromagnet with "+P.n2+" turns — how many clips? ("+P.n1+" turns lifted "+P.clips1+")"):T("مغناطيس كهربائي بـ٢٠٠ لفة — هيشيل كام مشبك؟ (١٠٠ لفة شالت ٦)","An electromagnet with 200 turns — how many clips? (100 turns lifted 6)"));
   ctx.fillStyle="#22303a";ctx.fillRect(56,66,54,34);gsTxt(ctx,T("بطارية","Battery"),83,118,{s:11});
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(110,74);ctx.lineTo(196,74);ctx.moveTo(110,94);ctx.lineTo(196,150);ctx.stroke();
   ctx.fillStyle="#8a5a2b";ctx.fillRect(196,96,250,22);ctx.strokeStyle=C_INK;ctx.strokeRect(196,96,250,22);
   ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<16;i++){const x=206+i*15;ctx.beginPath();ctx.moveTo(x,92);ctx.lineTo(x+8,122);ctx.stroke();}
-  gsTxt(ctx,T("قلب حديدي — ٢٠٠ لفة","Iron core — 200 turns"),321,80,{s:12});
+  gsTxt(ctx,P?T("قلب حديدي — "+P.n2+" لفة","Iron core — "+P.n2+" turns"):T("قلب حديدي — ٢٠٠ لفة","Iron core — 200 turns"),321,80,{s:12});
   ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(446,107);ctx.lineTo(540,107);ctx.lineTo(540,150);ctx.stroke();
   const clip=(x,y,rot,col,dash)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);if(dash)ctx.setLineDash([4,3]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(-5,-11,10,22);ctx.restore();};
   const hang=(frac,col,dash)=>{const n=Math.round(frac*24);for(let i=0;i<n;i++){const cx2=216+(i%12)*19,cy2=140+Math.floor(i/12)*26;clip(cx2,cy2,(i%2?.16:-.16),col,dash);}};
-  hang(.25,"#7d939e",false); // the known 6 clips of the 100-turn reference
+  hang(P?P.clips1/24:.25,"#7d939e",false); // the known clips of the reference winding
   if(!reveal&&g!=null)hang(g,C_BLUE,true);
   if(reveal)hang(tp*anim,C_TEAL,false);
   gsTxt(ctx,T("مشابك ورق","Paper clips"),560,196,{s:11});
@@ -9842,12 +9917,13 @@ const GSCENE_PAINT={
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(196,96);ctx.lineTo(238,96);ctx.moveTo(196,126);ctx.lineTo(238,126);ctx.stroke();
   ctx.fillStyle=C_INK;ctx.beginPath();ctx.moveTo(238,111);ctx.lineTo(224,104);ctx.lineTo(224,118);ctx.fill();ctx.beginPath();ctx.moveTo(196,111);ctx.lineTo(210,104);ctx.lineTo(210,118);ctx.fill();
   ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<6;i++){const x=252+i*17;ctx.beginPath();ctx.arc(x+8,111,13,Math.PI*.5,Math.PI*1.5);ctx.stroke();ctx.beginPath();ctx.arc(x+8,111,13,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
-  gsTxt(ctx,T("ملف","Coil"),302,160,{s:12});
+  gsTxt(ctx,window.__duelPaint?T("ملف — "+window.__duelPaint.turns+" لفة","Coil — "+window.__duelPaint.turns+" turns"):T("ملف","Coil"),302,160,{s:12});
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(356,90);ctx.lineTo(452,90);ctx.lineTo(452,66);ctx.moveTo(356,132);ctx.lineTo(420,132);ctx.lineTo(420,150);ctx.stroke();
   gsMeter(ctx,486,116,46,g,tp,reveal,anim,T("جلفانومتر","Galvanometer"));
 },
 16(ctx,w,h,anim,g,tp,reveal){ // capacitor charging at t = tau
-  gsCap(ctx,w,T("مكثف بيتشحن من بطارية عبر مقاومة — عدّى زمن قدّ الثابت الزمني τ بالظبط","A capacitor charging from a battery through a resistor — exactly one time constant τ has passed"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,(P&&P.tauK!=null)?T("مكثف بيتشحن من بطارية عبر مقاومة — عدّى "+P.tauK+" × الثابت الزمني τ","A capacitor charging from a battery through a resistor — "+P.tauK+" time constants τ have passed"):T("مكثف بيتشحن من بطارية عبر مقاومة — عدّى زمن قدّ الثابت الزمني τ بالظبط","A capacitor charging from a battery through a resistor — exactly one time constant τ has passed"));
   ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(90,58,380,118);
   ctx.fillStyle=C_INK;ctx.fillRect(84,96,5,42);ctx.fillRect(97,106,3,22);gsTxt(ctx,T("بطارية","Battery"),88,196,{s:11});
   ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();let zx=215;ctx.moveTo(zx,58);for(let i=0;i<6;i++){ctx.lineTo(zx+11,58+(i%2?13:-13));zx+=22;}ctx.lineTo(zx,58);ctx.stroke();gsTxt(ctx,"R",280,36,{s:12});
@@ -9860,29 +9936,31 @@ const GSCENE_PAINT={
   if(reveal)bar(tp*anim,C_TEAL,false);
 },
 17(ctx,w,h,anim,g,tp,reveal){ // Kirchhoff node: 5 A in, 2 A out one branch
-  gsCap(ctx,w,T("تيار ٥ أمبير وصل لعقدة واتفرّع — فرع خد ٢ أمبير، والتاني؟","A 5 A current reaches a node and branches — one branch took 2 A, the other?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("تيار "+P.iin+" أمبير وصل لعقدة واتفرّع — فرع خد "+P.i1+" أمبير، والتاني؟","A "+P.iin+" A current reaches a node and branches — one branch took "+P.i1+" A, the other?"):T("تيار ٥ أمبير وصل لعقدة واتفرّع — فرع خد ٢ أمبير، والتاني؟","A 5 A current reaches a node and branches — one branch took 2 A, the other?"));
   const ny=118;
   ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(36,ny);ctx.lineTo(268,ny);ctx.stroke();
   ctx.fillStyle=C_INK;ctx.beginPath();ctx.moveTo(180,ny);ctx.lineTo(162,ny-7);ctx.lineTo(162,ny+7);ctx.fill();
-  gsTxt(ctx,"5 A",110,96,{b:1,s:15});
+  gsTxt(ctx,(P?P.iin:5)+" A",110,96,{b:1,s:15});
   ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.arc(280,ny,9,0,7);ctx.fill();gsTxt(ctx,T("عقدة","Node"),280,ny+30,{s:11});
   ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(288,ny-4);ctx.lineTo(520,52);ctx.stroke();
   ctx.beginPath();ctx.moveTo(288,ny+4);ctx.lineTo(520,184);ctx.stroke();
   ctx.beginPath();ctx.moveTo(430,80);ctx.lineTo(414,76);ctx.lineTo(420,92);ctx.fill();
-  gsTxt(ctx,"2 A",470,44,{b:1,s:14,c:C_TEAL});
+  gsTxt(ctx,(P?P.i1:2)+" A",470,44,{b:1,s:14,c:C_TEAL});
   if(reveal){gsTxt(ctx,(tp*5).toFixed(1)+" A",470,208,{b:1,s:14,c:C_GOOD});}
   else if(g!=null){gsGhost(ctx,()=>{ctx.beginPath();ctx.moveTo(430,158);ctx.lineTo(414,162);ctx.lineTo(420,146);ctx.stroke();});gsTxt(ctx,LANG==="en"?"? A":"؟ أمبير",470,208,{b:1,s:14,c:C_BLUE});}
   else gsTxt(ctx,LANG==="en"?"? A":"؟ أمبير",470,208,{b:1,s:14});
 },
 19(ctx,w,h,anim,g,tp,reveal){ // heater energy: 2000 W x 1 h
-  gsCap(ctx,w,T("سخان ٢٠٠٠ واط اشتغل ساعة كاملة — استهلك طاقة قد إيه؟","A 2000 W heater ran for a full hour — how much energy did it use?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("سخان "+P.watts+" واط اشتغل "+P.hoursAr+" — استهلك طاقة قد إيه؟","A "+P.watts+" W heater ran for "+P.hoursEn+" — how much energy did it use?"):T("سخان ٢٠٠٠ واط اشتغل ساعة كاملة — استهلك طاقة قد إيه؟","A 2000 W heater ran for a full hour — how much energy did it use?"));
   ctx.fillStyle="#46525a";ctx.fillRect(96,92,170,84);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(96,92,170,84);
   ctx.strokeStyle=C_RED;ctx.lineWidth=4;ctx.beginPath();for(let i=0;i<3;i++){const y=112+i*22;ctx.moveTo(112,y);for(let x=0;x<5;x++)ctx.lineTo(112+(x+1)*27,y+(x%2?-6:6));}ctx.stroke();
-  gsTxt(ctx,"2000 W",181,196,{b:1,s:14,c:C_RED});
+  gsTxt(ctx,(P?P.watts:2000)+" W",181,196,{b:1,s:14,c:C_RED});
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(356,92,32,0,7);ctx.stroke();
   ctx.beginPath();ctx.moveTo(356,92);ctx.lineTo(356,68);ctx.moveTo(356,92);ctx.lineTo(374,100);ctx.stroke();
-  ctx.strokeStyle=C_AMBER;ctx.lineWidth=3;ctx.beginPath();ctx.arc(356,92,26,-Math.PI/2,-Math.PI/2+ (reveal?anim:1)*Math.PI*2);ctx.stroke();
-  gsTxt(ctx,T("ساعة كاملة","One full hour"),356,148,{s:11});
+  ctx.strokeStyle=C_AMBER;ctx.lineWidth=3;ctx.beginPath();ctx.arc(356,92,26,-Math.PI/2,-Math.PI/2+ (reveal?anim:1)*(P?Math.min(P.hours,1):1)*Math.PI*2);ctx.stroke();
+  gsTxt(ctx,P?(LANG==="en"?P.hoursEn:P.hoursAr):T("ساعة كاملة","One full hour"),356,148,{s:11});
   const bar=(frac,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(448,66,120,26);if(!dash){ctx.fillStyle=col;ctx.fillRect(451,69,114*frac,20);}ctx.restore();};
   gsTxt(ctx,T("عداد الطاقة","Energy meter"),508,52,{s:11});
   if(!reveal&&g!=null)bar(g,C_BLUE,true);
@@ -9900,25 +9978,28 @@ const GSCENE_PAINT={
   const dirA=tp>=.5?1:-1;
   if(reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,118,86,dirA>0?-.4:Math.PI-.9,dirA>0?.9:Math.PI+.4,dirA<0);ctx.stroke();}
   ctx.fillStyle="#22303a";ctx.fillRect(272,196,96,26);gsTxt(ctx,"−  +",320,214,{b:1,s:13,c:"#7fd4ff"});
-  gsTxt(ctx,T("بطارية معكوسة الأقطاب","Battery reversed"),320,240,{s:11});
+  gsTxt(ctx,window.__duelPaint?T("بطارية معكوسة — التيار "+window.__duelPaint.str+"٪ من الأصلي","Battery reversed — current "+window.__duelPaint.str+"% of the original"):T("بطارية معكوسة الأقطاب","Battery reversed"),320,240,{s:11});
 },
 23(ctx,w,h,anim,g,tp,reveal){ // friction: box sliding to a stop on rough carpet
   gsCap(ctx,w,T("صندوق اتزحلق على سجادة خشنة — هيقف بعد مسافة قد إيه؟","A box sliding on a rough carpet — how far before it stops?"));
+  const P=window.__duelPaint||null;
   const gy=184,x0=64,span=500;
   ctx.fillStyle="#9c6b34";ctx.fillRect(30,gy,580,14);
   ctx.strokeStyle="rgba(0,0,0,.25)";ctx.lineWidth=1.5;for(let x=40;x<600;x+=16){ctx.beginPath();ctx.moveTo(x,gy+12);ctx.lineTo(x+8,gy+2);ctx.stroke();}
+  if(P)gsTxt(ctx,T("سجادة خشنة — معامل الاحتكاك μ = "+P.mu.toFixed(2),"Rough carpet — friction coefficient μ = "+P.mu.toFixed(2)),440,gy+11,{b:1,s:12,c:"#fff"});
   const bx=reveal?x0+tp*anim*span:x0;
   if(reveal){ctx.strokeStyle="rgba(70,82,90,.5)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0,gy-2);ctx.lineTo(bx,gy-2);ctx.stroke();}
   ctx.fillStyle="#b07a3f";ctx.fillRect(bx,gy-40,46,40);ctx.strokeStyle="#5f3d17";ctx.lineWidth=2;ctx.strokeRect(bx,gy-40,46,40);
-  if(!reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0+56,gy-58);ctx.lineTo(x0+104,gy-58);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(x0+104,gy-58);ctx.lineTo(x0+92,gy-64);ctx.lineTo(x0+92,gy-52);ctx.fill();gsTxt(ctx,T("سرعة ابتدائية","Initial speed"),x0+80,gy-70,{s:11,c:C_TEAL});}
+  if(!reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0+56,gy-58);ctx.lineTo(x0+104,gy-58);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(x0+104,gy-58);ctx.lineTo(x0+92,gy-64);ctx.lineTo(x0+92,gy-52);ctx.fill();gsTxt(ctx,P?T("السرعة الابتدائية v = "+P.v+" م/ث","Initial speed v = "+P.v+" m/s"):T("سرعة ابتدائية","Initial speed"),x0+80,gy-70,{s:11,c:C_TEAL});}
   const flag=(frac,col,dash)=>{const fx=x0+frac*span;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fx,gy);ctx.lineTo(fx,gy-56);ctx.stroke();ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(fx,gy-56);ctx.lineTo(fx+20,gy-48);ctx.lineTo(fx,gy-40);ctx.fill();ctx.restore();};
   if(!reveal&&g!=null)flag(g,C_BLUE,true);
   if(reveal)flag(tp,C_GOOD,false);
 },
 26(ctx,w,h,anim,g,tp,reveal){ // inductive reactance: frequency doubled
-  gsCap(ctx,w,T("ملف حثي — ضاعفنا تردد المصدر للضعف. الممانعة الحثية الجديدة؟","An inductor — we doubled the source frequency. The new inductive reactance?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("ملف حثي — تردد المصدر بقى "+P.k+" أضعاف. الممانعة الحثية الجديدة؟","An inductor — the source frequency is now "+P.k+"×. The new inductive reactance?"):T("ملف حثي — ضاعفنا تردد المصدر للضعف. الممانعة الحثية الجديدة؟","An inductor — we doubled the source frequency. The new inductive reactance?"));
   ctx.strokeStyle="rgba(125,147,158,.6)";ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=150;x+=5){const y=64+Math.sin(x/150*Math.PI*2)*13;x===0?ctx.moveTo(56+x,y):ctx.lineTo(56+x,y);}ctx.stroke();gsTxt(ctx,"f",130,34,{s:12});
-  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=150;x+=5){const y=118+Math.sin(x/150*Math.PI*4)*13;x===0?ctx.moveTo(56+x,y):ctx.lineTo(56+x,y);}ctx.stroke();gsTxt(ctx,"2f",130,152,{b:1,s:13,c:C_TEAL});
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=150;x+=5){const y=118+Math.sin(x/150*Math.PI*2*(P?P.k:2))*13;x===0?ctx.moveTo(56+x,y):ctx.lineTo(56+x,y);}ctx.stroke();gsTxt(ctx,(P?P.k:2)+"f",130,152,{b:1,s:13,c:C_TEAL});
   gsTxt(ctx,T("مصدر متردد","AC source"),130,178,{s:11});
   ctx.strokeStyle="#b87333";ctx.lineWidth=3.5;for(let i=0;i<5;i++){const x=268+i*24;ctx.beginPath();ctx.arc(x+12,104,15,Math.PI*.5,Math.PI*1.5);ctx.stroke();ctx.beginPath();ctx.arc(x+12,104,15,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
   gsTxt(ctx,T("ملف حثي L","Inductor L"),328,152,{s:12});
@@ -9926,17 +10007,19 @@ const GSCENE_PAINT={
   gsMeter(ctx,520,104,44,g,tp,reveal,anim,T("الممانعة Xᴸ","Reactance Xᴸ"));
 },
 28(ctx,w,h,anim,g,tp,reveal){ // transformer 100:500, 220 V in
-  gsCap(ctx,w,T("محوّل: ابتدائي ١٠٠ لفة وثانوي ٥٠٠ لفة، والدخل ٢٢٠ فولت — الخرج؟","A transformer: 100 primary turns, 500 secondary, 220 V in — the output?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("محوّل: ابتدائي "+NV(P.n1)+" لفة وثانوي "+NV(P.n2)+" لفة، والدخل "+NV(P.vin)+" فولت — الخرج؟","A transformer: "+P.n1+" primary turns, "+P.n2+" secondary, "+P.vin+" V in — the output?"):T("محوّل: ابتدائي ١٠٠ لفة وثانوي ٥٠٠ لفة، والدخل ٢٢٠ فولت — الخرج؟","A transformer: 100 primary turns, 500 secondary, 220 V in — the output?"));
   ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(252,52,136,118);
   ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<5;i++){const y=66+i*22;ctx.beginPath();ctx.arc(252,y+8,11,Math.PI*.5,Math.PI*1.5);ctx.stroke();}
-  for(let i=0;i<11;i++){const y=58+i*10;ctx.beginPath();ctx.arc(388,y+5,7,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
-  gsTxt(ctx,T("ابتدائي ١٠٠ لفة","Primary 100 turns"),196,44,{s:12});gsTxt(ctx,T("ثانوي ٥٠٠ لفة","Secondary 500 turns"),452,44,{s:12});
-  ctx.fillStyle="rgba(245,197,66,.85)";ctx.beginPath();ctx.arc(150,111,20,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.stroke();gsTxt(ctx,"220 V",150,180,{b:1,s:13});
+  const NL2=P?Math.max(4,Math.round(11*(P.n2/P.n1)/5)):11;for(let i=0;i<NL2;i++){const y=58+i*(110/NL2);ctx.beginPath();ctx.arc(388,y+5,Math.min(7,55/NL2+2),Math.PI*1.5,Math.PI*.5);ctx.stroke();}
+  gsTxt(ctx,P?T("ابتدائي "+NV(P.n1)+" لفة","Primary "+P.n1+" turns"):T("ابتدائي ١٠٠ لفة","Primary 100 turns"),196,44,{s:12});gsTxt(ctx,P?T("ثانوي "+NV(P.n2)+" لفة","Secondary "+P.n2+" turns"):T("ثانوي ٥٠٠ لفة","Secondary 500 turns"),452,44,{s:12});
+  ctx.fillStyle="rgba(245,197,66,.85)";ctx.beginPath();ctx.arc(150,111,20,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.stroke();gsTxt(ctx,(P?P.vin:220)+" V",150,180,{b:1,s:13});
   ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(170,111);ctx.lineTo(238,111);ctx.moveTo(402,111);ctx.lineTo(452,96);ctx.stroke();
   gsMeter(ctx,516,104,42,g,tp,reveal,anim,T("جهد الخرج","Output voltage"));
 },
 29(ctx,w,h,anim,g,tp,reveal){ // diode threshold: I-V knee
-  gsCap(ctx,w,T("دايود سيليكون في الانحياز الأمامي — التيار بيبدأ يزيد بجد عند أي جهد؟","A silicon diode in forward bias — at what voltage does the current really take off?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("دايود "+P.matAr+" في الانحياز الأمامي — التيار بيبدأ يزيد بجد عند أي جهد؟","A diode ("+P.matEn+") in forward bias — at what voltage does the current really take off?"):T("دايود سيليكون في الانحياز الأمامي — التيار بيبدأ يزيد بجد عند أي جهد؟","A silicon diode in forward bias — at what voltage does the current really take off?"));
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(44,30,120,58);
   ctx.fillStyle=C_INK;ctx.fillRect(52,52,5,14);ctx.fillRect(62,56,2,7);
   ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(86,59);ctx.lineTo(104,59);ctx.stroke();ctx.beginPath();ctx.moveTo(104,48);ctx.lineTo(104,70);ctx.lineTo(122,59);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.moveTo(122,48);ctx.lineTo(122,70);ctx.stroke();ctx.beginPath();ctx.moveTo(122,59);ctx.lineTo(150,59);ctx.stroke();
@@ -9950,7 +10033,8 @@ const GSCENE_PAINT={
   if(reveal){curve(tp,C_RED,false);const x=ax+tp*aw;ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(x,ay,5,0,7);ctx.fill();gsTxt(ctx,T("جهد العتبة","Threshold"),x,ay-ah-8,{s:11,c:C_RED});}
 },
 35(ctx,w,h,anim,g,tp,reveal){ // Franck-Hertz: first current drop
-  gsCap(ctx,w,T("أنبوبة فرانك–هيرتز (بخار زئبق) — التيار بيهبط فجأة أول مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — at what voltage does the current first drop suddenly?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,(P&&P.drop===2)?T("أنبوبة فرانك–هيرتز (بخار زئبق) — التيار بيهبط فجأة تاني مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — at what voltage does the current drop suddenly for the second time?"):T("أنبوبة فرانك–هيرتز (بخار زئبق) — التيار بيهبط فجأة أول مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — at what voltage does the current first drop suddenly?"));
   ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(70,84);ctx.lineTo(400,84);ctx.quadraticCurveTo(424,84,424,112);ctx.quadraticCurveTo(424,140,400,140);ctx.lineTo(70,140);ctx.quadraticCurveTo(46,140,46,112);ctx.quadraticCurveTo(46,84,70,84);ctx.stroke();
   ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(66,96);ctx.lineTo(66,128);ctx.stroke();gsTxt(ctx,T("مهبط","Cathode"),66,160,{s:10});
   ctx.strokeStyle=C_INK;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(268,84);ctx.lineTo(268,140);ctx.stroke();ctx.setLineDash([]);gsTxt(ctx,T("شبكة","Grid"),268,160,{s:10});
@@ -9962,17 +10046,20 @@ const GSCENE_PAINT={
   const curve=(frac,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ax,ay);for(let i=1;i<=30;i++){const p=i/30;const x=ax+p*frac*aw;const y=ay-(p*ah*.8)*(1-.35*Math.max(0,p-.92)/.08);ctx.lineTo(x,y);}ctx.stroke();};
   curve(.55,"rgba(125,147,158,.55)");
   if(!reveal&&g!=null)gsGhost(ctx,()=>{const x=ax+g*aw;ctx.beginPath();ctx.moveTo(x,ay);ctx.lineTo(x,ay-ah);ctx.stroke();});
-  if(reveal){curve(Math.max(tp,.03),C_RED);const x=ax+tp*aw;ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(x,ay-ah*.8,5,0,7);ctx.fill();gsTxt(ctx,T("أول هبوط","First drop"),x,ay-ah-8,{s:10,c:C_RED});}
+  if(reveal){curve(Math.max(tp,.03),C_RED);const x=ax+tp*aw;ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(x,ay-ah*.8,5,0,7);ctx.fill();gsTxt(ctx,(P&&P.drop===2)?T("تاني هبوط","Second drop"):T("أول هبوط","First drop"),x,ay-ah-8,{s:10,c:C_RED});}
 },
 37(ctx,w,h,anim,g,tp,reveal){ // Bohr: n=3 to n=2 photon wavelength
-  gsCap(ctx,w,T("إلكترون هيدروجين نزل من المستوى ٣ للمستوى ٢ — لون الفوتون المنبعث؟","A hydrogen electron fell from level 3 to level 2 — the emitted photon's colour?"));
+  const P=window.__duelPaint||null;
+  const NF=P?P.nf:3,NT=P?P.nt:2;
+  gsCap(ctx,w,P?T("إلكترون هيدروجين نزل من المستوى "+NF+" للمستوى "+NT+" — لون الفوتون المنبعث؟","A hydrogen electron fell from level "+NF+" to level "+NT+" — the emitted photon's colour?"):T("إلكترون هيدروجين نزل من المستوى ٣ للمستوى ٢ — لون الفوتون المنبعث؟","A hydrogen electron fell from level 3 to level 2 — the emitted photon's colour?"));
   const cx=225,cy=112;
-  ctx.strokeStyle="rgba(125,147,158,.65)";ctx.lineWidth=1.5;[30,56,82].forEach(r=>{ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();});
+  const RR=n=>P?(18+64*(n-1)/(NF-1)):([30,56,82][n-1]);
+  ctx.strokeStyle="rgba(125,147,158,.65)";ctx.lineWidth=1.5;for(let n=1;n<=NF;n++){ctx.beginPath();ctx.arc(cx,cy,RR(n),0,7);ctx.stroke();}
   ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.fill();gsTxt(ctx,"H",cx,cy+4,{b:1,s:11});
-  gsTxt(ctx,"n=3",cx+92,cy-72,{s:11});gsTxt(ctx,"n=2",cx+66,cy-46,{s:11});
-  const eR=reveal?56:82,eA2=reveal?-.5:-.7;
+  gsTxt(ctx,"n="+NF,cx+RR(NF)+10,cy-RR(NF)+10,{s:11});gsTxt(ctx,"n="+NT,cx+RR(NT)+10,cy-RR(NT)+10,{s:11});
+  const eR=reveal?RR(NT):RR(NF),eA2=reveal?-.5:-.7;
   ctx.fillStyle=C_BLUE;ctx.beginPath();ctx.arc(cx+eR*Math.cos(eA2),cy+eR*Math.sin(eA2),6,0,7);ctx.fill();
-  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+76,cy-30);ctx.lineTo(cx+60,cy-16);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(cx+60,cy-16);ctx.lineTo(cx+68,cy-14);ctx.lineTo(cx+62,cy-24);ctx.fill();
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+RR(NF)-6,cy-30);ctx.lineTo(cx+RR(NT)+4,cy-16);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(cx+RR(NT)+4,cy-16);ctx.lineTo(cx+RR(NT)+12,cy-14);ctx.lineTo(cx+RR(NT)+6,cy-24);ctx.fill();
   const hue=tp2=>Math.round((1-tp2)*270);
   const wave=(frac,col)=>{ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();for(let x=0;x<=170;x+=6){const y=112+Math.sin(x/13)*10;x===0?ctx.moveTo(360+x,y):ctx.lineTo(360+x,y);}ctx.stroke();};
   if(reveal)wave(tp,"hsl("+hue(tp)+",85%,50%)");
@@ -9995,48 +10082,52 @@ const GSCENE_PAINT={
   gsMeter(ctx,518,138,42,g,tp,reveal,anim,T("المقاومة","Resistance"));
 },
 38(ctx,w,h,anim,g,tp,reveal){ // transistor: IC = beta x IB
-  gsCap(ctx,w,T("ترانزستور β = 100 وتيار قاعدته 0.2 مللي أمبير — تيار المجمّع؟","A transistor with β = 100 and base current 0.2 mA — the collector current?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("ترانزستور β = "+P.beta+" وتيار قاعدته "+P.ib+" مللي أمبير — تيار المجمّع؟","A transistor with β = "+P.beta+" and base current "+P.ib+" mA — the collector current?"):T("ترانزستور β = 100 وتيار قاعدته 0.2 مللي أمبير — تيار المجمّع؟","A transistor with β = 100 and base current 0.2 mA — the collector current?"));
   ctx.fillStyle="#22303a";ctx.fillRect(52,84,48,30);gsTxt(ctx,T("بطارية","Battery"),76,132,{s:10});
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(100,99);ctx.lineTo(196,99);ctx.stroke();
   ctx.strokeStyle=C_RED;ctx.lineWidth=2.5;ctx.beginPath();let zx=130;ctx.moveTo(zx,99);for(let i=0;i<4;i++){ctx.lineTo(zx+8,99+(i%2?9:-9));zx+=16;}ctx.lineTo(zx,99);ctx.stroke();
-  gsTxt(ctx,"IB = 0.2 mA",150,74,{s:11,c:C_RED});
+  gsTxt(ctx,"IB = "+(P?P.ib:0.2)+" mA",150,74,{s:11,c:C_RED});
   ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(268,112,30,0,7);ctx.stroke();
   ctx.beginPath();ctx.moveTo(238,112);ctx.lineTo(258,112);ctx.moveTo(258,92);ctx.lineTo(284,74);ctx.moveTo(258,132);ctx.lineTo(284,150);ctx.stroke();
-  gsTxt(ctx,"β = 100",268,168,{b:1,s:12});
+  gsTxt(ctx,"β = "+(P?P.beta:100),268,168,{b:1,s:12});
   ctx.beginPath();ctx.moveTo(284,74);ctx.lineTo(380,74);ctx.lineTo(380,66);ctx.moveTo(238,112);ctx.lineTo(120,112);ctx.lineTo(120,196);ctx.lineTo(430,196);ctx.stroke();
   gsMeter(ctx,452,74,40,g,tp,reveal,anim,T("تيار المجمّع IC","Collector current IC"));
 },
 40(ctx,w,h,anim,g,tp,reveal){ // Malus: polarizer at 45 degrees
-  gsCap(ctx,w,T("ضوء مستقطب عدى من مرشح مدوّر ٤٥° — كام في المية هينفذ؟ (مالوس)","Polarised light through a filter rotated 45° — what percentage gets through? (Malus)"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("ضوء مستقطب عدى من مرشح مدوّر "+P.deg+"° — كام في المية هينفذ؟ (مالوس)","Polarised light through a filter rotated "+P.deg+"° — what percentage gets through? (Malus)"):T("ضوء مستقطب عدى من مرشح مدوّر ٤٥° — كام في المية هينفذ؟ (مالوس)","Polarised light through a filter rotated 45° — what percentage gets through? (Malus)"));
   ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(52,112,17,0,7);ctx.fill();gsTxt(ctx,T("مصدر","Source"),52,150,{s:10});
   ctx.strokeStyle="rgba(224,138,0,.75)";ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<110;x+=6){const y=112+Math.sin(x/9)*8;x===0?ctx.moveTo(76+x,y):ctx.lineTo(76+x,y);}ctx.stroke();
   const pol=(x,deg)=>{ctx.save();ctx.translate(x,112);ctx.fillStyle="rgba(29,111,209,.16)";ctx.beginPath();ctx.arc(0,0,42,0,7);ctx.fill();ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.stroke();ctx.rotate(deg);ctx.lineWidth=1.6;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(i*11,-38);ctx.lineTo(i*11,38);ctx.stroke();}ctx.restore();};
-  pol(232,0);pol(368,Math.PI/4);
-  gsTxt(ctx,T("مستقطِب أول","First polariser"),232,180,{s:10});gsTxt(ctx,T("مدوّر ٤٥°","Rotated 45°"),368,180,{s:10});
+  pol(232,0);pol(368,(P?P.deg:45)*Math.PI/180);
+  gsTxt(ctx,T("مستقطِب أول","First polariser"),232,180,{s:10});gsTxt(ctx,P?T("مدوّر "+P.deg+"°","Rotated "+P.deg+"°"):T("مدوّر ٤٥°","Rotated 45°"),368,180,{s:10});
   const bright=reveal?tp*anim:(g!=null?g*.8:.1);
   ctx.fillStyle="rgba(245,197,66,"+bright+")";ctx.fillRect(492,62,72,100);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(492,62,72,100);
   if(!reveal&&g!=null)gsGhost(ctx,()=>{ctx.strokeRect(488,58,80,108);});
   gsTxt(ctx,T("الشاشة","Screen"),528,180,{s:10});
 },
 43(ctx,w,h,anim,g,tp,reveal){ // binding energy curve, Fe-56 at the peak
-  gsCap(ctx,w,T("منحنى طاقة الربط لكل نيوكليون — الحديد-56 عند القمة. قيمته؟","The binding-energy-per-nucleon curve — iron-56 sits at the peak. Its value?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("منحنى طاقة الربط لكل نيوكليون — "+P.nucAr+" مشار إليها على المنحنى. قيمتها؟","The binding-energy-per-nucleon curve — "+P.nucEn+" is marked on the curve. Its value?"):T("منحنى طاقة الربط لكل نيوكليون — الحديد-56 عند القمة. قيمته؟","The binding-energy-per-nucleon curve — iron-56 sits at the peak. Its value?"));
   const ax=90,ay=188,aw=470,ah=128;
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+aw,ay);ctx.moveTo(ax,ay);ctx.lineTo(ax,ay-ah);ctx.stroke();
   gsTxt(ctx,T("الكتلة العددية","Mass number"),ax+aw-30,ay+18,{s:10});gsTxt(ctx,"MeV",ax+16,ay-ah-4,{s:10});
   const pts=[[.02,.12],[.1,.55],[.2,.78],[.3,.92],[.38,1],[.5,.97],[.7,.9],[1,.8]];
   ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();pts.forEach((p,i)=>{const x=ax+p[0]*aw,y=ay-p[1]*ah;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
-  const feX=ax+.38*aw,feY=ay-ah;
-  ctx.fillStyle=C_INK;[[.1,.55,"He"],[.38,1,"Fe-56"],[.92,.83,"U"]].forEach(m=>{ctx.beginPath();ctx.arc(ax+m[0]*aw,ay-m[1]*ah,4.5,0,7);ctx.fill();gsTxt(ctx,m[2],ax+m[0]*aw,ay-m[1]*ah-12,{s:11,b:1});});
+  const feX=P?ax+P.a*aw:ax+.38*aw,feY=ay-ah;
+  ctx.fillStyle=C_INK;(P?[[.1,.55,"He"],[P.a,tp,P.nucEn],[.92,.83,"U"]]:[[.1,.55,"He"],[.38,1,"Fe-56"],[.92,.83,"U"]]).forEach(m=>{ctx.beginPath();ctx.arc(ax+m[0]*aw,ay-m[1]*ah,4.5,0,7);ctx.fill();gsTxt(ctx,m[2],ax+m[0]*aw,ay-m[1]*ah-12,{s:11,b:1});});
   const hline=(frac,col,dash)=>{const y=ay-frac*ah;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,y);ctx.lineTo(feX,y);ctx.stroke();ctx.restore();};
   if(!reveal&&g!=null)hline(g,C_BLUE,true);
   if(reveal)hline(tp*anim,C_GOOD,false);
 },
 44(ctx,w,h,anim,g,tp,reveal){ // gamma through thin lead
-  gsCap(ctx,w,T("أشعة جاما بتعدي من لوح رصاص رفيع — كام في المية هيوصل للكاشف؟","Gamma rays crossing a thin lead plate — what percentage reaches the detector?"));
+  gsCap(ctx,w,window.__duelPaint?T("أشعة جاما بتعدي من لوح رصاص "+window.__duelPaint.mm+" مم — كام في المية هيوصل للكاشف؟","Gamma rays crossing a "+window.__duelPaint.mm+" mm lead plate — what percentage reaches the detector?"):T("أشعة جاما بتعدي من لوح رصاص رفيع — كام في المية هيوصل للكاشف؟","Gamma rays crossing a thin lead plate — what percentage reaches the detector?"));
   ctx.fillStyle="#46525a";ctx.fillRect(52,78,58,74);ctx.fillStyle=C_AMBER;ctx.font="bold 26px sans-serif";ctx.textAlign="center";ctx.fillText("☢",81,124);
   gsTxt(ctx,T("مصدر جاما","Gamma source"),81,172,{s:11});
-  ctx.fillStyle="#5b6d77";ctx.fillRect(300,44,20,150);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(300,44,20,150);gsTxt(ctx,T("رصاص رفيع","Thin lead"),310,214,{s:11});
-  const ray=(y,pass,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=184;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(112+x,yy):ctx.lineTo(112+x,yy);}ctx.stroke();if(pass){ctx.beginPath();for(let x=0;x<=150;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(322+x,yy):ctx.lineTo(322+x,yy);}ctx.stroke();}ctx.restore();};
+  const P=window.__duelPaint||null;const LW=P?8+2*P.mm:20,plateR=302+LW;
+  ctx.fillStyle="#5b6d77";ctx.fillRect(300,44,LW,150);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(300,44,LW,150);gsTxt(ctx,P?T("رصاص "+P.mm+" مم","Lead "+P.mm+" mm"):T("رصاص رفيع","Thin lead"),300+LW/2,214,{s:11});
+  const ray=(y,pass,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=184;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(112+x,yy):ctx.lineTo(112+x,yy);}ctx.stroke();if(pass){ctx.beginPath();for(let x=0;x<=150;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(plateR+x,yy):ctx.lineTo(plateR+x,yy);}ctx.stroke();}ctx.restore();};
   const rows=[70,100,130,160,186];
   rows.forEach(y=>ray(y,false,C_AMBER,false));
   const passN=reveal?Math.round(tp*5):(g!=null?Math.round(g*5):-1);
@@ -10044,12 +10135,13 @@ const GSCENE_PAINT={
   ctx.fillStyle="#22303a";ctx.fillRect(486,74,84,84);gsTxt(ctx,reveal?T("وصل!","Detected!"):(LANG==="en"?"?":"؟"),528,124,{b:1,s:15,c:"#7fd4ff"});gsTxt(ctx,T("كاشف","Detector"),528,178,{s:11});
 },
 47(ctx,w,h,anim,g,tp,reveal){ // laser spot after 100 m
-  gsCap(ctx,w,T("شعاع ليزر سافر ١٠٠ متر — قطر بقعته على الشاشة بقى قد إيه؟","A laser beam travelled 100 metres — how wide is its spot on the screen now?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("شعاع ليزر سافر "+P.dist+" متر — قطر بقعته على الشاشة بقى قد إيه؟","A laser beam travelled "+P.dist+" metres — how wide is its spot on the screen now?"):T("شعاع ليزر سافر ١٠٠ متر — قطر بقعته على الشاشة بقى قد إيه؟","A laser beam travelled 100 metres — how wide is its spot on the screen now?"));
   ctx.fillStyle="#46525a";ctx.fillRect(46,94,72,40);ctx.fillStyle=C_RED;ctx.fillRect(112,106,10,16);gsTxt(ctx,T("ليزر","Laser"),82,156,{s:11});
-  const spread=.16;
+  const spread=P?.16*P.div:.16;
   ctx.strokeStyle="rgba(211,56,44,.75)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(122,114);ctx.lineTo(548,114-170*spread);ctx.moveTo(122,114);ctx.lineTo(548,114+170*spread);ctx.stroke();
   ctx.fillStyle="rgba(211,56,44,.1)";ctx.beginPath();ctx.moveTo(122,114);ctx.lineTo(548,114-170*spread);ctx.lineTo(548,114+170*spread);ctx.closePath();ctx.fill();
-  gsTxt(ctx,"100 m",330,196,{s:12});
+  gsTxt(ctx,(P?P.dist:100)+" m",330,196,{s:12});
   ctx.fillStyle="#ece5cf";ctx.fillRect(548,44,14,140);ctx.strokeStyle=C_INK;ctx.strokeRect(548,44,14,140);
   const spot=(frac,col,dash)=>{const r=3+frac*30;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.fillStyle="rgba(211,56,44,.35)";ctx.beginPath();ctx.ellipse(555,114,7,r,0,0,7);if(!dash)ctx.fill();ctx.lineWidth=2;ctx.stroke();ctx.restore();};
   if(!reveal&&g!=null)spot(g,C_BLUE,true);
@@ -10057,11 +10149,12 @@ const GSCENE_PAINT={
   gsTxt(ctx,T("الشاشة","Screen"),555,204,{s:10});
 },
 48(ctx,w,h,anim,g,tp,reveal){ // optical fibre critical angle
-  gsCap(ctx,w,T("ليف ضوئي: قلب ١٫٤٨ وغلاف ١٫٤٦ — الزاوية الحرجة للانعكاس الكلي؟","An optical fibre: core 1.48, cladding 1.46 — the critical angle for total internal reflection?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("ليف ضوئي: قلب "+NV(P.n1,2)+" وغلاف "+NV(P.n2,2)+" — الزاوية الحرجة للانعكاس الكلي؟","An optical fibre: core "+P.n1+", cladding "+P.n2+" — the critical angle for total internal reflection?"):T("ليف ضوئي: قلب ١٫٤٨ وغلاف ١٫٤٦ — الزاوية الحرجة للانعكاس الكلي؟","An optical fibre: core 1.48, cladding 1.46 — the critical angle for total internal reflection?"));
   ctx.fillStyle="rgba(125,147,158,.35)";ctx.fillRect(46,84,548,66);
   ctx.fillStyle="rgba(127,212,255,.35)";ctx.fillRect(46,100,548,34);
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(46,84,548,66);ctx.beginPath();ctx.moveTo(46,100);ctx.lineTo(594,100);ctx.moveTo(46,134);ctx.lineTo(594,134);ctx.stroke();
-  gsTxt(ctx,T("غلاف ١٫٤٦","Cladding 1.46"),110,76,{s:10});gsTxt(ctx,T("قلب ١٫٤٨","Core 1.48"),110,121,{s:10});
+  gsTxt(ctx,P?T("غلاف "+NV(P.n2,2),"Cladding "+P.n2):T("غلاف ١٫٤٦","Cladding 1.46"),110,76,{s:10});gsTxt(ctx,P?T("قلب "+NV(P.n1,2),"Core "+P.n1):T("قلب ١٫٤٨","Core 1.48"),110,121,{s:10});
   ctx.strokeStyle=C_RED;ctx.lineWidth=2.5;ctx.beginPath();let x=52,y=117,up=false;ctx.moveTo(x,y);while(x<560){x+=54;y=up?134:100;up=!up;ctx.lineTo(x,y);}ctx.stroke();
   const ix=470,iy=168;
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(ix,iy,44,0,7);ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(ix,iy,43,0,7);ctx.fill();
@@ -10089,20 +10182,22 @@ const GSCENE_PAINT={
   ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(320,196,5,0,7);ctx.fill();
 },
 56(ctx,w,h,anim,g,tp,reveal){ // Meissner: field inside the superconductor
-  gsCap(ctx,w,T("موصل فائق اتبرّد تحت حرارته الحرجة جوه مجال مغناطيسي — المجال جواه؟","A superconductor cooled below its critical temperature inside a magnetic field — the field inside it?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?(P.below?T("موصل فائق اتبرّد تحت حرارته الحرجة جوه مجال مغناطيسي — المجال جواه؟","A superconductor cooled below its critical temperature inside a magnetic field — the field inside it?"):T("مادة فائقة التوصيل لسه أسخن من حرارتها الحرجة جوه مجال مغناطيسي — المجال جواها؟","A superconductor still above its critical temperature inside a magnetic field — the field inside it?")):T("موصل فائق اتبرّد تحت حرارته الحرجة جوه مجال مغناطيسي — المجال جواه؟","A superconductor cooled below its critical temperature inside a magnetic field — the field inside it?"));
   ctx.fillStyle=C_RED;ctx.fillRect(258,26,60,34);ctx.fillStyle=C_BLUE;ctx.fillRect(318,26,60,34);
   gsTxt(ctx,"N",288,50,{b:1,s:14,c:"#fff"});gsTxt(ctx,"S",348,50,{b:1,s:14,c:"#fff"});
   ctx.strokeStyle="rgba(29,111,209,.55)";ctx.lineWidth=2;
   for(let i=-2;i<=2;i++){const off=i*36;ctx.beginPath();ctx.moveTo(318+off*.4,60);ctx.bezierCurveTo(318+off*1.7,96,318+off*1.7,120,318+off*.9,132);ctx.stroke();ctx.beginPath();ctx.moveTo(318+off*.9,182);ctx.lineTo(318+off*.9,204);ctx.stroke();}
   ctx.fillStyle="rgba(127,212,255,.5)";ctx.beginPath();ctx.moveTo(222,132);ctx.lineTo(414,132);ctx.lineTo(428,182);ctx.lineTo(208,182);ctx.closePath();ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.stroke();
-  gsTxt(ctx,T("موصل فائق — أبرد من Tc","Superconductor — below Tc"),318,168,{b:1,s:12});
+  gsTxt(ctx,P?((LANG==="en"?P.matEn:P.matAr)+(P.below?T(" — أبرد من Tc"," — below Tc"):T(" — أسخن من Tc"," — above Tc"))):T("موصل فائق — أبرد من Tc","Superconductor — below Tc"),318,168,{b:1,s:12});
   gsTxt(ctx,"❄",240,152,{s:14});gsTxt(ctx,"❄",392,152,{s:14});
   if(!reveal&&g!=null&&g>.04)gsGhost(ctx,()=>{const n=Math.max(1,Math.round(g*4));for(let i=0;i<n;i++){const x=262+i*36;ctx.beginPath();ctx.moveTo(x,136);ctx.lineTo(x,178);ctx.stroke();}});
   if(reveal&&tp>.04){ctx.strokeStyle="rgba(29,111,209,.5)";for(let i=0;i<Math.max(1,Math.round(tp*4));i++){const x=280+i*36;ctx.beginPath();ctx.moveTo(x,136);ctx.lineTo(x,178);ctx.stroke();}}
   gsTxt(ctx,T("خطوط المجال بتنحني حوالين الموصل — وجواه؟","The field lines bend around the block — and inside it?"),318,222,{s:11});
 },
 58(ctx,w,h,anim,g,tp,reveal){ // gold nanoparticles: absorption peak
-  gsCap(ctx,w,T("محلول جسيمات ذهب نانوية (٢٠ نانومتر) — لونه أحمر ياقوتي. بيمتص أي لون بقوة؟","A gold-nanoparticle solution (20 nm) — ruby red. Which colour does it absorb strongly?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("محلول جسيمات ذهب نانوية ("+P.d+" نانومتر) — لونه أحمر ياقوتي. بيمتص أي لون بقوة؟","A gold-nanoparticle solution ("+P.d+" nm) — ruby red. Which colour does it absorb strongly?"):T("محلول جسيمات ذهب نانوية (٢٠ نانومتر) — لونه أحمر ياقوتي. بيمتص أي لون بقوة؟","A gold-nanoparticle solution (20 nm) — ruby red. Which colour does it absorb strongly?"));
   const sx=110,sw=420,sy=36;
   const grad=ctx.createLinearGradient(sx,0,sx+sw,0);["#7a4fd0","#1d6fd1","#3fae5a","#f5c542","#e08a00","#e0483c"].forEach((c,i,a)=>grad.addColorStop(i/(a.length-1),c));
   ctx.fillStyle=grad;ctx.fillRect(sx,sy,sw,16);ctx.strokeStyle=C_INK;ctx.strokeRect(sx,sy,sw,16);
@@ -10112,17 +10207,18 @@ const GSCENE_PAINT={
   if(reveal)dip(tp,C_INK,false);
   ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(238,96);ctx.lineTo(402,96);ctx.lineTo(388,186);ctx.lineTo(252,186);ctx.closePath();ctx.stroke();
   ctx.fillStyle="rgba(176,32,52,.65)";ctx.fillRect(254,120,132,62);
-  ctx.strokeStyle="rgba(63,174,90,.9)";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(120,140);ctx.lineTo(252,140);ctx.stroke();
-  ctx.strokeStyle="rgba(63,174,90,.25)";ctx.beginPath();ctx.moveTo(388,140);ctx.lineTo(470,140);ctx.stroke();
-  gsTxt(ctx,T("شعاع أخضر بيتوهن جوه المحلول","A green beam fading inside the solution"),320,208,{s:11});
+  ctx.strokeStyle=P?("hsl("+Math.round((1-tp)*270)+",75%,42%)"):"rgba(63,174,90,.9)";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(120,140);ctx.lineTo(252,140);ctx.stroke();
+  ctx.strokeStyle=P?("hsla("+Math.round((1-tp)*270)+",75%,42%,.25)"):"rgba(63,174,90,.25)";ctx.beginPath();ctx.moveTo(388,140);ctx.lineTo(470,140);ctx.stroke();
+  gsTxt(ctx,P?T("الشعاع الممتص بيتوهن جوه المحلول","The absorbed beam fading inside the solution"):T("شعاع أخضر بيتوهن جوه المحلول","A green beam fading inside the solution"),320,208,{s:11});
 },
 60(ctx,w,h,anim,g,tp,reveal){ // entanglement: correlation of paired measurements
-  gsCap(ctx,w,T("زوج فوتونات متشابك — بنقيس الاتنين بنفس الاتجاه. النتيجتين هيتفقوا كام مرة؟","An entangled photon pair — both measured in the same direction. How often will the results agree?"));
+  const P=window.__duelPaint||null;
+  gsCap(ctx,w,P?T("زوج فوتونات متشابك — بنقيس الاتنين باتجاهين بينهما "+P.ang+"°. النتيجتين هيتفقوا كام مرة؟","An entangled photon pair — both measured along directions "+P.ang+"° apart. How often will the results agree?"):T("زوج فوتونات متشابك — بنقيس الاتنين بنفس الاتجاه. النتيجتين هيتفقوا كام مرة؟","An entangled photon pair — both measured in the same direction. How often will the results agree?"));
   ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.moveTo(320,74);ctx.lineTo(338,96);ctx.lineTo(320,118);ctx.lineTo(302,96);ctx.closePath();ctx.fill();gsTxt(ctx,T("مصدر التشابك","Entanglement source"),320,140,{s:10});
   const wv=(x0,x1,y,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=x1-x0;x+=6){const yy=y+Math.sin(x/11)*7;x===0?ctx.moveTo(x0+x,yy):ctx.lineTo(x0+x,yy);}ctx.stroke();};
   wv(150,296,96,C_TEAL);wv(344,490,96,C_TEAL);
-  const det=(x)=>{ctx.fillStyle="rgba(29,111,209,.16)";ctx.beginPath();ctx.arc(x,96,30,0,7);ctx.fill();ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(x,96);for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*9,-26);ctx.lineTo(i*9,26);ctx.stroke();}ctx.restore();};
-  det(118);det(522);gsTxt(ctx,T("كاشف أ","Detector A"),118,148,{s:10});gsTxt(ctx,T("كاشف ب","Detector B"),522,148,{s:10});
+  const det=(x,rot)=>{ctx.fillStyle="rgba(29,111,209,.16)";ctx.beginPath();ctx.arc(x,96,30,0,7);ctx.fill();ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(x,96);ctx.rotate(rot||0);for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*9,-26);ctx.lineTo(i*9,26);ctx.stroke();}ctx.restore();};
+  det(118,0);det(522,P?P.ang*Math.PI/180:0);gsTxt(ctx,T("كاشف أ","Detector A"),118,148,{s:10});gsTxt(ctx,T("كاشف ب","Detector B"),522,148,{s:10});
   const row=(frac,col,dash)=>{const match=Math.round(frac*10);for(let i=0;i<10;i++){const x=170+i*32;const same=i<match;ctx.save();if(dash)ctx.setLineDash([4,3]);ctx.fillStyle=same?col:"#c9ccd1";ctx.beginPath();ctx.arc(x,192,8,0,7);ctx.fill();ctx.fillStyle=same?col:C_RED;ctx.beginPath();ctx.arc(x+13,192,8,0,7);ctx.fill();ctx.restore();}};
   gsTxt(ctx,T("١٠ قياسات: كل زوج نقطتين","10 measurements: each pair is two dots"),320,168,{s:10});
   if(!reveal&&g!=null)row(g,C_BLUE,true);
@@ -10180,10 +10276,172 @@ function duelOverlayAxis(ctx,W,H,guessPct,reveal){
   tri(guessPct,C_BLUE,T("أنت","You"),0);
   if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
 }
+/* ================= DUEL MODELS FOR THE CONVERTED MARKER EXPERIMENTS =================
+   The 24 experiments converted from choice to marker labs (CONV_MARKER) have
+   no MARKER_MODELS entry, so their duel rounds used to fall back to the fixed
+   canonical anchor (exp.b) with NO on-scene data. These duel-only models give
+   every such round the same treatment the native marker experiments get:
+   FRESH parameters drawn per round from the experiment's own ranges, the
+   truth computed from the draw by the experiment's law, the draw listed as
+   on-scene givens (duelBand), the round's question restated with the drawn
+   values, and the draw handed to the scene painter (paint → R.conv →
+   window.__duelPaint in drawDuelMarker) so the labels and sizes drawn on
+   the scene ARE this round's values. Training never reads this map, and the
+   painters keep their canonical setup whenever no duel draw is active —
+   two consecutive matches can therefore never repeat an identical setup. */
+const DUEL_CONV_MODELS={
+/* 3 — specific heat: ΔT_metal = ΔT_water × 4186 / c_metal (equal masses, same heat) */
+3(){const M=pk([[450,"حديد","Iron",[6,8,10,12]],[385,"نحاس","Copper",[6,8,10]],[900,"ألومنيوم","Aluminium",[10,12,15]]]);
+  const dTw=pk(M[3]);const tv=Math.round(dTw*4186/M[0]);
+  return {trueVal:tv,paint:{dTw:dTw,metalAr:M[1],metalEn:M[2]},
+   q:T("سخّنا كتلتين متساويتين — مية و"+M[1]+" — بنفس كمية الحرارة بالظبط. المية طلعت "+dTw+" درجات. "+M[1]+" هيطلع كام درجة؟","We heated two equal masses — water and "+M[2].toLowerCase()+" — with exactly the same amount of heat. The water rose "+dTw+" degrees. How many degrees will the "+M[2].toLowerCase()+" rise?"),
+   givens:[["الكتلتان","The two masses",["متساويتان","Equal"]],["ارتفاع حرارة الماء","Water's temperature rise",dTw+" K"],["الحرارة النوعية للماء","Specific heat of water","4186 J/(kg·K)"],["الحرارة النوعية للمعدن","The metal's specific heat",M[0]+" J/(kg·K)"]]};},
+/* 7 — surface tension: drops held ∝ coin area ÷ drop volume */
+7(){const coinD=pk([20,25,30]);const dropV=pk([0.04,0.05,0.06]);
+  const tv=Math.round(Math.pow(coinD/25,2)*26*(0.05/dropV));
+  return {trueVal:tv,paint:{coinD:coinD},
+   q:T("هنحط قطرات مية واحدة ورا التانية على عملة معدنية مسطحة قطرها "+coinD+" مم — القطرات بتتكوّم فوقها بفعل التوتر السطحي. كام قطرة هتستحملها العملة قبل ما المية تفيض؟","We will place water drops one after another on a flat coin "+coinD+" mm across — the drops mound up on it through surface tension. How many drops will the coin hold before the water spills?"),
+   givens:[["قطر العملة","Coin diameter",coinD+" mm"],["حجم القطرة الواحدة","Volume of one drop",dropV+" mL"],["المطلوب","The task",["عدد القطرات حتى الفيض","Drops until it spills"]]]};},
+/* 10 — Boyle: P₂ = P₁ ÷ (V₂/V₁) at constant temperature */
+10(){const fr=[[0.5,"النص","half"],[1/3,"التلت","a third"],[2/3,"التلتين","two thirds"],[0.25,"الربع","a quarter"],[0.75,"تلات أرباع","three quarters"]];
+  let P1=1,f=fr[0],P2=2,tries=0;
+  do{f=pk(fr);P1=pk([0.6,0.8,1.0,1.2]);P2=P1/f[0];tries++;}while(P2>2.9&&tries<40);
+  const tv=Math.round(P2*100)/100;
+  return {trueVal:tv,paint:{ratio:f[0],fracAr:f[1],fracEn:f[2]},
+   q:T("غاز محبوس في محقنة عند ضغط "+NV(P1,1)+" جو. ضغطنا المكبس فالحجم بقى "+f[1]+" بالظبط، والحرارة ثابتة. الضغط الجديد كام جو؟","A gas trapped in a syringe at a pressure of "+NV(P1,1)+" atm. We pushed the piston so the volume became exactly "+f[2]+", at constant temperature. What is the new pressure, in atm?"),
+   givens:[["الضغط الابتدائي","Initial pressure",NV(P1,1)+" atm"],["الحجم الجديد","The new volume",["بقى "+f[1]+" من الأصلي","Became "+f[2]+" of the original"]],["الحرارة","Temperature",["ثابتة","Constant"]]]};},
+/* 13 — Oersted: tan θ = B_wire / B_earth, B_wire = 20·I/d µT */
+13(){const I=pk([3,4,5,6,8,10,12]),d=pk([2,3,4,5]);
+  const Bw=20*I/d;const tv=Math.round(Math.atan(Bw/22)*180/Math.PI*10)/10;
+  return {trueVal:tv,paint:{amps:I},
+   q:T("سلك مستقيم بيعدي فيه تيار "+I+" أمبير، وتحته على بعد "+d+" سم إبرة بوصلة (تجربة أورستد). الإبرة هتنحرف عن الشمال المغناطيسي بكام درجة؟","A straight wire carries a current of "+I+" A, with a compass needle "+d+" cm below it (Oersted's experiment). By how many degrees will the needle deflect from magnetic north?"),
+   givens:[["تيار السلك","Wire current",I+" A"],["بعد الإبرة عن السلك","Needle's distance from the wire",d+" cm"],["المركبة الأفقية لمجال الأرض","Earth's horizontal field","22 µT"]]};},
+/* 14 — electromagnet: clips ∝ turns at the same current */
+14(){let N1=100,mult=2,clips2=12,tries=0;
+  do{N1=pk([50,100,150]);mult=pk([1.5,2,2.5,3]);clips2=Math.round(N1/100*6*mult);tries++;}while((clips2<4||clips2>22)&&tries<40);
+  const clips1=N1/100*6,N2=N1*mult;
+  return {trueVal:clips2,paint:{n1:N1,n2:N2,clips1:clips1},
+   q:T("مغناطيس كهربائي بـ"+N1+" لفة شال "+clips1+" مشابك ورق. غيّرنا اللفات لـ"+N2+" لفة بنفس التيار. هيشيل كام مشبك؟","An electromagnet with "+N1+" turns lifted "+clips1+" paper clips. We changed the winding to "+N2+" turns at the same current. How many clips will it lift?"),
+   givens:[["المرجع","Reference",N1+" turns → "+clips1+" clips"],["اللفات الجديدة","New turns",N2+" turns"],["التيار","Current",["ثابت","Unchanged"]]]};},
+/* 15 — induction: galvanometer swing ∝ turns × magnet speed */
+15(){const turns=pk([200,400,600,800]);const sp=pk([[0.45,"بطيئة","Slow"],[0.7,"متوسطة","Medium"],[1,"سريعة","Fast"]]);
+  const tv=Math.round(turns/900*sp[0]*100);
+  return {trueVal:tv,paint:{turns:turns},
+   q:T("مغناطيس بيتحرك رايح جاي بسرعة "+sp[1]+" جوه ملف من "+turns+" لفة موصّل بجلفانومتر. مؤشر الجلفانومتر هيوصل لكام في المية من آخر تدريجه؟","A magnet moves in and out at a "+sp[2].toLowerCase()+" speed inside a coil of "+turns+" turns connected to a galvanometer. How far will the galvanometer's needle swing, as a percentage of its full scale?"),
+   givens:[["لفات الملف","Coil turns",turns+" turns"],["سرعة المغناطيس","Magnet speed",[sp[1],sp[2]]],["القاعدة","The rule",["الانحراف ∝ اللفات × السرعة","Deflection ∝ turns × speed"]]]};},
+/* 17 — Kirchhoff: branch 2 = total in − branch 1 */
+17(){const iin=pk([3,4,5,6]);const i1=ri(1,iin-1);const tv=iin-i1;
+  return {trueVal:tv,paint:{iin:iin,i1:i1},
+   q:T("تيار "+iin+" أمبير وصل لعقدة واتفرّع لفرعين: فرع خد "+i1+" أمبير. الفرع التاني خد كام أمبير؟","A current of "+iin+" A reached a node and split into two branches: one branch took "+i1+" A. How many amperes did the other branch take?"),
+   givens:[["التيار الداخل للعقدة","Current entering the node",iin+" A"],["تيار الفرع الأول","First branch's current",i1+" A"],["قانون كيرشوف","Kirchhoff's law",["ما يدخل العقدة = ما يخرج منها","What enters the node = what leaves it"]]]};},
+/* 19 — electric energy: E = P × t */
+19(){const HRS=[[0.5,"نصف ساعة","half an hour"],[1,"ساعة كاملة","one full hour"],[1.5,"ساعة ونصف","an hour and a half"],[2,"ساعتين","two hours"]];
+  let P=2000,hh=HRS[1],E=2000,tries=0;
+  do{P=pk([400,600,800,1000,1200,1500,1800,2000,2400]);hh=pk(HRS);E=P*hh[0];tries++;}while((E<300||E>2900)&&tries<40);
+  return {trueVal:E,paint:{watts:P,hours:hh[0],hoursAr:hh[1],hoursEn:hh[2]},
+   q:T("سخان قدرته "+P+" واط اشتغل "+hh[1]+". الطاقة اللي استهلكها كام واط·ساعة؟","A heater rated "+P+" W ran for "+hh[2]+". How much energy did it use, in watt-hours?"),
+   givens:[["قدرة السخان","Heater power",P+" W"],["زمن التشغيل","Running time",[hh[1],hh[2]]],["القاعدة","The rule",["الطاقة = القدرة × الزمن","Energy = power × time"]]]};},
+/* 20 — motor: reversed battery → rotation flips at the drawn current strength */
+20(){const s=pk([45,60,75,90,100]);
+  return {trueVal:-s,paint:{str:s},
+   q:T("محرك DC كان بيدور بقوة معينة. عكسنا أقطاب البطارية فانعكس التيار، وبقى التيار الجديد "+s+"٪ من قوته الأصلية. على محور الاتجاه (اليمين + مع عقارب الساعة، والشمال − عكسها)، الدوران الجديد هيبقى فين؟","A DC motor was spinning with a certain strength. We reversed the battery poles, so the current flipped, and the new current is "+s+"% of its original strength. On the direction axis (right + = clockwise, left − = counter-clockwise), where will the new rotation sit?"),
+   givens:[["ما حدث","What changed",["عكسنا أقطاب البطارية","We reversed the battery poles"]],["شدة التيار الجديد","The new current's strength",s+"%"]]};},
+/* 23 — friction: stopping distance d = v²/(2μg) on the rough carpet */
+23(){let v=4,mu=0.7,d=100,tries=0;
+  do{v=pk([2.5,3,3.5,4,4.5,5]);mu=pk([0.5,0.55,0.6,0.65,0.7,0.75,0.8]);d=v*v/(2*mu*9.8)*100;tries++;}while((d<15||d>190)&&tries<40);
+  const tv=Math.round(d);
+  return {trueVal:tv,paint:{v:v,mu:mu},
+   q:T("صندوق اتزحلق بسرعة ابتدائية "+NV(v,1)+" م/ث على سجادة خشنة معامل احتكاكها μ = "+NV(mu,2)+". هيقف بعد مسافة كام سنتيمتر؟","A box slid with an initial speed of "+NV(v,1)+" m/s on a rough carpet whose friction coefficient is μ = "+NV(mu,2)+". After how many centimetres will it stop?"),
+   givens:[["السرعة الابتدائية","Initial speed",NV(v,1)+" m/s"],["السطح","The surface",["سجادة خشنة","Rough carpet"]],["معامل الاحتكاك μ","Friction coefficient μ",NV(mu,2)],["تسارع الجاذبية g","Gravitational acceleration g","9.8 m/s²"]]};},
+/* 26 — inductive reactance: Xᴸ scales with the frequency factor */
+26(){let X1=50,k=2,tries=0;
+  do{X1=pk([20,30,40,50,60,80]);k=pk([1.5,2,2.5,3]);tries++;}while(X1*k>195&&tries<40);
+  return {trueVal:X1*k,paint:{k:k},
+   q:T("ملف حثي ممانعته "+X1+" أوم عند تردد معين. غيّرنا تردد المصدر فبقى "+NV(k,1)+" أضعاف. الممانعة الحثية الجديدة كام أوم؟","An inductor's reactance is "+X1+" Ω at a certain frequency. We changed the source frequency to "+NV(k,1)+" times as much. What is the new inductive reactance, in ohms?"),
+   givens:[["الممانعة عند التردد الأصلي","Reactance at the original frequency",X1+" Ω"],["تغيّر التردد","Frequency change",["بقى "+NV(k,1)+" أضعاف","Became "+NV(k,1)+" times"]],["القاعدة","The rule",["Xᴸ ∝ التردد","Xᴸ ∝ frequency"]]]};},
+/* 28 — transformer: V_out = V_in × N₂/N₁ */
+28(){const N1=pk([100,200,250,500]),r=pk([2,3,4,5]),Vin=pk([110,220]);const N2=N1*r;
+  return {trueVal:Vin*r,paint:{n1:N1,n2:N2,vin:Vin},
+   q:T("محوّل ملفه الابتدائي "+N1+" لفة والثانوي "+N2+" لفة، ودخله "+Vin+" فولت. جهد الخرج كام فولت؟","A transformer whose primary has "+N1+" turns and secondary "+N2+" turns, with "+Vin+" V in. What is the output voltage?"),
+   givens:[["لفات الابتدائي","Primary turns",N1+""],["لفات الثانوي","Secondary turns",N2+""],["جهد الدخل","Input voltage",Vin+" V"]]};},
+/* 29 — diode threshold: the drawn diode type sets the knee voltage */
+29(){const M=pk([[0.7,"سيليكون","Silicon"],[0.3,"جرمانيوم","Germanium"],[0.45,"شوتكي","Schottky"],[1.0,"زرنيخيد الجاليوم","Gallium arsenide"],[1.7,"LED أحمر","Red LED"]]);
+  return {trueVal:M[0],paint:{matAr:M[1],matEn:M[2]},
+   q:T("دايود من "+M[1]+" في الانحياز الأمامي — التيار بيبدأ يزيد بجد عند أي جهد؟ (جهد العتبة)","A diode ("+M[2]+") in forward bias — at what voltage does the current really take off? (The threshold voltage)"),
+   givens:[["نوع الدايود","Diode type",[M[1],M[2]]],["المطلوب","The task",["جهد العتبة اللي عنده التيار بيزيد فجأة","The threshold where the current surges"]]]};},
+/* 35 — Franck–Hertz: drops repeat every 4.9 V; the round asks for drop 1 or 2 */
+35(){const n=pk([1,2]);
+  return {trueVal:Math.round(4.9*n*10)/10,paint:{drop:n},
+   q:n===1?T("أنبوبة فرانك–هيرتز (بخار زئبق) — التيار بيهبط فجأة أول مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — at what voltage does the current first drop suddenly?")
+     :T("أنبوبة فرانك–هيرتز (بخار زئبق) — الهبوطات بتتكرر كل ٤٫٩ فولت. التيار هيهبط فجأة تاني مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — the drops repeat every 4.9 V. At what voltage will the current drop suddenly for the second time?"),
+   givens:[["بخار الأنبوبة","Tube vapour",["زئبق","Mercury"]],["خطوة الإثارة","Excitation step","4.9 V"],["المطلوب","The task",n===1?["أول هبوط","The first drop"]:["تاني هبوط","The second drop"]]]};},
+/* 37 — Bohr/Balmer: λ from the Rydberg formula for the drawn start level */
+37(){const nf=pk([3,4,5,6]);const lam=Math.round(1/(1.097e7*(1/4-1/(nf*nf)))*1e9);
+  return {trueVal:lam,paint:{nf:nf,nt:2},
+   q:T("إلكترون في ذرة هيدروجين نزل من المستوى "+nf+" للمستوى ٢ — الطول الموجي للفوتون المنبعث كام نانومتر؟","An electron in a hydrogen atom fell from level "+nf+" to level 2 — what is the emitted photon's wavelength, in nanometres?"),
+   givens:[["المستوى الابتدائي","Starting level","n = "+nf],["المستوى النهائي","Final level","n = 2"],["السلسلة","The series",["بالمر (مرئية)","Balmer (visible)"]]]};},
+/* 38 — transistor: IC = β × IB */
+38(){let beta=100,ib=0.2,tries=0;
+  do{beta=pk([40,50,80,100,120,150,200]);ib=pk([0.05,0.08,0.1,0.15,0.2]);tries++;}while((beta*ib<2||beta*ib>24)&&tries<40);
+  const tv=Math.round(beta*ib*10)/10;
+  return {trueVal:tv,paint:{beta:beta,ib:ib},
+   q:T("ترانزستور معامل تكبيره β = "+beta+" وتيار قاعدته "+NV(ib,2)+" مللي أمبير — تيار المجمّع كام مللي أمبير؟","A transistor with β = "+beta+" and a base current of "+NV(ib,2)+" mA — what is the collector current, in mA?"),
+   givens:[["معامل التكبير β","Gain β",beta+""],["تيار القاعدة IB","Base current IB",NV(ib,2)+" mA"],["القاعدة","The rule",["IC = β × IB","IC = β × IB"]]]};},
+/* 40 — Malus: I = I₀ cos²θ for the drawn filter angle */
+40(){const deg=pk([20,25,30,35,40,45,50,55,60,65,70]);const tv=Math.round(100*Math.pow(Math.cos(deg*Math.PI/180),2));
+  return {trueVal:tv,paint:{deg:deg},
+   q:T("ضوء مستقطب شدته الأصلية ١٠٠٪ عدى من مرشح استقطاب مدوّر بزاوية "+deg+"°. الشدة النافذة كام في المية؟ (قانون مالوس: I = I₀ cos²θ)","Polarised light of original intensity 100% passed through a polarising filter rotated by "+deg+"°. What percentage is transmitted? (Malus's law: I = I₀ cos²θ)"),
+   givens:[["زاوية المرشح θ","Filter angle θ",deg+"°"],["الشدة الأصلية","Original intensity","100%"],["القانون","The law",["I = I₀ cos²θ","I = I₀ cos²θ"]]]};},
+/* 43 — binding energy per nucleon of the drawn nucleus (real values) */
+43(){const M=pk([["حديد-56","Iron-56",8.79,56],["نيكل-62","Nickel-62",8.79,62],["كالسيوم-40","Calcium-40",8.55,40],["قصدير-120","Tin-120",8.51,120],["أكسجين-16","Oxygen-16",7.98,16],["رصاص-208","Lead-208",7.87,208],["كربون-12","Carbon-12",7.68,12],["يورانيوم-238","Uranium-238",7.57,238],["هيليوم-4","Helium-4",7.07,4],["ليثيوم-7","Lithium-7",5.61,7],["ديوتيريوم","Deuterium",1.11,2]]);
+  return {trueVal:M[2],paint:{nucAr:M[0],nucEn:M[1],a:M[3]/238},
+   q:T("طاقة الربط لكل نيوكليون في نواة "+M[0]+" — قيمتها كام MeV تقريبًا؟ (المنحنى بيبدأ واطي، وبيوصل لقمته حوالين الكتلة ٥٦–٦٢، وبعدين بينزل ببطء)","The binding energy per nucleon in the "+M[1]+" nucleus — what is its value, in MeV, approximately? (The curve starts low, peaks around mass 56–62, then falls slowly)"),
+   givens:[["النواة","The nucleus",[M[0],M[1]]],["عددها الكتلي","Its mass number",M[3]+""]]};},
+/* 44 — gamma attenuation: transmitted % = 100 × 2^(−x/HVL) */
+44(){const E=pk([[0.5,6.5],[1,9],[2,13]]);const x=pk([2,4,6,8,10]);
+  const tv=Math.round(100*Math.pow(2,-x/E[1]));
+  return {trueVal:tv,paint:{mm:x},
+   q:T("أشعة جاما طاقتها "+NV(E[0],1)+" MeV عدّت من لوح رصاص سُمكه "+x+" مم. كام في المية منها هيعدي ويوصل للكاشف تقريبًا؟","Gamma rays of energy "+NV(E[0],1)+" MeV crossed a lead plate "+x+" mm thick. Roughly what percentage will pass through and reach the detector?"),
+   givens:[["طاقة أشعة جاما","Gamma-ray energy",NV(E[0],1)+" MeV"],["سُمك الرصاص","Lead thickness",x+" mm"],["سُمك النصف لهذه الطاقة","Half-value layer at this energy",NV(E[1],1)+" mm"]]};},
+/* 47 — laser spot: diameter ≈ divergence × distance */
+47(){const L=pk([50,100,150,200]),div=pk([0.5,0.8,1,1.2,1.5]);
+  const tv=Math.round(div*L/10*10)/10;
+  return {trueVal:tv,paint:{dist:L,div:div},
+   q:T("شعاع ليزر انحرافه الزاوي "+NV(div,1)+" مللي راديان سافر "+L+" متر كاملة. قطر بقعته على الشاشة بقى كام سنتيمتر تقريبًا؟","A laser beam with an angular divergence of "+NV(div,1)+" mrad travelled a full "+L+" metres. What will its spot diameter on the screen be, in centimetres, approximately?"),
+   givens:[["مسافة السفر","Travel distance",L+" m"],["الانحراف الزاوي للشعاع","Beam divergence",NV(div,1)+" mrad"],["القاعدة","The rule",["قطر البقعة ≈ الانحراف × المسافة","Spot diameter ≈ divergence × distance"]]]};},
+/* 48 — fibre critical angle: sin θc = n₂/n₁ */
+48(){const pr=pk([[1.48,1.46],[1.50,1.40],[1.52,1.46],[1.44,1.42],[1.62,1.50],[1.48,1.40],[1.40,1.36],[1.56,1.49]]);
+  const tv=Math.round(Math.asin(pr[1]/pr[0])*180/Math.PI*10)/10;
+  return {trueVal:tv,paint:{n1:pr[0],n2:pr[1]},
+   q:T("ليف ضوئي: قلب معامل انكساره "+NV(pr[0],2)+" وغلاف "+NV(pr[1],2)+". الزاوية الحرجة للانعكاس الداخلي الكلي عند سطح القلب والغلاف كام درجة تقريبًا؟","An optical fibre: core refractive index "+NV(pr[0],2)+", cladding "+NV(pr[1],2)+". What is the critical angle for total internal reflection at the core–cladding boundary, approximately?"),
+   givens:[["معامل انكسار القلب n₁","Core index n₁",NV(pr[0],2)],["معامل انكسار الغلاف n₂","Cladding index n₂",NV(pr[1],2)],["القانون","The law",["sin θc = n₂/n₁","sin θc = n₂/n₁"]]]};},
+/* 56 — Meissner: field inside = 0% below Tc, 100% (normal state) above it */
+56(){const M=pk([["نيوبيوم","Niobium",9.2],["رصاص","Lead",7.2],["YBCO (خزف فائق التوصيل)","YBCO (ceramic superconductor)",92]]);
+  const B=pk([["هيليوم سائل","liquid helium",4.2],["نيتروجين سائل","liquid nitrogen",77],["ماء مثلج","ice water",273]]);
+  const below=B[2]<M[2];
+  return {trueVal:below?0:100,paint:{matAr:M[0],matEn:M[1],tc:M[2],bathT:B[2],below:below},
+   q:T("قطعة من "+M[0]+" (حرارتها الحرجة Tc = "+M[2]+" K) اتحطت في "+B[0]+" (حرارته "+B[2]+" K) وهي جوه مجال مغناطيسي خارجي. المجال المغناطيسي جواها هيبقى كام في المية من المجال اللي بره؟","A piece of "+M[1]+" (critical temperature Tc = "+M[2]+" K) was placed in "+B[1]+" (at "+B[2]+" K) inside an external magnetic field. The magnetic field inside it will be what percentage of the field outside?"),
+   givens:[["المادة وحرارتها الحرجة","Material and its Tc",[M[0]+" — Tc = "+M[2]+" K",M[1]+" — Tc = "+M[2]+" K"]],["حمّام التبريد وحرارته","Cooling bath and its temperature",[B[0]+" — "+B[2]+" K",B[1]+" — "+B[2]+" K"]]]};},
+/* 58 — gold nanoparticles: plasmon peak shifts with the drawn diameter */
+58(){const d=pk([10,20,30,40,60,80,100]);const tv=Math.round(515+0.55*d);
+  return {trueVal:tv,paint:{d:d},
+   q:T("محلول جسيمات ذهب نانوية قطرها "+d+" نانومتر (رنين البلازمون السطحي) — المحلول بيبان أحمر ياقوتي لأنه بيمتص لونًا معينًا بقوة. الطول الموجي لذروة الامتصاص كام نانومتر؟","A solution of gold nanoparticles "+d+" nm in diameter (surface plasmon resonance) — the solution looks ruby red because it absorbs one colour strongly. What is the absorption peak's wavelength, in nanometres?"),
+   givens:[["قطر الجسيمات","Particle diameter",d+" nm"],["الوسط","The medium",["محلول مائي","Aqueous solution"]],["الظاهرة","The phenomenon",["رنين البلازمون السطحي","Surface plasmon resonance"]]]};},
+/* 60 — entanglement: same-result correlation = cos² of the angle between the two measurement directions */
+60(){const ang=pk([15,30,45,60,75]);const tv=Math.round(100*Math.pow(Math.cos(ang*Math.PI/180),2));
+  return {trueVal:tv,paint:{ang:ang},
+   q:T("زوج فوتونات متشابك في حالة الاستقطاب القصوى: بنقيس الفوتونين بمرشحين بين اتجاهيهما زاوية "+ang+"°، مرات كتير. كام في المية من المرات هتطلع النتيجتان مترابطتين (نفس النتيجة)؟","A maximally entangled photon pair: we measure both photons with filters whose directions differ by "+ang+"°, many times. In what percentage of the trials will the two results come out correlated (the same result)?"),
+   givens:[["حالة الزوج","The pair's state",["تشابك أقصى في الاستقطاب","Maximally entangled in polarisation"]],["الزاوية بين اتجاهي القياس","Angle between the measurement directions",ang+"°"],["القانون","The law",["الترابط = cos² للزاوية","Correlation = cos² of the angle"]]]};}
+};
 function duelBuildMarker(exp){
   let truePct;
   const M=(typeof MARKER_MODELS!=="undefined"&&MARKER_MODELS[exp.n])?MARKER_MODELS[exp.n]():null;
-  if(M&&typeof M.trueVal==="number")truePct=clamp((M.trueVal-exp.min)/(exp.max-exp.min),.02,.98);
+  /* converted marker experiments draw from their duel model above; native
+     ones from MARKER_MODELS — either way the round's truth, question, scene
+     data band and scene painting all come from THIS round's fresh draw */
+  const CM=(!M&&typeof DUEL_CONV_MODELS!=="undefined"&&DUEL_CONV_MODELS[exp.n])?DUEL_CONV_MODELS[exp.n]():null;
+  const SRC=M||CM;
+  if(SRC&&typeof SRC.trueVal==="number")truePct=clamp((SRC.trueVal-exp.min)/(exp.max-exp.min),.02,.98);
   else{
     const bias={16:rnd(.55,.72),36:rnd(.06,.3),50:rnd(.5,.7),6:rnd(.25,.9),24:rnd(.45,.7),57:rnd(.2,.6),18:rnd(.55,.78),49:rnd(.42,.54),55:rnd(.44,.53),59:rnd(.8,.9)};
     truePct=clamp((bias[exp.n]!==undefined?bias[exp.n]:(exp.b!==undefined?exp.b:rnd(.3,.7)))+rnd(-.08,.08),.06,.94);
@@ -10193,11 +10451,13 @@ function duelBuildMarker(exp){
        drawDuelMarker): the same values the training panel lists, printed on
        the apparatus — mass, length, voltage, temperature… whatever this
        round's truth is computed from */
-    sceneData:(M&&Array.isArray(M.givens)&&M.givens.length)?M.givens.map(r=>String((LANG==="en"?r[1]:r[0])||"")+": "+String(Array.isArray(r[2])?(LANG==="en"?r[2][1]:r[2][0]):r[2])):null,
+    sceneData:(SRC&&Array.isArray(SRC.givens)&&SRC.givens.length)?SRC.givens.map(r=>String((LANG==="en"?r[1]:r[0])||"")+": "+String(Array.isArray(r[2])?(LANG==="en"?r[2][1]:r[2][0]):r[2])):null,
+    /* the drawn parameters the scene painter renders from (labels, sizes) */
+    conv:(SRC&&SRC.paint)?SRC.paint:null,
     /* the round's question is the experiment's OWN estimation cue — the same
        full question the training lab asks (setup + what to estimate) — never
        the bare duel brief: the player must know WHAT he is estimating. */
-    q:((LANG==="en"&&(typeof CUE_EN!=="undefined"&&CUE_EN[exp.n]))||exp.cue||(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t),
+    q:((CM&&CM.q)||(LANG==="en"&&(typeof CUE_EN!=="undefined"&&CUE_EN[exp.n]))||exp.cue||(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t),
     ask:T("شاهد مشهد التجربة، واسحب علامتك على المحور لحد المكان اللي تتوقعه — طرفا مدى المحور مكتوبين تحته، لكن من غير أي معطيات: عينك هي المقياس.","Watch the experiment's scene and drag your mark along the axis to where you expect the result — the axis range ends are written under it, but there are no givens: your eye is the gauge.")};
 }
 function duelBuildChoice(exp){
@@ -11376,9 +11636,11 @@ async function qzSubmitTake(){
   q.questions.forEach((qq,i)=>{if(tk.answers[i]===qq.correct)score++;});
   let saved=true,saveErr=null;
   try{
-    const r=await sbCall(SB.from("course_quiz_results").insert({course_id:tk.sid,quiz_id:q.id,score:score,total:q.questions.length}));
-    if(r.error){saved=false;saveErr=r.error;}
-  }catch(e){saved=false;saveErr=e;}
+    /* course_quiz_results has exactly: id, course_id, quiz_id, user_id,
+       score, total, created_at — insert those columns and nothing else. */
+    const r=await sbCall(SB.from("course_quiz_results").insert({course_id:tk.sid,quiz_id:q.id,user_id:SESSION.uid,score:score,total:q.questions.length}));
+    if(r.error){saved=false;saveErr=r.error;console.error("[quiz-result] course_quiz_results insert failed:",r.error);}
+  }catch(e){saved=false;saveErr=e;console.error("[quiz-result] course_quiz_results insert failed:",e);}
   if(saved)delete QZ_DATA[tk.sid];
   if(QZ_TAKE!==tk)return;
   qzRenderTakeResult(score,saved,saveErr);
