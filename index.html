@@ -436,6 +436,16 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
 @media (prefers-reduced-motion: reduce){.balance.vsanim i{animation:none;width:50%}}
 #duelGame .timerbar{height:10px;border-radius:6px}
 #duelTimer{transition:width .12s linear}
+#duelTimer.low{background:var(--red)}
+.duelclock.low{color:var(--red);font-weight:800}
+/* readable scale under the duel slider: the round's own min/max + unit, so the
+   player always knows WHAT range he is dragging across (the truth stays hidden) */
+.duelscale{display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem;color:var(--muted);margin-top:2px;direction:ltr}
+.duelscale b{color:var(--ink);font-weight:700}
+.duelscale .du{color:var(--muted);font-weight:600}
+@keyframes roundIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#duelGame .card.roundin{animation:roundIn .35s ease}
+@media (prefers-reduced-motion: reduce){#duelGame .card.roundin{animation:none}}
 #duelGame .side .scorebig{font-size:1.7rem}
 #duelStart{box-shadow:0 8px 20px rgba(0,0,0,.16)}
 /* ===== invite-a-friend: the big "+" action, generated link/code, invite list ===== */
@@ -769,8 +779,8 @@ button{touch-action:manipulation}
         <h2 data-i18n="duel_rules_h">قبل ما تبدأ — قوانين الماتش</h2>
         <p data-i18n="duel_intro">أنت <b style="color:var(--blue)">الأزرق</b>، والبوت <b style="color:var(--red)">الأحمر</b>.</p>
         <ul class="thtopics">
-          <li data-i18n="duel_li1"><b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.</li>
-          <li data-i18n="duel_li2">في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.</li>
+          <li data-i18n="duel_li1"><b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد التجربة الحقيقي من غير لوحة معطيات: تقدير بعينك من المشهد بس.</li>
+          <li data-i18n="duel_li2">في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>30 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.</li>
           <li data-i18n="duel_li3">نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.</li>
           <li data-i18n="duel_li4">شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.</li>
           <li data-i18n="duel_li5">الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.</li>
@@ -801,8 +811,9 @@ button{touch-action:manipulation}
         <div id="duelRangeRow">
         <label class="lbl" for="duelRange" data-i18n="duel_rg_lbl">اسحب على الرسم أو هنا لوضع علامتك</label> <b id="duelVal"></b>
         <input type="range" id="duelRange" class="unplaced" min="0" max="1000" value="0">
+        <div class="duelscale" id="duelScale"><b id="duelMin"></b><span class="du" id="duelUnit"></span><b id="duelMax"></b></div>
         </div>
-        <div class="row" style="align-items:center;gap:8px;margin:8px 0"><div class="timerbar" style="flex:1"><i id="duelTimer" style="width:100%"></i></div><span class="duelclock" id="duelClock">٢٠ ث</span></div>
+        <div class="row" style="align-items:center;gap:8px;margin:8px 0"><div class="timerbar" style="flex:1"><i id="duelTimer" style="width:100%"></i></div><span class="duelclock" id="duelClock">٣٠ ث</span></div>
         <button class="btn primary block" id="duelConfirm" data-i18n="duel_confirm" disabled>أكّد التوقع</button>
         <div class="feedback" id="duelFeedback"></div>
         <button class="btn block" id="duelNext" style="display:none;margin-top:10px" data-i18n="duel_next">الجولة التالية</button>
@@ -1303,7 +1314,7 @@ const TYPE_EN={"units": "Visual estimation + units", "heat": "Interactive heat s
 const EN_T={"1": "Units & Dimensions: The Visual Estimation Lab", "2": "The Concept of Heat and Heat Transfer", "3": "Specific Heat Capacity", "4": "Thermal Conduction", "5": "Thermal Expansion", "6": "Density: Mass and Volume", "7": "Surface Tension", "8": "Viscosity", "9": "Pressure in Liquids", "10": "Boyle's Law for Gases", "11": "Ohm's Law", "12": "Series and Parallel Connections", "13": "The Magnetic Field Around a Wire", "14": "The Electromagnet", "15": "Electromagnetic Induction", "16": "Charging and Discharging a Capacitor", "17": "Kirchhoff's Laws (Simplified)", "18": "Electric Field Lines", "19": "Electric Power", "20": "The Simple Electric Motor", "21": "The Simple Pendulum", "22": "Free Fall", "23": "Friction", "24": "Buoyancy: Archimedes' Principle", "25": "Waves and Sound", "26": "Alternating Current and Reactance", "27": "Resonance in RLC Circuits", "28": "The Transformer", "29": "The Diode and Semiconductors", "30": "The Integrated Digital Lab", "31": "Thin Films: Light Interference", "32": "Measuring Film Thickness from Interference Colours", "33": "The Photoelectric Effect", "34": "The Electron Charge-to-Mass Ratio e/m", "35": "The Franck–Hertz Experiment", "36": "The Rutherford Experiment: The Thin Gold Foil", "37": "The Bohr Model and Line Spectra", "38": "The Transistor as Switch and Amplifier", "39": "Sensors and the Light-Dependent Resistor (LDR)", "40": "Electromagnetic Waves and Polarisation", "41": "The Geiger Counter: Counting Radiation", "42": "Half-Life and Radioactive Decay", "43": "Nuclear Binding Energy", "44": "Alpha, Beta and Gamma Radiation and Penetration", "45": "Diffraction of Light: The Double Slit", "46": "The Diffraction Spectrometer and Wavelength Measurement", "47": "The Laser and Optical Coherence", "48": "Optical Fibres and Total Internal Reflection", "49": "The Earth's Magnetic Field", "50": "The Galvanometer: Measuring Tiny Currents", "51": "X-Ray Diffraction (XRD)", "52": "Radiocarbon Dating", "53": "Single-Photon Self-Interference", "54": "Electron Diffraction", "55": "The Compton Effect", "56": "Superconductivity and the Meissner Effect", "57": "The Scanning Tunnelling Microscope (STM)", "58": "Nanotechnology: Properties at the Nanoscale", "59": "Particle Accelerators", "60": "Quantum Entanglement"};
 const EN_G={"1": "A five-round estimation lab: judge length, mass, volume, temperature and time by eye — with no measuring instrument shown before you predict — plus conversion rounds between the SI, CGS and imperial systems.", "2": "Watch heat travel through a solid body and follow the temperature distribution with your eyes before it is measured.", "3": "Compare two materials heated with the same energy and predict which one ends up hotter.", "4": "Compare the speed of heat conduction in two different metals and predict which conducts faster.", "5": "Predict how much a heated metal rod expands — its original end is marked, and the expansion appears before you with no ruler.", "6": "Predict the density of a mystery cube from its appearance and how deep it will sink in water.", "7": "Predict the largest number of water drops that can sit on a coin before it overflows.", "8": "Watch a small sphere sink in a viscous liquid and predict where it will be after a given time.", "9": "Predict how far water will jet from a hole in a tank, based on the hole's depth.", "10": "Compress a trapped gas to half its volume and predict its new pressure.", "11": "Predict the current in a circuit before the ammeter shows you the number.", "12": "Compare the brightness of two lamps in two different connections and predict the total current.", "13": "See a compass needle beside a current-carrying wire and predict the direction and size of its deflection.", "14": "Predict how many paper clips an electromagnet can lift after its turns are increased.", "15": "Move a magnet inside a coil and predict when the galvanometer deflects most.", "16": "Follow a capacitor charging and predict its voltage after a given time.", "17": "A current splits into two branches — predict the current in the second branch.", "18": "Predict the shape of the field lines between two charges and the position of the zero-field point.", "19": "Compare the consumption of two appliances and predict which costs more on the electricity bill.", "20": "Predict the rotation direction of a coil in a magnetic field when the current reverses.", "21": "Predict the period of a pendulum from the visible length of its string.", "22": "Drop a ball from a visible height and predict when it will reach the ground.", "23": "Predict which surface will stop a sliding box fastest.", "24": "Predict how much of its height a piece of wood will sink below the surface as it floats on water and settles.", "25": "See a vibrating string and predict the frequency of its note from its visible length and tension.", "26": "Compare the reactance of a coil and a capacitor at two frequencies and predict the circuit's behaviour.", "27": "Predict the resonance frequency at which the current is maximum.", "28": "Predict the output voltage of a transformer from its turns ratio.", "29": "Predict the behaviour of a diode under forward and reverse bias.", "30": "Build circuits from AND, OR, NOT, XOR and NAND gates, wire inputs to outputs, and watch the truth table build live — up to a complete application: the half adder.", "31": "See the colours of a soap film and predict the film thickness from its colour.", "32": "From the order of colours on an oil patch, predict the interference order and the film thickness.", "33": "Shine light of different frequencies on a metal and predict: will electrons be emitted, and with what energy?", "34": "Watch an electron beam bend in a magnetic field and predict the radius of its path.", "35": "Follow the current–voltage curve and predict the position of the first drop in current.", "36": "Fire alpha particles at a very thin gold foil and predict the fraction deflected through large angles.", "37": "See the hydrogen emission spectrum and predict the colour of a specific line.", "38": "Predict the collector current from a small base current and the gain factor.", "39": "Predict the resistance of an LDR under medium lighting.", "40": "Rotate a polarising filter in front of polarised light and predict the transmitted intensity.", "41": "Hear and see Geiger counter pulses beside a radioactive sample and predict the count in 10 seconds.", "42": "Follow a sample decaying and predict the amount remaining after a given time.", "43": "Compare the stability of two nuclei and predict which is more stable.", "44": "Predict which radiation will pass through different barriers.", "45": "See a double-slit interference pattern and predict the positions of the bright fringes.", "46": "From the diffraction angle of a colour, predict its wavelength.", "47": "Compare a laser beam with an ordinary lamp and predict how their spreading differs.", "48": "Predict the fate of a ray inside an optical fibre at different angles.", "49": "Predict the dip angle of a free magnetic needle at a place on Earth.", "50": "Predict the deflection of a sensitive galvanometer needle for a very small current.", "51": "From an X-ray diffraction pattern of a crystal, predict the Bragg angle of the first order.", "52": "Predict the age of an ancient wooden artefact from its remaining carbon-14 fraction.", "53": "Photons are sent one by one and accumulate until the interference pattern appears — predict the shape of the final pattern.", "54": "See electron diffraction rings from a crystal and predict the de Broglie wavelength.", "55": "An X-ray photon collides with an electron — predict the size of the wavelength shift.", "56": "See a magnet float above a cooled superconductor and predict the field behaviour inside it.", "57": "Predict the height of a single atom on a surface from the tunnelling current.", "58": "Compare the behaviour of gold nanoparticles with ordinary gold and predict their colour.", "59": "Predict the path radius of a very fast proton in a ring accelerator magnet.", "60": "Measure one photon of an entangled pair and predict the measurement result of its distant twin."};
 const EN_D={"1": "Closest estimate across different quantities (length/mass/volume/temperature/time) and the correct conversion between systems.", "2": "Position of the heat front inside the rod after a given time.", "3": "Choosing the material that ends up hotter after heating.", "4": "Ranking materials by how fast heat reaches the far end.", "5": "Position of the rod's end after heating — visual estimation with no ruler.", "6": "The sinking depth of the cube in water.", "7": "Choosing the closest number of water drops on the coin.", "8": "Position of the sphere after a given time inside the tube.", "9": "The distance reached by the water jet from the hole.", "10": "Choosing the new pressure after compressing the volume.", "11": "The ammeter reading before it is revealed.", "12": "The ammeter reading in the parallel connection.", "13": "Direction and size of the compass needle's deflection.", "14": "Choosing the closest number of clips after doubling the turns.", "15": "Choosing the case with the largest induced current.", "16": "The capacitor voltage after a known charging time (relative to the RC time constant).", "17": "Choosing the current in the second branch.", "18": "Position of the zero-field point on the line between the charges.", "19": "Choosing the appliance with the higher running cost.", "20": "The rotation direction after reversing the current.", "21": "The period of one full oscillation of the pendulum.", "22": "The time for the ball to reach the ground.", "23": "Choosing the surface that stops the box fastest.", "24": "The submerged fraction of the floating wood piece's height.", "25": "The fundamental frequency of the string.", "26": "Choosing how reactance behaves with frequency.", "27": "The resonance frequency on the frequency axis.", "28": "Choosing the correct output voltage.", "29": "Choosing the case in which current flows.", "30": "Predicting the circuit output for given inputs before the result is revealed.", "31": "Position of the first colour band on the wavelength strip.", "32": "Position of the second-order interference colour.", "33": "Whether emission occurs, and the maximum electron energy.", "34": "The radius of the electron beam's circular path.", "35": "Choosing the voltage of the first current drop.", "36": "The fraction of particles deflected by more than 90 degrees.", "37": "Choosing the colour of the spectral line.", "38": "Choosing the correct collector current.", "39": "The LDR resistance under the shown lighting.", "40": "Choosing the light intensity at 45 degrees.", "41": "The number of counts recorded in the counting time.", "42": "The fraction of the sample remaining after the shown time.", "43": "Choosing the most stable nucleus.", "44": "Choosing the radiation able to cross the barrier.", "45": "Position of the second-order bright fringe.", "46": "Position of the spectral line on the wavelength scale.", "47": "Choosing the property that distinguishes the laser.", "48": "Choosing the fate of the ray at a large angle.", "49": "The needle's dip angle from the horizontal.", "50": "The needle deflection as a percentage of full scale.", "51": "The Bragg angle of the first diffraction peak.", "52": "The sample's age from its remaining carbon fraction.", "53": "Position of the first side peak in the accumulated interference pattern.", "54": "Position of the first diffraction ring.", "55": "The wavelength shift after scattering at a known angle.", "56": "Choosing the magnetic field behaviour inside the superconductor.", "57": "The height of the atomic bump on the scan line.", "58": "Choosing the colour of the gold nanoparticle solution.", "59": "The radius of curvature of the proton's path.", "60": "Choosing the measurement result of the twin photon."};
-const I18N={"info_fab": ["عن الموقع", "About"], "nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.", "<b>5 rounds</b> from the level you choose — each round is a scene with no numbers or data: blind estimation by eye only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>20 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.", "Daily login streak: sign in every day for escalating XP (<b>10, 15, 20, 25, 30, 40</b>) on days 1–6 and <b>50 gems</b> on day 7 — miss a full day and the counter restarts."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
+const I18N={"info_fab": ["عن الموقع", "About"], "nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد التجربة الحقيقي من غير لوحة معطيات: تقدير بعينك من المشهد بس.", "<b>5 rounds</b> from the level you choose — each round is the experiment's real scene with no givens panel: estimation by eye from the scene only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>30 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>30 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.", "Daily login streak: sign in every day for escalating XP (<b>10, 15, 20, 25, 30, 40</b>) on days 1–6 and <b>50 gems</b> on day 7 — miss a full day and the counter restarts."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
 </script>
 
 <script>
@@ -2887,6 +2898,7 @@ function startCircuit(exp){
      <canvas class="sim" id="cv" width="640" height="250"></canvas>
      <label class="lbl" for="rg">${T("توقعك للتيار الكلي:","Your prediction of the total current:")} <b id="gv"></b></label>
      <input type="range" id="rg" class="unplaced" min="0" max="5" step="0.05" value="0">
+     <div class="duelscale"><b>0</b><span class="du">${T("أمبير (A) — مدى الأميتر في هذه التجربة","amperes (A) — the ammeter's range in this experiment")}</span><b>5</b></div>
      <button class="btn primary block" id="cf" disabled>${T("أكّد ووصّل الدايرة","Confirm and connect the circuit")}</button>
      <div class="feedback" id="roundFb"></div>${feedbackBox()}`;
     const ctx=$("#cv").getContext("2d");
@@ -2897,13 +2909,19 @@ function startCircuit(exp){
     }
     function draw(t,on){
       ctx.clearRect(0,0,640,250);
+      /* component values as bold dark tags ON the devices themselves — the eye
+         reads the battery's voltage and the resistor's value off the drawing,
+         so the estimate is Ohm's-law reasoning, not a blind drag */
+      const tag=(cx,cy,txt)=>{ctx.font="bold 14px sans-serif";const tw=ctx.measureText(txt).width+20,hh=25,x=cx-tw/2,y=cy-hh/2,r=12;ctx.fillStyle="#22303a";ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+tw,y,x+tw,y+hh,r);ctx.arcTo(x+tw,y+hh,x,y+hh,r);ctx.arcTo(x,y+hh,x,y,r);ctx.arcTo(x,y,x+tw,y,r);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(txt,cx,cy+5);ctx.fillStyle=C_INK;};
       ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(70,45,500,150);
       if(parallel){ctx.beginPath();ctx.moveTo(430,45);ctx.lineTo(430,195);ctx.stroke();}
       ctx.fillStyle=C_INK;ctx.fillRect(60,100,8,50);ctx.fillRect(82,112,5,26);
-      ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(V+"V",74,215);
+      ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.fillText("+",52,112);
+      tag(74,212,V+" V");
       ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();
       let zx=250;ctx.moveTo(zx,45);for(let i=0;i<6;i++){ctx.lineTo(zx+12,45+(i%2?14:-14));zx+=24;}ctx.lineTo(zx,45);ctx.stroke();
-      ctx.fillStyle=C_INK;ctx.fillText("R = "+R+" Ω",310,25);
+      tag(322,20,"R = "+R+" Ω");
+      ctx.font="13px sans-serif";ctx.textAlign="center";
       const bright=on?clamp(I/4,0.1,1):0.06;
       lamp(570,120,24,bright);
       if(parallel)lamp(430,120,20,bright);
@@ -3595,10 +3613,14 @@ function drawDuel(ctx,scene,truePct,anim,mePct,botPct){
    (max +10, i.e. 10%) paid only when a mark was actually placed. Round max is
    therefore exactly 100 for every experiment, whatever its scale. */
 const DUEL_TOL=0.40;
+/* ONE round length for every duel at every level: 30 seconds (raised from 20 —
+   players need time to actually read the scene and reason, not just drag). The
+   clock, the timer bar and the speed bonus all read this single constant. */
+const DUEL_TIME=30;
 function duelRoundPoints(errFrac,usedSec,marked){
   if(!marked)return 0;
   const acc=Math.max(0,1-errFrac/DUEL_TOL)*90;
-  const spd=Math.max(0,(20-Math.min(Math.max(usedSec,0),20))/20)*10;
+  const spd=Math.max(0,(DUEL_TIME-Math.min(Math.max(usedSec,0),DUEL_TIME))/DUEL_TIME)*10;
   return Math.round(acc+spd);
 }
 /* The bot's error is drawn from a NORMAL distribution whose sigma (as a
@@ -3660,7 +3682,7 @@ function nextDuelRound(){
   D.marker=exp.type==="marker";
   D.scene=DUEL_SCENES[ri(0,DUEL_SCENES.length-1)];
   D.truePct=D.marker?rnd(.12,.88):rnd(.14,.86);D.guess=null;D.botPct=null;D.locked=false; // NO preset mark in duels either
-  D.exp=exp;D.startT=performance.now();D.left=20;
+  D.exp=exp;D.startT=performance.now();D.left=DUEL_TIME;
   $("#duelRoundLbl").textContent=LANG==="en"?("Round "+D.round+" of 5 — "+(EN_T[exp.n]||exp.t)):`الجولة ${AR(D.round)} من 5 — ${exp.t}`;
   $("#duelDots").innerHTML=[1,2,3,4,5].map(i=>`<i class="${i<D.round?"on":i===D.round?"cur":""}"></i>`).join("");
   $("#duelTitle").textContent=D.marker?(LANG==="en"?((EN_D[exp.n])||exp.duel||D.scene.promptEn):(exp.duel||D.scene.prompt)):(LANG==="en"?D.scene.promptEn:D.scene.prompt);
@@ -3681,7 +3703,7 @@ function nextDuelRound(){
      experiment's own setup scene. The loop dies on lock, on navigation
      (stopTimers cancels window.__raf), and when a new match replaces D. */
   if(!D.marker){const _RD=D;let _pvLast=0;const pv=t=>{if(D!==_RD||D.locked||currentScreen!=="scr-duel")return;if(t-_pvLast<33){window.__raf=requestAnimationFrame(pv);return;}_pvLast=t;const ph=(t%2600)/2600;const demo=.5+.3*Math.sin(t/550);drawD(ph,false,demo);window.__raf=requestAnimationFrame(pv);};window.__raf=requestAnimationFrame(pv);}
-  const clk=$("#duelClock");if(clk)clk.textContent=AR(20)+T(" ث","s");
+  const clk=$("#duelClock");if(clk)clk.textContent=AR(DUEL_TIME)+T(" ث","s");
   rg.oninput=()=>{D.guess=rg.value/100;rg.classList.remove("unplaced");$("#duelConfirm").disabled=false;drawDT();};
   // RELATIVE drag in duels too: a press places the mark at ZERO (or keeps the current
   // value); only the drag distance moves it — never a jump to the pressed position.
@@ -3690,8 +3712,8 @@ function nextDuelRound(){
   $("#duelCanvas").onpointermove=e=>{if(!D||D.locked||!duelDrag||e.buttons===0)return;const r=e.target.getBoundingClientRect();const dx=(e.clientX-duelDrag.x)/r.width*640;D.guess=clamp(duelDrag.v+dx/(602-38),0,1);rg.value=Math.round(D.guess*100);drawDT();};
   $("#duelCanvas").onpointerup=()=>{duelDrag=null;};
   D.timer=every(()=>{
-    D.left=Math.max(0,20-(performance.now()-D.startT)/1000);
-    $("#duelTimer").style.width=(D.left/20*100)+"%";
+    D.left=Math.max(0,DUEL_TIME-(performance.now()-D.startT)/1000);
+    $("#duelTimer").style.width=(D.left/DUEL_TIME*100)+"%";
     const ck=$("#duelClock");if(ck)ck.textContent=AR(Math.ceil(D.left))+T(" ث","s");
     if(D.left<=0)confirmDuel(true);
   },100);
@@ -3742,16 +3764,18 @@ function confirmDuel(timedOut){
       :`<div style="margin-top:4px">علامتك: <b>${gV}</b> — الصح: <b>${tV}</b> — علامة البوت: ${bV}.</div>`;
   }
   if(D.round>=5){
+    D.done=true;
     window.__duelSession=window.__duelSession||{played:0,won:0};window.__duelSession.played++;if(D.me>D.bot)window.__duelSession.won++;
     const xp=(D.marks||0)===0?0:(D.me>D.bot?60:15);gainXP(xp,"duel");if(xp===60)S.duelWins=(S.duelWins||0)+1;
     fb.innerHTML+=LANG==="en"
     ?`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"You won the match!":D.me<D.bot?"The bot won this time":"A draw!"}</div>
     <div>Final score: You ${D.me} — Bot ${D.bot}. You earned ${xp} XP, added to your balance.</div>
-    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">New match</button><button class="btn" id="dHome">Home</button></div>`
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">New match</button><button class="btn" id="dSetup">Change level</button><button class="btn" id="dHome">Home</button></div>`
     :`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"فزت بالمباراة!":D.me<D.bot?"البوت فاز المرة دي":"تعادل!"}</div>
     <div>النتيجة النهائية: أنت ${AR(D.me)} — البوت ${AR(D.bot)}. كسبت ${AR(xp)} XP اتضافت لرصيدك.</div>
-    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">مباراة جديدة</button><button class="btn" id="dHome">الرئيسية</button></div>`;
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">مباراة جديدة</button><button class="btn" id="dSetup">تغيير المستوى</button><button class="btn" id="dHome">الرئيسية</button></div>`;
     $("#dAgain").onclick=()=>$("#duelStart").click();
+    const _dsBtn=$("#dSetup");if(_dsBtn)_dsBtn.onclick=()=>duelBackToSetup();
     $("#dHome").onclick=()=>{showScreen("scr-home");};
   }else{
     const nb=$("#duelNext");nb.style.display="block";nb.textContent=LANG==="en"?("Round "+(D.round+1)+" of 5"):`الجولة ${AR(D.round+1)} من 5`;
@@ -4782,6 +4806,11 @@ Object.assign(THEORY_EN,{
 });
 /* ---- real educational photographs/diagrams inside the theories (sourced from the web, stored locally) ---- */
 const THEORY_IMG={
+11:{src:"assets/theory-ohm.png",cap:"أبسط دائرة كهربية: مصدر جهد V يغذّي مقاومة R فيمر التيار i — قانون أوم يربط الثلاثة: V = iR.",capEn:"The simplest electric circuit: a voltage source V feeding a resistor R with current i flowing — Ohm's law ties the three together: V = iR.",credit:"Wikimedia Commons — inductiveload (Public domain)",url:"https://commons.wikimedia.org/wiki/File:Ohm%27s_Law_with_Voltage_source.svg"},
+21:{src:"assets/theory-pendulum.gif",cap:"مخطط قوى البندول البسيط: الخيط طوله L والزاوية θ، ووزن الكرة mg يتحلل لمركبة مماسية Ft (المعيدة) ومركبة قطرية Fr.",capEn:"Force diagram of the simple pendulum: string length L at angle θ, with the bob's weight mg resolved into a tangential component Ft (the restoring force) and a radial component Fr.",credit:"Wikimedia Commons — Gurjete Ukaj (CC BY-SA 3.0)",url:"https://commons.wikimedia.org/wiki/File:Pendulum.gif"},
+37:{src:"assets/theory-hydrogen.jpg",cap:"طيف انبعاث الهيدروجين المرئي الحقيقي: خطوط بالمر — الأحمر H-alpha عند 656 نانومتر، ثم خطوط سماوية وبنفسجية عند 486 و434 و410 نانومتر.",capEn:"The real visible emission spectrum of hydrogen: the Balmer lines — red H-alpha at 656 nm, then cyan and violet lines at 486, 434 and 410 nm.",credit:"Wikimedia Commons — Jan Homann (CC BY-SA 3.0)",url:"https://commons.wikimedia.org/wiki/File:Visible_spectrum_of_hydrogen.jpg"},
+41:{src:"assets/theory-geiger.jpg",cap:"عدّاد جايجر حقيقي بمسباره: الأنبوبة في المسبار الأسطواني، والجهاز يعدّ النبضات ويعرض المعدل على تدريجه.",capEn:"A real Geiger counter with its probe: the tube sits in the cylindrical probe, and the unit counts the pulses and shows the rate on its dial.",credit:"Wikimedia Commons — TimVickers (Public domain)",url:"https://commons.wikimedia.org/wiki/File:Geiger_counter_2.jpg"},
+59:{src:"assets/theory-cern.jpg",cap:"صورة جوية لموقع سيرن (ميران) قرب جنيف — تحت هذه المباني والحقول تدور حلقة مصادم الهدرونات الكبير بمحيط ٢٧ كم تقريبًا.",capEn:"An aerial view of the CERN (Meyrin) site near Geneva — beneath these buildings and fields runs the Large Hadron Collider ring, about 27 km in circumference.",credit:"Wikimedia Commons — Brücke-Osteuropa (CC0)",url:"https://commons.wikimedia.org/wiki/File:CERN-aerial_1.jpg"},
 33:{src:"assets/theory-photoelectric.jpg",cap:"مخطط التأثير الكهروضوئي: فوتونات ساقطة تقتلع إلكترونات من سطح المعدن.",capEn:"Diagram of the photoelectric effect: incoming photons eject electrons from a metal surface.",credit:"ClassNotes.ng",url:"https://classnotes.ng/lesson/basic-electronics-basic-emission-theory-jss3/"},
 36:{src:"assets/theory-rutherford.jpg",cap:"تجربة رذرفورد: جسيمات ألفا على رقاقة ذهب رقيقة، وحلقة الكاشف تسجّل التشتت بكل الزوايا.",capEn:"Rutherford's experiment: alpha particles on a thin gold foil, with the detector ring recording scattering at all angles.",credit:"OpenStax-based textbook diagram",url:"https://freeprintables.us.com/view/ernest-rutherford-discovery-of-proton/"},
 45:{src:"assets/theory-double-slit.jpg",cap:"تجربة الشق المزدوج: شعاع ساقط على شقين، ونمط التداخل على الشاشة بهدب مرقّمة الرتب m.",capEn:"The double-slit experiment: an incident beam on two slits, and the interference pattern on the screen with fringes labelled by order m.",credit:"CUNY — Hedberg, Intro Physics notes",url:"https://hedberg.ccnysites.cuny.edu/viewers/ebook.php?course=introphysics&topic=wave-optics&l=cal"},
@@ -4797,7 +4826,7 @@ theoryBlock=function(e,forPrint){
   const en=LANG==="en",te=en?THEORY_EN[e.n]:null;
   const s=te?te.s:th.s,der=te?te.der:th.der,d=te?te.d:th.d,exp=te?te.exp:th.exp,ex=te?te.ex:th.ex;
   const img=THEORY_IMG[e.n];
-  const imgHTML=img?`<figure class="thimg"><img src="${img.src}" alt="${en?img.capEn:img.cap}" loading="lazy"><figcaption>${en?img.capEn:img.cap} <span dir="ltr">(${en?"Source":"المصدر"}: <a href="${img.url}" target="_blank" rel="noopener">${img.credit}</a>)</span></figcaption></figure>`:"";
+  const imgHTML=img?`<figure class="thimg"><img src="${img.src}" alt="${en?img.capEn:img.cap}" loading="lazy" onerror="var f=this.closest('figure');if(f)f.style.display='none'"><figcaption>${en?img.capEn:img.cap} <span dir="ltr">(${en?"Source":"المصدر"}: <a href="${img.url}" target="_blank" rel="noopener">${img.credit}</a>)</span></figcaption></figure>`:"";
   if(forPrint)return `<h3>${T("التعريف والفكرة بدقة:","Definition and core idea:")}</h3><p>${s}</p>${der?`<h3>${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</h3><p>${der}</p>`:""}<h3>${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</h3><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<h3>${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</h3><p>${d}</p>${ex?`<h3>${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</h3><p>${ex}</p>`:""}${exp?`<h3>${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</h3><p>${exp}</p>`:""}`;
   return `<div class="thlaw" style="margin-top:0">${T("التعريف والفكرة بدقة:","Definition and core idea:")}</div><p class="thsum">${s}</p>${der?`<div class="thlaw">${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</div><p class="thsum">${der}</p>`:""}<div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<div class="thlaw">${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</div><p class="small" style="color:var(--ink)">${d}</p>${ex?`<div class="thlaw">${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</div><p class="thsum">${ex}</p>`:""}${exp?`<div class="thlaw">${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</div><p class="thsum">${exp}</p>`:""}`;
 };
@@ -6271,7 +6300,7 @@ auth_newpass:["كلمة السر الجديدة","New password"],
 auth_rec_btn:["تعيين كلمة السر الجديدة","Set new password"],
 auth_back_in:["← العودة لتسجيل الدخول","← Back to sign in"],
 auth_fullname:["الاسم الكامل","Full name"],
-auth_fullname_ph:["مثال: يوسف أحمد","e.g. Youssef Ahmed"],
+auth_fullname_ph:["مثال: محمد نادر","e.g. Mohamed Nader"],
 auth_phone:["رقم التليفون","Phone number"],
 auth_dob:["تاريخ الميلاد","Date of birth"],
 auth_pass2:["تأكيد كلمة السر","Confirm password"],
@@ -6558,15 +6587,31 @@ showScreen("scr-login");
    and the print/PDF sheet. No hand-drawn HTML/CSS fractions or radicals remain. */
 let _mjState=0;
 function texOf(el){const n=+el.getAttribute("data-fx");const th=(typeof THEORY!=="undefined")?THEORY[n]:null;return th?th.fx:null;}
+let _texQueue=[],_texBusy=false;
 function typesetMath(root){
   const els=Array.from((root||document).querySelectorAll(".formula[data-fx]:not([data-done])"));
   if(!els.length)return;
   if(window.katex){
-    els.forEach(el=>{const tex=texOf(el);
-      if(tex==null){el.setAttribute("data-done","1");return;}
-      try{katex.render(tex,el,{displayMode:true,throwOnError:false,strict:false});}
-      catch(e){el.textContent=tex;}
-      el.setAttribute("data-done","1");});
+    /* Chunked rendering: the theory list alone holds 60 display formulas, and
+       rendering them all in one synchronous pass blocks the main thread long
+       enough to feel like a freeze on a phone. Six per frame keeps every
+       interaction smooth while the page fills in progressively. */
+    for(const el of els)if(!_texQueue.includes(el))_texQueue.push(el);
+    if(_texBusy)return;_texBusy=true;
+    const step=()=>{
+      const batch=_texQueue.splice(0,6);
+      for(const el of batch){
+        if(el.getAttribute("data-done"))continue;
+        const tex=texOf(el);
+        if(tex==null){el.setAttribute("data-done","1");continue;}
+        try{katex.render(tex,el,{displayMode:true,throwOnError:false,strict:false});}
+        catch(e){el.textContent=tex;}
+        el.setAttribute("data-done","1");
+      }
+      if(_texQueue.length){if(window.requestAnimationFrame)requestAnimationFrame(step);else setTimeout(step,16);}
+      else _texBusy=false;
+    };
+    step();
     return;
   }
   els.forEach(el=>{const tex=texOf(el);
@@ -9379,7 +9424,7 @@ function duelBuildMarker(exp){
        full question the training lab asks (setup + what to estimate) — never
        the bare duel brief: the player must know WHAT he is estimating. */
     q:((LANG==="en"&&(typeof CUE_EN!=="undefined"&&CUE_EN[exp.n]))||exp.cue||(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t),
-    ask:T("شاهد مشهد التجربة، واسحب علامتك على المحور لحد المكان اللي تتوقعه — بلا أرقام: عينك هي المقياس.","Watch the experiment's scene and drag your mark along the axis to where you expect the result — no numbers: your eye is the gauge.")};
+    ask:T("شاهد مشهد التجربة، واسحب علامتك على المحور لحد المكان اللي تتوقعه — طرفا مدى المحور مكتوبين تحته، لكن من غير أي معطيات: عينك هي المقياس.","Watch the experiment's scene and drag your mark along the axis to where you expect the result — the axis range ends are written under it, but there are no givens: your eye is the gauge.")};
 }
 function duelBuildChoice(exp){
   const en=LANG==="en";
@@ -9510,16 +9555,23 @@ function duelBuildCircuit(exp){
   const cfg=pickCfg(),Req=parallel?cfg.R/2:cfg.R,I=cfg.V/Req;
   return {mode:"slider",h:300,axis:true,min:0,max:5,unit:"أمبير",trueVal:I,truePct:I/5,
     q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
-    ask:T("الدايرة قدامك ببطاريتها ومقاومتها، والأميتر متغطي — خمّن التيار الكلي اللي هيقيسه الأميتر لما الدايرة تتوصل.","The circuit is in front of you with its battery and resistor, and the ammeter is covered — guess the total current the ammeter will read once the circuit is connected."),
+    ask:T("الدايرة قدامك: جهد البطارية مكتوب عليها وقيمة المقاومة مكتوبة على الرسم نفسه، والأميتر متغطي — طبّق قانون أوم بحدسك وخمّن التيار الكلي.","The circuit is in front of you: the battery's voltage is written on it and the resistor's value is written on the drawing itself, and the ammeter is covered — apply Ohm's law by intuition and guess the total current."),
+    ex:T("بالقانون: التيار = الجهد ÷ المقاومة المكافئة = "+cfg.V+" ÷ "+Req+" = "+I.toFixed(2)+" أمبير"+(parallel?" — على التوازي المقاومة المكافئة نصّ مقاومة الفرع الواحد لأن التيار بيلاقي طريقين.":"."),"By the law: current = voltage ÷ equivalent resistance = "+cfg.V+" ÷ "+Req+" = "+I.toFixed(2)+" A"+(parallel?" — in parallel the equivalent resistance is half of one branch's, because the current finds two paths.":".")),
     draw(ctx,W,H,anim,guessPct,reveal){
       ctx.clearRect(0,0,640,300);
       const V=cfg.V,R=cfg.R,on=reveal;
+      /* same bold on-device value tags as the training lab: battery voltage and
+         resistor value readable straight off the drawing (the duel hides the
+         givens PANEL, never the values printed on the apparatus itself) */
+      const tag=(cx,cy,txt)=>{ctx.font="bold 14px sans-serif";const tw=ctx.measureText(txt).width+20,hh=25,x=cx-tw/2,y=cy-hh/2,r=12;ctx.fillStyle="#22303a";ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+tw,y,x+tw,y+hh,r);ctx.arcTo(x+tw,y+hh,x,y+hh,r);ctx.arcTo(x,y+hh,x,y,r);ctx.arcTo(x,y,x+tw,y,r);ctx.closePath();ctx.fill();ctx.fillStyle="#fff";ctx.textAlign="center";ctx.fillText(txt,cx,cy+5);ctx.fillStyle=C_INK;};
       ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(70,45,500,150);
       if(parallel){ctx.beginPath();ctx.moveTo(430,45);ctx.lineTo(430,195);ctx.stroke();}
       ctx.fillStyle=C_INK;ctx.fillRect(60,100,8,50);ctx.fillRect(82,112,5,26);
-      ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(V+"V",74,215);
+      ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.fillText("+",52,112);
+      tag(74,212,V+" V");
       ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();let zx=250;ctx.moveTo(zx,45);for(let i=0;i<6;i++){ctx.lineTo(zx+12,45+(i%2?14:-14));zx+=24;}ctx.lineTo(zx,45);ctx.stroke();
-      ctx.fillStyle=C_INK;ctx.fillText("R = "+R+" Ω",310,25);
+      tag(322,20,"R = "+R+" Ω");
+      ctx.font="13px sans-serif";ctx.textAlign="center";
       const lamp=(x,y,r,bright)=>{ctx.fillStyle=`rgba(245,197,66,${bright})`;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(x-r*.6,y+r*.6);ctx.lineTo(x+r*.6,y-r*.6);ctx.moveTo(x-r*.6,y-r*.6);ctx.lineTo(x+r*.6,y+r*.6);ctx.stroke();};
       const bright=on?clamp(I/4,0.1,1):0.06;
       lamp(570,120,24,bright);if(parallel)lamp(430,120,20,bright);
@@ -9587,6 +9639,8 @@ function duelBuildPhoto(){
   return {mode:"slider",h:300,axis:true,min:0,max:5,unit:"eV",trueVal:Math.round(KE0*100)/100,truePct:KE0/5,
     q:(LANG==="en"?(EN_D[33]||""):"هل هيحصل انبعاث، وكام أقصى طاقة للإلكترونات؟"),
     ask:T("سطح من "+m[0]+" بيتسلّط عليه ضوء بلون الشعاع اللي شايفه — خمّن أقصى طاقة حركة للإلكترونات المنبعثة (وحط صفر لو حكمك إن مفيش انبعاث أصلًا).","A surface of "+m[1]+" with light of the beam colour you see shining on it — guess the maximum kinetic energy of the emitted electrons (put zero if your judgement is that there will be no emission at all)."),
+    ex:emits?T("طاقة الفوتون من لونه ≈ "+E0.toFixed(1)+" eV، ودالة شغل "+m[0]+" = "+phi+" eV — فأقصى طاقة حركة = "+E0.toFixed(1)+" − "+phi+" = "+KE0.toFixed(1)+" eV. اللون هو دليلك: البنفسجي أعلى طاقة والأحمر أقلها.","The photon's energy from its colour ≈ "+E0.toFixed(1)+" eV, and the work function of "+m[1]+" = "+phi+" eV — so the maximum kinetic energy = "+E0.toFixed(1)+" − "+phi+" = "+KE0.toFixed(1)+" eV. The colour is your guide: violet carries the most energy, red the least.")
+      :T("طاقة الفوتون من لونه ≈ "+E0.toFixed(1)+" eV، وهي أقل من دالة شغل "+m[0]+" ("+phi+" eV) — فلا انبعاث أصلًا مهما اشتد الضوء: العتبة أولًا.","The photon's energy from its colour ≈ "+E0.toFixed(1)+" eV, which is below the work function of "+m[1]+" ("+phi+" eV) — so there is no emission at all, however intense the light: the threshold comes first."),
     draw(ctx,W,H,anim,guessPct,reveal){
       ctx.clearRect(0,0,640,300);
       ctx.fillStyle="#5b6d77";ctx.fillRect(430,30,26,170);
@@ -9723,7 +9777,7 @@ nextDuelRound=function(){
   D.R=R;D.exp=exp;D.mode=R.mode;D.marker=!!R.marker;
   D.truePct=(R.mode==="slider")?R.truePct:null;
   D.guess=null;D.sel=null;D.botPct=null;D.botCorrect=false;D.locked=false;
-  D.startT=performance.now();D.left=20;
+  D.startT=performance.now();D.left=DUEL_TIME;
   $("#duelRoundLbl").textContent=LANG==="en"?("Round "+D.round+" of 5 — "+(EN_T[exp.n]||exp.t)):`الجولة ${AR(D.round)} من 5 — ${exp.t}`;
   $("#duelDots").innerHTML=[1,2,3,4,5].map(i=>`<i class="${i<D.round?"on":i===D.round?"cur":""}"></i>`).join("");
   $("#duelTitle").textContent=R.q||exp.t;
@@ -9744,7 +9798,17 @@ nextDuelRound=function(){
     if(rangeRow)rangeRow.style.display="";
     rg.value=0;rg.disabled=false;rg.classList.add("unplaced");
     if(valEl)valEl.textContent="";
+    /* readable scale: the round's own endpoints + unit under the slider, so the
+       drag is a reasoned estimate inside a known range — never a blind sweep */
+    const mnEl=$("#duelMin"),mxEl=$("#duelMax"),unEl=$("#duelUnit");
+    if(mnEl)mnEl.textContent=fmtVal(R.min,"").trim();
+    if(mxEl)mxEl.textContent=fmtVal(R.max,"").trim();
+    if(unEl)unEl.textContent=(LANG==="en"&&typeof UNIT_EN!=="undefined")?(UNIT_EN[R.unit]||R.unit):(R.unit||"");
   }
+  /* fresh round, fresh clock face: full bar, no leftover low-time warning */
+  const _tb0=$("#duelTimer");if(_tb0){_tb0.classList.remove("low");_tb0.style.width="100%";}
+  const _ck0=$("#duelClock");if(_ck0)_ck0.classList.remove("low");
+  const _card=$("#duelGame .card");if(_card){_card.classList.remove("roundin");void _card.offsetWidth;_card.classList.add("roundin");}
   const drawD=(anim,reveal)=>{
     try{
       if(R.marker){drawDuelMarker(anim,reveal);return;}
@@ -9760,7 +9824,7 @@ nextDuelRound=function(){
     const pv=t=>{if(D!==_RD||D.locked||currentScreen!=="scr-duel")return;if(t-_pvLast<40){window.__raf=requestAnimationFrame(pv);return;}_pvLast=t;drawD((t%2800)/2800,false);window.__raf=requestAnimationFrame(pv);};
     window.__raf=requestAnimationFrame(pv);
   }
-  const clk=$("#duelClock");if(clk)clk.textContent=AR(20)+T(" ث","s");
+  const clk=$("#duelClock");if(clk)clk.textContent=AR(DUEL_TIME)+T(" ث","s");
   rg.oninput=()=>{if(D.mode!=="slider")return;D.guess=rg.value/1000;rg.classList.remove("unplaced");$("#duelConfirm").disabled=false;
     if(valEl)valEl.textContent=(D.R&&(D.R.mode==="slider"))?("= "+duelFmt(D.R,D.R.min+D.guess*(D.R.max-D.R.min))):"";
     drawD(0,false);};
@@ -9769,9 +9833,10 @@ nextDuelRound=function(){
   cvEl.onpointermove=e=>{if(!D||D.locked||!duelDrag||e.buttons===0||D.mode!=="slider")return;const r=e.target.getBoundingClientRect();const dx=(e.clientX-duelDrag.x)/r.width*640;D.guess=clamp(duelDrag.v+dx/(602-38),0,1);rg.value=Math.round(D.guess*1000);if(valEl&&D.R)valEl.textContent="= "+duelFmt(D.R,D.R.min+D.guess*(D.R.max-D.R.min));drawD(0,false);};
   cvEl.onpointerup=()=>{duelDrag=null;};
   D.timer=every(()=>{
-    D.left=Math.max(0,20-(performance.now()-D.startT)/1000);
-    $("#duelTimer").style.width=(D.left/20*100)+"%";
-    const ck=$("#duelClock");if(ck)ck.textContent=AR(Math.ceil(D.left))+T(" ث","s");
+    D.left=Math.max(0,DUEL_TIME-(performance.now()-D.startT)/1000);
+    const tb=$("#duelTimer");tb.style.width=(D.left/DUEL_TIME*100)+"%";
+    const low=D.left<=10;tb.classList.toggle("low",low);
+    const ck=$("#duelClock");if(ck){ck.textContent=AR(Math.ceil(D.left))+T(" ث","s");ck.classList.toggle("low",low);}
     if(D.left<=0)confirmDuel(true);
   },100);
 };
@@ -9829,25 +9894,39 @@ confirmDuel=function(timedOut){
     fb.innerHTML=(LANG==="en"
       ?`<b>${win?"You won this round":"The bot won this round"}</b> — You: ${mePts} pts (error ${pctS(meErrF)} in ${used.toFixed(1)} s) — Bot: ${boPts} pts (error ${pctS(boErrF)}).`
       :`<b>${win?"كسبت الجولة دي":"البوت كسب الجولة دي"}</b> — أنت: ${AR(mePts)} نقطة (خطأ ${pctS(meErrF)} في ${used.toFixed(1)} ث) — البوت: ${AR(boPts)} نقطة (خطأ ${pctS(boErrF)}).`)
-      +`<div style="margin-top:4px">${LANG==="en"?`Your mark: <b>${gV}</b> — the truth: <b>${tV}</b> — the bot's mark: ${bV}.`:`علامتك: <b>${gV}</b> — الصح: <b>${tV}</b> — علامة البوت: ${bV}.`}</div>`;
+      +`<div style="margin-top:4px">${LANG==="en"?`Your mark: <b>${gV}</b> — the truth: <b>${tV}</b> — the bot's mark: ${bV}.`:`علامتك: <b>${gV}</b> — الصح: <b>${tV}</b> — علامة البوت: ${bV}.`}</div>`
+      +(R.ex?`<div style="margin-top:4px">${escHTML(R.ex)}</div>`:"");
   }
   if(D.round>=5){
+    D.done=true;
     window.__duelSession=window.__duelSession||{played:0,won:0};window.__duelSession.played++;if(D.me>D.bot)window.__duelSession.won++;
     const xp=(D.marks||0)===0?0:(D.me>D.bot?60:15);gainXP(xp,"duel");if(xp===60)S.duelWins=(S.duelWins||0)+1;
     fb.innerHTML+=LANG==="en"
     ?`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"You won the match!":D.me<D.bot?"The bot won this time":"A draw!"}</div>
     <div>Final score: You ${D.me} — Bot ${D.bot}. You earned ${xp} XP, added to your balance.</div>
-    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">New match</button><button class="btn" id="dHome">Home</button></div>`
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">New match</button><button class="btn" id="dSetup">Change level</button><button class="btn" id="dHome">Home</button></div>`
     :`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"فزت بالمباراة!":D.me<D.bot?"البوت فاز المرة دي":"تعادل!"}</div>
     <div>النتيجة النهائية: أنت ${AR(D.me)} — البوت ${AR(D.bot)}. كسبت ${AR(xp)} XP اتضافت لرصيدك.</div>
-    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">مباراة جديدة</button><button class="btn" id="dHome">الرئيسية</button></div>`;
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">مباراة جديدة</button><button class="btn" id="dSetup">تغيير المستوى</button><button class="btn" id="dHome">الرئيسية</button></div>`;
     $("#dAgain").onclick=()=>$("#duelStart").click();
+    const _dsBtn=$("#dSetup");if(_dsBtn)_dsBtn.onclick=()=>duelBackToSetup();
     $("#dHome").onclick=()=>{showScreen("scr-home");};
   }else{
     const nb=$("#duelNext");nb.style.display="block";nb.textContent=LANG==="en"?("Round "+(D.round+1)+" of 5"):`الجولة ${AR(D.round+1)} من 5`;
     nb.onclick=()=>nextDuelRound();
   }
 };
+/* A finished match must never trap the player on its final round: the setup
+   (rules + level choice) is where a completed match leaves you — via the
+   "Change level" button, and automatically whenever the duel screen is
+   re-entered after a finished match. */
+function duelBackToSetup(){
+  try{if(D&&D.timer)clearInterval(D.timer);}catch(e){}
+  const s=$("#duelSetup"),g=$("#duelGame");
+  if(s)s.style.display="block";if(g)g.style.display="none";
+}
+const _ssDuelReset=showScreen;
+showScreen=function(id){_ssDuelReset(id);if(id==="scr-duel"&&typeof D!=="undefined"&&D&&D.done)duelBackToSetup();};
 /* test hooks (used by the 60/60 duel verification): build + paint every round */
 window.__duelTest={build:duelBuildRound,builders:{marker:duelBuildMarker,choice:duelBuildChoice,units:duelBuildUnits,heat:duelBuildHeat,circuit:duelBuildCircuit,digital:duelBuildDigital,geiger:duelBuildGeiger,photo:duelBuildPhoto,fringe:duelBuildFringe,decay:duelBuildDecay}};
 </script>
@@ -9903,7 +9982,7 @@ function renderInfo(){
     `<div class="pvcard">
       <div class="row between"><span class="chip" style="background:#e3ecfd;color:#1d4fa1">${T("أنت","You")} · 240</span><b>${T("ضد","VS")}</b><span class="chip" style="background:#fbe7e4;color:#9c2b21">${T("البوت","Bot")} · 180</span></div>
       <div class="mpbal"><div class="bl" style="width:57%"></div><div class="rd" style="width:43%"></div></div>
-      <div class="small">${T("شريط التوازن بيميل ناحية الكسبان مع كل جولة — ٥ جولات، وكل جولة ٢٠ ثانية.","The balance bar tilts toward whoever is winning after each round — 5 rounds, 20 seconds each.")}</div>
+      <div class="small">${T("شريط التوازن بيميل ناحية الكسبان مع كل جولة — ٥ جولات، وكل جولة ٣٠ ثانية.","The balance bar tilts toward whoever is winning after each round — 5 rounds, 30 seconds each.")}</div>
     </div>`);
   const ladder=RANKS.map((r,i)=>`<div class="tierrow"><span><b>${LANG==="en"?RANK_EN[i]:r[0]}</b></span><span class="chip">${AR(r[1])}+ XP</span></div>`).join("");
   const rankPv=pv(T("سلّم الرتب من البرونزي للأسطوري","The tier ladder, Bronze to Legendary"),`<div class="pvcard">${ladder}</div>`);
@@ -9984,7 +10063,7 @@ function renderInfo(){
       duelPv+
       `<ul class="infolist">
         <li>${T("أنت <b>الأزرق</b> وخصمك (البوت حاليًا) <b>الأحمر</b>، والماتش <b>٥ جولات</b> من تجارب المستوى اللي تختاره — أي تجربة من تجارب المستوى ممكن تطلع لك.","You are <b>blue</b> and your opponent (the bot, for now) is <b>red</b>; a match is <b>5 rounds</b> drawn from the level you choose — any of that level's experiments can come up.")}</li>
-        <li>${T("كل جولة بتعرض <b>مشهد التجربة الحقيقي وسؤال تقديرها</b>، لكن من غير أي أرقام أو معطيات: تقدير أعمى بعينك بس، وكل جولة <b>٢٠ ثانية</b>.","Each round shows the <b>experiment's real scene and its estimation question</b>, but with no numbers or givens at all: blind estimation by eye only, and each round lasts <b>20 seconds</b>.")}</li>
+        <li>${T("كل جولة بتعرض <b>مشهد التجربة الحقيقي وسؤال تقديرها</b>، لكن من غير لوحة معطيات: القيم المطبوعة على الجهاز نفسه بس هي اللي قدامك، والتقدير بعينك من المشهد — وكل جولة <b>٣٠ ثانية</b>.","Each round shows the <b>experiment's real scene and its estimation question</b>, but with no givens panel: only the values printed on the apparatus itself are in front of you, and the estimation is by eye from the scene — and each round lasts <b>30 seconds</b>.")}</li>
         <li>${T("نقاط الجولة: ٩٠٪ على قرب توقعك من الصح و١٠٪ على السرعة — بنفس السماحية الموحّدة على كل التجارب مهما اختلف مقياسها، ولازم تحط توقع أصلًا عشان تاخد أي نقطة.","Round points: 90% for how close your prediction is and 10% for speed — with the same unified tolerance on every experiment whatever its scale, and you must place a prediction to earn any points at all.")}</li>
         <li>${T("شريط التوازن في النص بيميل لحظيًا ناحية الكسبان، والفائز بالماتش بياخد <b>60 XP</b> والخاسر <b>15 XP</b>.","The balance bar in the middle tilts live toward whoever is winning; the match winner earns <b>60 XP</b> and the loser <b>15 XP</b>.")}</li>
        </ul>`)
