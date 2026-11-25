@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 :root{
   --bg:#f2f5f4; --surface:#ffffff; --surface2:#e9efec; --ink:#15222b; --muted:#5b6d77;
@@ -274,6 +275,24 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
   #printSheet .formula{border:1px solid #999;background:#f4f4f4;break-inside:avoid}
   @page{margin:14mm 12mm}
 }
+/* ===== PDF staging: theory is rendered here exactly as on screen, then captured
+   into a real downloadable PDF in-app (html2canvas + jsPDF) — no print dialog ===== */
+#pdfStage{position:absolute;left:-12000px;top:0;width:720px;background:#fff;color:#141414;padding:30px 34px;line-height:1.85;font-size:15.5px;z-index:-1;color-scheme:light}
+#pdfStage h1{font-size:24px;color:#095e58;border-bottom:3px solid #0b766e;padding-bottom:10px;margin:0 0 14px}
+#pdfStage h2{font-size:19px;color:#095e58;border-bottom:1.5px solid #9fc6c0;padding-bottom:5px;margin:0 0 10px}
+#pdfStage h3{font-size:16px;color:#095e58;margin:16px 0 5px}
+#pdfStage p{margin:0 0 8px;text-align:justify}
+#pdfStage .thlaw{color:#095e58;font-weight:700;margin:14px 0 4px}
+#pdfStage .thsum,#pdfStage .small{color:#141414}
+#pdfStage .formula{background:#f5f5f3;border:1px solid #b9b9b9;color:#141414}
+#pdfStage .katex{color:#141414}
+#pdfStage .thfig,#pdfStage .thimg{border:1px solid #bbb;background:#fff;border-radius:8px}
+#pdfStage .thimg img{max-width:100%}
+#pdfStage table.tt{border-collapse:collapse;width:100%;margin:8px 0}
+#pdfStage table.tt th,#pdfStage table.tt td{border:1px solid #bbb;padding:5px 8px;text-align:start}
+#pdfStage ul{margin:4px 0 10px}
+#pdfToast{position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:200;background:#123c38;color:#fff;padding:10px 18px;border-radius:99px;font-size:.92rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .25s;max-width:92vw;text-align:center}
+#pdfToast.show{opacity:1}
 .kbd{font-variant-numeric:tabular-nums}
 /* ===== theory & formulas ===== */
 .formula{direction:ltr;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 10px;margin:10px 0;font-size:1.12rem;overflow-x:auto}
@@ -414,6 +433,31 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
 .modecard span{display:block}
 .modecard .chip{display:inline-block;margin-top:6px}
 .duelclock{font-weight:700;min-width:46px;text-align:center}
+/* ===== design polish pass — unified modern finish, both themes =====
+   Additive refinements only: consistent press/focus feedback, star-rating
+   widget, form polish, dark-theme primary contrast, calmer motion. */
+::selection{background:var(--teal);color:#fff}
+.btn,.opt,.lvlcard,.modecard,.gatebtn,.switch,.chipbtn{transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .08s ease,box-shadow .15s ease}
+.btn:active,.opt:active,.lvlcard:active,.modecard:active,.gatebtn:active{transform:translateY(1px)}
+.btn.primary{box-shadow:0 3px 10px rgba(11,118,110,.28)}
+html[data-theme="dark"] .btn.primary{color:#052e2a;box-shadow:0 3px 12px rgba(45,212,191,.22)}
+@media (prefers-color-scheme: dark){html:not([data-theme="light"]) .btn.primary{color:#052e2a;box-shadow:0 3px 12px rgba(45,212,191,.22)}}
+.btn:focus-visible,.opt:focus-visible,.lvlcard:focus-visible,.modecard:focus-visible,.gatebtn:focus-visible,.switch:focus-visible,a:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.fld:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(11,118,110,.18)}
+html[data-theme="dark"] .fld:focus{box-shadow:0 0 0 3px rgba(45,212,191,.22)}
+textarea.fld{resize:vertical;line-height:1.65;min-height:64px}
+h1{line-height:1.35}h2{line-height:1.4}h3{line-height:1.45}
+.card>h2:first-child,.card>h3:first-child{margin-top:0}
+canvas.sim{box-shadow:inset 0 0 0 1px rgba(0,0,0,.02)}
+*{-webkit-tap-highlight-color:transparent}
+button{touch-action:manipulation}
+/* star rating widget («قيّمنا») */
+.ratestars{display:flex;justify-content:center;gap:6px;margin:10px 0 2px}
+.ratestars button{background:none;border:none;font-size:2.3rem;line-height:1;padding:4px 6px;cursor:pointer;color:var(--line);transition:color .12s ease,transform .1s ease}
+.ratestars button.on{color:#e9a812;text-shadow:0 2px 8px rgba(233,168,18,.35)}
+.ratestars button:active{transform:scale(1.15)}
+.ratestars button:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:8px}
+@media (prefers-reduced-motion: reduce){.btn,.opt,.lvlcard,.modecard,.gatebtn,.switch,.ratestars button{transition:none}}
 </style>
 </head>
 <body>
@@ -618,9 +662,9 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
 <section class="screen" id="scr-theory">
   <div class="wrap">
     <h1 data-i18n="th_h">النظرية</h1>
-    <p class="small" data-i18n="th_sub">لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو اطبع الكل PDF واقرأه في البيت من غير نت.</p>
+    <p class="small" data-i18n="th_sub">لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.</p>
     <input class="search" id="thSearch" type="search" data-i18n-ph="th_search_ph" placeholder="دوّر في مواضيع النظرية…" aria-label="بحث في النظرية">
-    <button class="btn primary block noprint" id="printAllBtn" style="margin-bottom:12px" data-i18n="th_print">طباعة / تنزيل كل النظرية PDF</button>
+    <button class="btn primary block noprint" id="printAllBtn" style="margin-bottom:12px" data-i18n="th_print">تنزيل كل النظرية PDF</button>
     <div id="theoryList"></div>
   </div>
 </section>
@@ -838,7 +882,7 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
           <b style="font-size:.9rem" data-i18n="exp_topics_lbl">مواضيع النظرية في هذه التجربة:</b>
           <ul class="thtopics" id="expTheory"></ul>
         </div>
-        <button class="btn sm" id="expTheoryBtn" style="margin-top:10px" data-i18n="exp_print_btn">اطبع نظرية هذه التجربة PDF</button>
+        <button class="btn sm" id="expTheoryBtn" style="margin-top:10px" data-i18n="exp_print_btn">نزّل نظرية هذه التجربة PDF</button>
       </div>
       <button class="btn primary block" id="enterLabBtn" style="min-height:56px;font-size:1.08rem" data-i18n="exp_enter">فهمت النظرية — ادخل المعمل التفاعلي</button>
       <p class="small" style="text-align:center;margin-top:8px" data-i18n="exp_note">المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.</p>
@@ -972,11 +1016,42 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
       <p class="small" id="installSteps" style="margin-top:8px" data-i18n="set_install_steps">من متصفح كروم على أندرويد: افتح قائمة المتصفح (⋮) واختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». ومن سفاري على آيفون: زرار المشاركة ثم «إضافة إلى الشاشة الرئيسية».</p>
       <p class="small" id="installDone" style="display:none;margin-top:8px" data-i18n="set_install_done">التطبيق مثبّت على جهازك بالفعل — بيفتح من أيقونته على الشاشة الرئيسية.</p>
     </div>
+    <div class="card" id="rateCard">
+      <div class="row between"><h2 style="margin:0" data-i18n="rate_h">قيّمنا</h2><span class="chip l0" data-i18n="rate_chip">رأيك يطوّر المختبر</span></div>
+      <p class="small" style="margin-top:8px" data-i18n="rate_d">تقييمك وملاحظاتك بتوصل مباشرة وبتساعدنا نطوّر المختبر ونصلّح اللي يضايقك ونضيف اللي ناقصك.</p>
+      <div id="rateForm">
+        <div class="ratestars" id="rateStars">
+          <button type="button" data-star="1" aria-label="1 star">★</button>
+          <button type="button" data-star="2" aria-label="2 stars">★</button>
+          <button type="button" data-star="3" aria-label="3 stars">★</button>
+          <button type="button" data-star="4" aria-label="4 stars">★</button>
+          <button type="button" data-star="5" aria-label="5 stars">★</button>
+        </div>
+        <p class="small" id="rateStarLbl" style="text-align:center;min-height:1.2em"></p>
+        <label class="fldlbl" for="rateOpinion" data-i18n="rate_opinion_lbl">رأيك العام في المختبر</label>
+        <textarea class="fld" id="rateOpinion" rows="3" maxlength="1000" data-i18n-ph="rate_opinion_ph" placeholder="إيه انطباعك العام عن المختبر والتجارب؟"></textarea>
+        <label class="fldlbl" for="rateFix" data-i18n="rate_fix_lbl">ايه اللي نصلّحه؟</label>
+        <textarea class="fld" id="rateFix" rows="3" maxlength="1000" data-i18n-ph="rate_fix_ph" placeholder="أي مشكلة قابلتك أو حاجة ضايقتك في الاستخدام…"></textarea>
+        <label class="fldlbl" for="rateIdeas" data-i18n="rate_ideas_lbl">ايه اللي نعمله أو نضيفه؟</label>
+        <textarea class="fld" id="rateIdeas" rows="3" maxlength="1000" data-i18n-ph="rate_ideas_ph" placeholder="فكرة أو ميزة أو تجربة نفسك تشوفها في المختبر…"></textarea>
+        <div class="autherr" id="rateMsg"></div>
+        <button class="btn primary block" id="rateSend" style="margin-top:10px" data-i18n="rate_send">إرسال التقييم</button>
+      </div>
+      <div id="rateGuest" style="display:none">
+        <p class="small" id="rateGuestTxt" style="margin-top:4px"></p>
+      </div>
+      <div id="rateDone" style="display:none">
+        <p style="margin-top:6px"><b data-i18n="rate_thanks_h">شكرًا لتقييمك! ⭐</b></p>
+        <p class="small" data-i18n="rate_thanks_d">وصلنا رأيك وسنقرأه بعناية — ملاحظاتك هي اللي بتوجّه تطوير المختبر.</p>
+        <button class="btn sm" id="rateAgain" style="margin-top:8px" data-i18n="rate_again">إرسال تقييم آخر</button>
+      </div>
+    </div>
     <div class="card" id="ownerPanel" style="display:none;border-color:var(--amber)">
       <div class="row between"><h2 style="margin:0" data-i18n="ow_h">لوحة تحكم المالك</h2><span class="chip l1" data-i18n="ow_chip">للمالك فقط</span></div>
       <p class="small" style="margin-top:6px" data-i18n="ow_d">من هنا تدير مختبرك بنفسك: إحصائيات فورية، حسابات الجلسة، إظهار أو إخفاء أي تجربة عن الطلاب، إعلان يظهر في أعلى الرئيسية للجميع، وتصفير تقدم الجلسة.</p>
       <div class="statgrid" id="owStats" style="margin-top:8px"></div>
       <div id="owOnline"></div>
+      <p class="small" id="owCfgMsg" style="min-height:1em"></p>
       <h3 style="margin-top:14px" data-i18n="ow_ann_h">إعلان الرئيسية</h3>
       <p class="small" data-i18n="ow_ann_d">اكتب إعلانًا يظهر في أعلى الصفحة الرئيسية لكل المستخدمين. اتركه فارغًا واحفظ لإخفائه.</p>
       <input class="fld" id="owAnnInput" type="text" data-i18n-ph="ow_ann_ph" placeholder="مثال: تحدي الأسبوع بدأ — جرّب تجربة اليوم!">
@@ -991,6 +1066,9 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
       <h3 style="margin-top:14px">طلبات التجارب</h3>
       <p class="small">طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».</p>
       <div id="owReqList"></div>
+      <h3 style="margin-top:14px" data-i18n="ow_fb_h">تقييمات وآراء المستخدمين</h3>
+      <p class="small" data-i18n="ow_fb_d">كل التقييمات الواردة من قسم «قيّمنا» في الإعدادات — الأحدث أولًا.</p>
+      <div id="owFbList"></div>
       <h3 style="margin-top:14px" data-i18n="ow_exp_h">إظهار / إخفاء التجارب عن الطلاب</h3>
       <p class="small" data-i18n="ow_exp_d">التجربة المخفية تختفي فورًا من قوائم التجارب والنظرية عند الطلاب، وتبقى ظاهرة لك هنا وفي قوائمك مع علامة «مخفية».</p>
       <div id="owExpList"></div>
@@ -1107,7 +1185,7 @@ const TYPE_EN={"units": "Visual estimation + units", "heat": "Interactive heat s
 const EN_T={"1": "Units & Dimensions: The Visual Estimation Lab", "2": "The Concept of Heat and Heat Transfer", "3": "Specific Heat Capacity", "4": "Thermal Conduction", "5": "Thermal Expansion", "6": "Density: Mass and Volume", "7": "Surface Tension", "8": "Viscosity", "9": "Pressure in Liquids", "10": "Boyle's Law for Gases", "11": "Ohm's Law", "12": "Series and Parallel Connections", "13": "The Magnetic Field Around a Wire", "14": "The Electromagnet", "15": "Electromagnetic Induction", "16": "Charging and Discharging a Capacitor", "17": "Kirchhoff's Laws (Simplified)", "18": "Electric Field Lines", "19": "Electric Power", "20": "The Simple Electric Motor", "21": "The Simple Pendulum", "22": "Free Fall", "23": "Friction", "24": "Buoyancy: Archimedes' Principle", "25": "Waves and Sound", "26": "Alternating Current and Reactance", "27": "Resonance in RLC Circuits", "28": "The Transformer", "29": "The Diode and Semiconductors", "30": "The Integrated Digital Lab", "31": "Thin Films: Light Interference", "32": "Measuring Film Thickness from Interference Colours", "33": "The Photoelectric Effect", "34": "The Electron Charge-to-Mass Ratio e/m", "35": "The Franck–Hertz Experiment", "36": "The Rutherford Experiment: The Thin Gold Foil", "37": "The Bohr Model and Line Spectra", "38": "The Transistor as Switch and Amplifier", "39": "Sensors and the Light-Dependent Resistor (LDR)", "40": "Electromagnetic Waves and Polarisation", "41": "The Geiger Counter: Counting Radiation", "42": "Half-Life and Radioactive Decay", "43": "Nuclear Binding Energy", "44": "Alpha, Beta and Gamma Radiation and Penetration", "45": "Diffraction of Light: The Double Slit", "46": "The Diffraction Spectrometer and Wavelength Measurement", "47": "The Laser and Optical Coherence", "48": "Optical Fibres and Total Internal Reflection", "49": "The Earth's Magnetic Field", "50": "The Galvanometer: Measuring Tiny Currents", "51": "X-Ray Diffraction (XRD)", "52": "Radiocarbon Dating", "53": "Single-Photon Self-Interference", "54": "Electron Diffraction", "55": "The Compton Effect", "56": "Superconductivity and the Meissner Effect", "57": "The Scanning Tunnelling Microscope (STM)", "58": "Nanotechnology: Properties at the Nanoscale", "59": "Particle Accelerators", "60": "Quantum Entanglement"};
 const EN_G={"1": "A five-round estimation lab: judge length, mass, volume, temperature and time by eye — with no measuring instrument shown before you predict — plus conversion rounds between the SI, CGS and imperial systems.", "2": "Watch heat travel through a solid body and follow the temperature distribution with your eyes before it is measured.", "3": "Compare two materials heated with the same energy and predict which one ends up hotter.", "4": "Compare the speed of heat conduction in two different metals and predict which conducts faster.", "5": "Predict how much a heated metal rod expands — its original end is marked, and the expansion appears before you with no ruler.", "6": "Predict the density of a mystery cube from its appearance and how deep it will sink in water.", "7": "Predict the largest number of water drops that can sit on a coin before it overflows.", "8": "Watch a small sphere sink in a viscous liquid and predict where it will be after a given time.", "9": "Predict how far water will jet from a hole in a tank, based on the hole's depth.", "10": "Compress a trapped gas to half its volume and predict its new pressure.", "11": "Predict the current in a circuit before the ammeter shows you the number.", "12": "Compare the brightness of two lamps in two different connections and predict the total current.", "13": "See a compass needle beside a current-carrying wire and predict the direction and size of its deflection.", "14": "Predict how many paper clips an electromagnet can lift after its turns are increased.", "15": "Move a magnet inside a coil and predict when the galvanometer deflects most.", "16": "Follow a capacitor charging and predict its voltage after a given time.", "17": "A current splits into two branches — predict the current in the second branch.", "18": "Predict the shape of the field lines between two charges and the position of the zero-field point.", "19": "Compare the consumption of two appliances and predict which costs more on the electricity bill.", "20": "Predict the rotation direction of a coil in a magnetic field when the current reverses.", "21": "Predict the period of a pendulum from the visible length of its string.", "22": "Drop a ball from a visible height and predict when it will reach the ground.", "23": "Predict which surface will stop a sliding box fastest.", "24": "Predict how much of its height a piece of wood will sink below the surface as it floats on water and settles.", "25": "See a vibrating string and predict the frequency of its note from its visible length and tension.", "26": "Compare the reactance of a coil and a capacitor at two frequencies and predict the circuit's behaviour.", "27": "Predict the resonance frequency at which the current is maximum.", "28": "Predict the output voltage of a transformer from its turns ratio.", "29": "Predict the behaviour of a diode under forward and reverse bias.", "30": "Build circuits from AND, OR, NOT, XOR and NAND gates, wire inputs to outputs, and watch the truth table build live — up to a complete application: the half adder.", "31": "See the colours of a soap film and predict the film thickness from its colour.", "32": "From the order of colours on an oil patch, predict the interference order and the film thickness.", "33": "Shine light of different frequencies on a metal and predict: will electrons be emitted, and with what energy?", "34": "Watch an electron beam bend in a magnetic field and predict the radius of its path.", "35": "Follow the current–voltage curve and predict the position of the first drop in current.", "36": "Fire alpha particles at a very thin gold foil and predict the fraction deflected through large angles.", "37": "See the hydrogen emission spectrum and predict the colour of a specific line.", "38": "Predict the collector current from a small base current and the gain factor.", "39": "Predict the resistance of an LDR under medium lighting.", "40": "Rotate a polarising filter in front of polarised light and predict the transmitted intensity.", "41": "Hear and see Geiger counter pulses beside a radioactive sample and predict the count in 10 seconds.", "42": "Follow a sample decaying and predict the amount remaining after a given time.", "43": "Compare the stability of two nuclei and predict which is more stable.", "44": "Predict which radiation will pass through different barriers.", "45": "See a double-slit interference pattern and predict the positions of the bright fringes.", "46": "From the diffraction angle of a colour, predict its wavelength.", "47": "Compare a laser beam with an ordinary lamp and predict how their spreading differs.", "48": "Predict the fate of a ray inside an optical fibre at different angles.", "49": "Predict the dip angle of a free magnetic needle at a place on Earth.", "50": "Predict the deflection of a sensitive galvanometer needle for a very small current.", "51": "From an X-ray diffraction pattern of a crystal, predict the Bragg angle of the first order.", "52": "Predict the age of an ancient wooden artefact from its remaining carbon-14 fraction.", "53": "Photons are sent one by one and accumulate until the interference pattern appears — predict the shape of the final pattern.", "54": "See electron diffraction rings from a crystal and predict the de Broglie wavelength.", "55": "An X-ray photon collides with an electron — predict the size of the wavelength shift.", "56": "See a magnet float above a cooled superconductor and predict the field behaviour inside it.", "57": "Predict the height of a single atom on a surface from the tunnelling current.", "58": "Compare the behaviour of gold nanoparticles with ordinary gold and predict their colour.", "59": "Predict the path radius of a very fast proton in a ring accelerator magnet.", "60": "Measure one photon of an entangled pair and predict the measurement result of its distant twin."};
 const EN_D={"1": "Closest estimate across different quantities (length/mass/volume/temperature/time) and the correct conversion between systems.", "2": "Position of the heat front inside the rod after a given time.", "3": "Choosing the material that ends up hotter after heating.", "4": "Ranking materials by how fast heat reaches the far end.", "5": "Position of the rod's end after heating — visual estimation with no ruler.", "6": "The sinking depth of the cube in water.", "7": "Choosing the closest number of water drops on the coin.", "8": "Position of the sphere after a given time inside the tube.", "9": "The distance reached by the water jet from the hole.", "10": "Choosing the new pressure after compressing the volume.", "11": "The ammeter reading before it is revealed.", "12": "The ammeter reading in the parallel connection.", "13": "Direction and size of the compass needle's deflection.", "14": "Choosing the closest number of clips after doubling the turns.", "15": "Choosing the case with the largest induced current.", "16": "The capacitor voltage after a known charging time (relative to the RC time constant).", "17": "Choosing the current in the second branch.", "18": "Position of the zero-field point on the line between the charges.", "19": "Choosing the appliance with the higher running cost.", "20": "The rotation direction after reversing the current.", "21": "The period of one full oscillation of the pendulum.", "22": "The time for the ball to reach the ground.", "23": "Choosing the surface that stops the box fastest.", "24": "The submerged fraction of the floating wood piece's height.", "25": "The fundamental frequency of the string.", "26": "Choosing how reactance behaves with frequency.", "27": "The resonance frequency on the frequency axis.", "28": "Choosing the correct output voltage.", "29": "Choosing the case in which current flows.", "30": "Predicting the circuit output for given inputs before the result is revealed.", "31": "Position of the first colour band on the wavelength strip.", "32": "Position of the second-order interference colour.", "33": "Whether emission occurs, and the maximum electron energy.", "34": "The radius of the electron beam's circular path.", "35": "Choosing the voltage of the first current drop.", "36": "The fraction of particles deflected by more than 90 degrees.", "37": "Choosing the colour of the spectral line.", "38": "Choosing the correct collector current.", "39": "The LDR resistance under the shown lighting.", "40": "Choosing the light intensity at 45 degrees.", "41": "The number of counts recorded in the counting time.", "42": "The fraction of the sample remaining after the shown time.", "43": "Choosing the most stable nucleus.", "44": "Choosing the radiation able to cross the barrier.", "45": "Position of the second-order bright fringe.", "46": "Position of the spectral line on the wavelength scale.", "47": "Choosing the property that distinguishes the laser.", "48": "Choosing the fate of the ray at a large angle.", "49": "The needle's dip angle from the horizontal.", "50": "The needle deflection as a percentage of full scale.", "51": "The Bragg angle of the first diffraction peak.", "52": "The sample's age from its remaining carbon fraction.", "53": "Position of the first side peak in the accumulated interference pattern.", "54": "Position of the first diffraction ring.", "55": "The wavelength shift after scattering at a known angle.", "56": "Choosing the magnetic field behaviour inside the superconductor.", "57": "The height of the atomic bump on the scan line.", "58": "Choosing the colour of the gold nanoparticle solution.", "59": "The radius of curvature of the proton's path.", "60": "Choosing the measurement result of the twin photon."};
-const I18N={"nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو اطبع الكل PDF واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or print everything as a PDF and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["طباعة / تنزيل كل النظرية PDF", "Print / download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.", "<b>5 rounds</b> from the level you choose — each round is a scene with no numbers or data: blind estimation by eye only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>20 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["سلسلة الأيام المتتالية (Streak): <b>25 XP</b> كل 7 أيام لعب متتالية.", "Daily streak: <b>25 XP</b> for every 7 consecutive days of play."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["اطبع نظرية هذه التجربة PDF", "Print this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
+const I18N={"nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد من غير أي أرقام أو بيانات: تقدير أعمى بعينك بس.", "<b>5 rounds</b> from the level you choose — each round is a scene with no numbers or data: blind estimation by eye only."], "duel_li2": ["في كل جولة: اسحب علامة توقعك لمكانها وأكّد قبل ما المؤقّت يخلص — <b>20 ثانية</b> للجولة الواحدة، وبعدها التوقع بيتثبّت تلقائيًا.", "In each round: drag your prediction marker into place and confirm before the timer ends — <b>20 seconds</b> per round, then the prediction locks automatically."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["سلسلة الأيام المتتالية (Streak): <b>25 XP</b> كل 7 أيام لعب متتالية.", "Daily streak: <b>25 XP</b> for every 7 consecutive days of play."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
 </script>
 
 <script>
@@ -1249,7 +1327,7 @@ renderExps();
 function theoryHTML(list){
   return list.map(e=>`<details class="th"><summary><span>${T("تجربة ","Experiment ")}${AR(e.n)}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t}</span><span class="chip l${e.lvl}">${LVL[e.lvl]}</span></summary>
     <div class="body"><p class="small">${e.goal}</p><b>المواضيع:</b><ul>${e.theory.map(t=>`<li>${t}</li>`).join("")}</ul>
-    <button class="btn sm" data-print="${e.n}">${T("طباعة / تنزيل PDF","Print / download PDF")}</button></div></details>`).join("");
+    <button class="btn sm" data-print="${e.n}">${T("تنزيل PDF","Download PDF")}</button></div></details>`).join("");
 }
 /* Same build-once pattern as the experiment list: details are built once per
    (language, hidden-set); searching only toggles their visibility in place. */
@@ -4127,7 +4205,7 @@ Object.assign(TOPICS_EN,{"المجال بين شحنتين موجبتين مخت
 theoryHTML=function(list){
   return list.map(e=>`<details class="th"><summary><span>${T("تجربة ","Experiment ")}${AR(e.n)}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t}</span><span class="chip l${e.lvl}">${LVL[e.lvl]}</span></summary>
     <div class="body">${theoryBlock(e,false)}<b>${T("مواضيع النظرية:","Theory topics:")}</b><ul>${e.theory.map(t=>`<li>${topicL(t)}</li>`).join("")}</ul>
-    <button class="btn sm" data-print="${e.n}">${T("طباعة / تنزيل PDF","Print / download PDF")}</button></div></details>`).join("");
+    <button class="btn sm" data-print="${e.n}">${T("تنزيل PDF","Download PDF")}</button></div></details>`).join("");
 };
 renderTheory=function(q){
   const list=CATALOG.filter(e=>!q||e.t.includes(q)||e.theory.some(t=>t.includes(q))||(THEORY[e.n]&&(THEORY[e.n].s.includes(q)||THEORY[e.n].fp.includes(q)))||(EN_T[e.n]||"").toLowerCase().includes((q||"").toLowerCase()));
@@ -4795,22 +4873,12 @@ const CHOICE_EXTRA_EN={
 </script>
 <script>
 "use strict";
-/* ================= LOGIN SCREEN WIRING (prepared entry — online phase plugs in here) =================
-   Structural preparation only: entering the lab sets the in-session display name through
-   CURRENT_USER (the single source of truth the greeting already reads) and opens the home
-   screen. No account is created, nothing is sent anywhere, nothing is stored — when the
-   online phase launches, real email/phone registration replaces the body of go() only. */
+/* ================= SETTINGS → LOGIN SCREEN LINK =================
+   The sign-in screen itself is wired by wireAuth() + the online layer; the only
+   job left here is the Settings button that returns to it. (An earlier prepared
+   entry pointed at loginName/loginEnter/loginGuest fields that the official
+   login screen never had — removed so nothing references missing elements.) */
 (function(){
-  function go(asGuest){
-    if(!asGuest){
-      const nm=(document.getElementById("loginName").value||"").trim();
-      if(nm){CURRENT_USER.name=nm;if(/^[\x00-\x7F\s.'-]+$/.test(nm))CURRENT_USER.nameEn=nm;setGreeting();}
-    }
-    showScreen("scr-home");
-  }
-  const en=document.getElementById("loginEnter"),gu=document.getElementById("loginGuest");
-  if(en)en.onclick=()=>go(false);
-  if(gu)gu.onclick=()=>go(true);
   const ob=document.getElementById("openLoginBtn");
   if(ob)ob.onclick=()=>showScreen("scr-login");
 })();
@@ -6392,7 +6460,8 @@ function fillOwnerPanel(){
     `<div class="owrow"><span class="grow">${T("وضع «ضد لاعب حقيقي أونلاين»","\u201CVs real player online\u201D mode")}</span><span class="chip l1">${T("قيد التجهيز","In preparation")}</span></div>`+
     `<div class="owrow"><span class="grow">${T("ماتشات المواجهة المكتملة في هذه الجلسة","Duel matches completed this session")}</span><b>${AR(ds.played)}</b></div>`+
     `<div class="owrow"><span class="grow">${T("انتصاراتك في ماتشات هذه الجلسة","Your match wins this session")}</span><b>${AR(ds.won)}</b></div>`+
-    `<div class="owrow"><span class="grow">${T("إجمالي انتصارات المواجهة على حسابك","Total duel wins on your account")}</span><b>${AR(S.duelWins||0)}</b></div>`;}
+    `<div class="owrow"><span class="grow">${T("إجمالي انتصارات المواجهة على حسابك","Total duel wins on your account")}</span><b>${AR(S.duelWins||0)}</b></div>`+
+    `<div class="owrow"><span class="grow">${T("قسم المواجهات 1v1 ظاهر لكل المستخدمين والزوار","The 1v1 duels section is visible to all users and guests")}</span><button class="btn sm" data-dueltgl>${(window.__siteCfg&&window.__siteCfg.duels===false)?T("تفعيل القسم","Enable the section"):T("إيقاف القسم","Disable the section")}</button><span class="chip ${(window.__siteCfg&&window.__siteCfg.duels===false)?"l2":"l0"}">${(window.__siteCfg&&window.__siteCfg.duels===false)?T("موقوف للكل","Off for everyone"):T("مفعّل للكل","On for everyone")}</span></div>`;}
   const al=document.getElementById("owAccList");
   if(al){al.innerHTML=accs.length?accs.map(a=>{const isT=a.role==="teacher";const roleLbl=a.role==="owner"?T("المالك","Owner"):isT?T("معلم","Teacher"):T("مستخدم","User");
     return `<div class="owrow"><span class="grow"><b>${escHTML(a.name||"")}</b> <span class="small" dir="ltr">${escHTML(a.email||"")}</span></span><span class="chip ${a.role==="owner"?"l1":"l0"}">${roleLbl}</span><span class="small">${AR((a.progress&&a.progress.xp)||0)} XP</span>${a.role==="owner"?"":`<button class="btn sm" data-roletgl="${escHTML(a.email||"")}">${isT?T("إرجاعه طالبًا","Back to student"):T("اجعله معلمًا","Make teacher")}</button>`}</div>`;}).join(""):`<p class="small">${T("لا توجد حسابات مسجّلة بعد في هذه الجلسة.","No accounts registered yet in this session.")}</p>`;
@@ -6413,11 +6482,13 @@ function wireOwnerPanel(){
     ADMIN.announcement=inp.value.trim();
     document.getElementById("owAnnMsg").textContent=ADMIN.announcement?T("تم نشر الإعلان — يظهر الآن في أعلى الرئيسية للجميع.","Announcement published — it now appears at the top of Home for everyone."):T("تم إخفاء الإعلان.","Announcement hidden.");
     renderOwnerBits();
+    if(typeof sbSaveSiteConfig==="function")sbSaveSiteConfig("announcement",ADMIN.announcement);
   });
   if(clear)clear.addEventListener("click",()=>{
     ADMIN.announcement="";inp.value="";
     document.getElementById("owAnnMsg").textContent=T("تم مسح الإعلان.","Announcement cleared.");
     renderOwnerBits();
+    if(typeof sbSaveSiteConfig==="function")sbSaveSiteConfig("announcement","");
   });
   const xl=document.getElementById("owExpList");
   if(xl)xl.addEventListener("click",e=>{
@@ -6427,6 +6498,7 @@ function wireOwnerPanel(){
     try{renderExps();}catch(err){}
     try{const q=document.getElementById("thSearch");renderTheory(q?q.value.trim():"");}catch(err){}
     fillOwnerPanel();
+    if(typeof sbSaveSiteConfig==="function")sbSaveSiteConfig("hidden_exps",JSON.stringify(Array.from(ADMIN.hidden)));
   });
   const rb=document.getElementById("owResetBtn");
   if(rb)rb.addEventListener("click",()=>{
@@ -7663,6 +7735,286 @@ if(SB){
     }
   }catch(e){}
 }
+</script>
+<script>
+"use strict";
+/* ================= THEORY PDF — REAL in-app generation (html2canvas + jsPDF) =================
+   Replaces the old print-sheet flow entirely: NO print dialog, NO window.print.
+   Pressing any theory PDF button now stages the theory off-screen EXACTLY as it
+   is rendered in the app — the same theoryBlock HTML the screens show, with the
+   laws typeset by the app's own KaTeX engine, the SVG diagrams and the theory
+   photos in place, Arabic RTL or English LTR to match the current language —
+   captures it experiment by experiment, and writes a paginated A4 PDF that
+   downloads directly. If the generator library could not be loaded (offline),
+   the student gets an honest message instead of a dead button. */
+(function(){
+  let busy=false,toastTimer=null;
+  function toast(msg,sticky){
+    let t=document.getElementById("pdfToast");
+    if(!t){t=document.createElement("div");t.id="pdfToast";document.body.appendChild(t);}
+    t.textContent=msg;t.classList.add("show");
+    if(toastTimer)clearTimeout(toastTimer);
+    if(!sticky)toastTimer=setTimeout(()=>{t.classList.remove("show");},3600);
+  }
+  function stageEl(){
+    let st=document.getElementById("pdfStage");
+    if(!st){st=document.createElement("div");st.id="pdfStage";document.body.appendChild(st);}
+    return st;
+  }
+  function sectionHTML(e){
+    return `<section class="pdf-exp"><h2>${T("تجربة ","Experiment ")}${e.n}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t} (${LVL[e.lvl]} — ${LANG==="en"?(LAB_EN[e.lab]||e.lab):e.lab})</h2><p><b>${T("الهدف:","Goal:")}</b> ${LANG==="en"?(EN_G[e.n]||e.goal):e.goal}</p>${theoryBlock(e,false)}<p><b>${T("مواضيع النظرية:","Theory topics:")}</b> ${e.theory.map(topicL).join(LANG==="en"?", ":"، ")}</p></section>`;
+  }
+  async function generate(list){
+    if(busy){toast(T("جارٍ تجهيز ملف PDF آخر — انتظر لحظات.","Another PDF is still being prepared — please wait a moment."),true);return;}
+    if(!window.html2canvas||!window.jspdf||!window.jspdf.jsPDF){
+      toast(T("تعذّرت توليد ملف PDF الآن — مكتبة التوليد لم تُحمَّل. تحقّق من اتصالك بالإنترنت وحاول مرة أخرى.","The PDF could not be generated right now — the generator library did not load. Check your internet connection and try again."));
+      return;
+    }
+    busy=true;
+    const btns=Array.from(document.querySelectorAll("[data-print],#printAllBtn,#expTheoryBtn"));
+    btns.forEach(b=>{b.disabled=true;b.style.opacity=.55;});
+    try{
+      toast(T("جارٍ تجهيز ملف PDF…","Preparing your PDF…"),true);
+      const st=stageEl();
+      st.setAttribute("dir",LANG==="en"?"ltr":"rtl");
+      const titleSec=list.length>1?`<section class="pdf-exp"><h1>${T("مختبر الحدس الفيزيائي — النظرية والقوانين","Physics Intuition Lab — Theory & Laws")}</h1><p>${T("النظرية الكاملة لكل التجارب: الفكرة، واشتقاق القانون، وصيغته الرياضية، ورموزه وحدوده، ومثال محلول، وربط كل قانون بتجربته.","The complete theory for every experiment: the idea, the derivation of the law, its mathematical form, its symbols and limits, a worked example, and how each law links to its experiment.")}</p></section>`:"";
+      st.innerHTML=titleSec+list.map(sectionHTML).join("");
+      try{typesetMath(st);}catch(e){}
+      const imgs=Array.from(st.querySelectorAll("img"));
+      if(imgs.length){
+        await Promise.race([
+          Promise.all(imgs.map(im=>im.complete?Promise.resolve():new Promise(r=>{im.addEventListener("load",r,{once:true});im.addEventListener("error",r,{once:true});}))),
+          new Promise(r=>setTimeout(r,5000))
+        ]);
+      }
+      await new Promise(r=>setTimeout(r,150));
+      const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true});
+      const M=12,PW=210-2*M,PH=297-2*M;
+      const secs=Array.from(st.querySelectorAll(".pdf-exp"));
+      let first=true;
+      for(let i=0;i<secs.length;i++){
+        if(secs.length>1)toast(T("جارٍ تجهيز ملف PDF… ","Preparing your PDF… ")+(i+1)+" / "+secs.length,true);
+        const canvas=await html2canvas(secs[i],{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
+        const pagePx=Math.max(200,Math.floor(canvas.width*PH/PW));
+        let y=0;
+        while(y<canvas.height){
+          const h=Math.min(pagePx,canvas.height-y);
+          const c2=document.createElement("canvas");c2.width=canvas.width;c2.height=h;
+          const cx=c2.getContext("2d");cx.fillStyle="#ffffff";cx.fillRect(0,0,c2.width,h);cx.drawImage(canvas,0,-y);
+          if(!first)doc.addPage();first=false;
+          doc.addImage(c2.toDataURL("image/jpeg",0.96),"JPEG",M,M,PW,h*PW/canvas.width);
+          y+=h;
+        }
+        secs[i].innerHTML="";
+      }
+      doc.save(list.length===1?("intuition-lab-theory-experiment-"+list[0].n+".pdf"):"intuition-lab-theory-all.pdf");
+      toast(T("تم تنزيل ملف PDF ✓ — هتلاقيه في تنزيلات جهازك.","Your PDF has been downloaded ✓ — you will find it in your device's downloads."));
+    }catch(err){
+      if(window.console)console.warn("PDF generation failed:",err);
+      toast(T("حدثت مشكلة أثناء توليد ملف PDF — حاول مرة أخرى، ولو تكرّرت جرّب تنزيل تجربة واحدة بدل الكل.","Something went wrong while generating the PDF — please try again; if it repeats, try downloading a single experiment instead of all."));
+    }finally{
+      busy=false;
+      btns.forEach(b=>{b.disabled=false;b.style.opacity=1;});
+      const st=document.getElementById("pdfStage");if(st)st.innerHTML="";
+    }
+  }
+  openPrint=function(list){generate(list);};
+})();
+</script>
+<script>
+"use strict";
+/* ================= RATE US («قيّمنا») — Settings feedback → Supabase `feedback` =================
+   A 5-star rating + three free-text fields (general opinion / what to fix /
+   what to add) in Settings. For server accounts the submission is inserted
+   into the Supabase `feedback` table (user_id, rating, opinion,
+   fix_suggestions, ideas, created_at). Guests — and anyone not on a live
+   server session — see a gentle notice that rating needs a registered
+   account, and nothing is faked or stored locally. The owner dashboard
+   lists every submitted rating (stars, texts, user name, date), newest
+   first, read from the same table. */
+Object.assign(I18N,{
+rate_h:["قيّمنا","Rate us"],
+rate_chip:["رأيك يطوّر المختبر","Your feedback improves the lab"],
+rate_d:["تقييمك وملاحظاتك بتوصل مباشرة وبتساعدنا نطوّر المختبر ونصلّح اللي يضايقك ونضيف اللي ناقصك.","Your rating and notes reach us directly and help us improve the lab, fix what bothers you, and add what you miss."],
+rate_opinion_lbl:["رأيك العام في المختبر","Your general opinion of the lab"],
+rate_opinion_ph:["إيه انطباعك العام عن المختبر والتجارب؟","What is your general impression of the lab and the experiments?"],
+rate_fix_lbl:["ايه اللي نصلّحه؟","What should we fix?"],
+rate_fix_ph:["أي مشكلة قابلتك أو حاجة ضايقتك في الاستخدام…","Any problem you met, or anything that annoyed you while using the lab…"],
+rate_ideas_lbl:["ايه اللي نعمله أو نضيفه؟","What should we build or add?"],
+rate_ideas_ph:["فكرة أو ميزة أو تجربة نفسك تشوفها في المختبر…","An idea, a feature, or an experiment you would love to see in the lab…"],
+rate_send:["إرسال التقييم","Send rating"],
+rate_thanks_h:["شكرًا لتقييمك! ⭐","Thank you for your rating! ⭐"],
+rate_thanks_d:["وصلنا رأيك وسنقرأه بعناية — ملاحظاتك هي اللي بتوجّه تطوير المختبر.","We received your feedback and will read it carefully — your notes are what guides the lab's development."],
+rate_again:["إرسال تقييم آخر","Send another rating"],
+ow_fb_h:["تقييمات وآراء المستخدمين","User ratings & feedback"],
+ow_fb_d:["كل التقييمات الواردة من قسم «قيّمنا» في الإعدادات — الأحدث أولًا.","All ratings submitted from the “Rate us” section in Settings — newest first."]});
+if(LANG==="en")applyLang("en");
+let RATE_VAL=0,RATE_SENT=false;
+const RATE_WORDS=[["",""],["ضعيف","Poor"],["مقبول","Fair"],["جيد","Good"],["جيد جدًا","Very good"],["ممتاز","Excellent"]];
+function rateMsg(txt,ok){const el=document.getElementById("rateMsg");if(!el)return;el.textContent=txt||"";el.className=(ok?"authok":"autherr")+(txt?" show":"");}
+function paintStars(){
+  const box=document.getElementById("rateStars");if(!box)return;
+  box.querySelectorAll("[data-star]").forEach(b=>{b.classList.toggle("on",+b.dataset.star<=RATE_VAL);});
+  const lbl=document.getElementById("rateStarLbl");
+  if(lbl)lbl.textContent=RATE_VAL?(AR(RATE_VAL)+" / 5 — "+RATE_WORDS[RATE_VAL][LANG==="en"?1:0]):T("اضغط على النجوم لتقييم المختبر","Tap the stars to rate the lab");
+}
+function renderRateUs(){
+  const form=document.getElementById("rateForm"),guest=document.getElementById("rateGuest"),done=document.getElementById("rateDone");
+  if(!form||!guest||!done)return;
+  const server=(typeof sbServerSession==="function")&&sbServerSession();
+  if(RATE_SENT){form.style.display="none";guest.style.display="none";done.style.display="block";return;}
+  done.style.display="none";
+  if(server){form.style.display="block";guest.style.display="none";paintStars();}
+  else{
+    form.style.display="none";guest.style.display="block";
+    const gt=document.getElementById("rateGuestTxt");
+    if(gt)gt.textContent=(typeof SESSION!=="undefined"&&SESSION&&SESSION.mode==="guest")
+      ?T("أنت تتصفح كزائر دلوقتي — والتقييم متاح للحسابات المسجّلة بس، عشان رأيك يتربط بحسابك ويوصلنا باسمك. أنشئ حسابًا أو سجّل الدخول من شاشة الدخول وارجع قيّمنا.","You are browsing as a guest right now — rating is available to registered accounts only, so your feedback is tied to your account and reaches us under your name. Create an account or sign in from the sign-in screen, then come back and rate us.")
+      :T("التقييم بيتبعت من حسابك المسجّل على السيرفر — سجّل الدخول بحسابك الأونلاين (أو ارجع لما يكون الاتصال متاحًا) وارجع قيّمنا.","Ratings are sent from your registered server account — sign in with your online account (or come back when the connection is available) and rate us.");
+  }
+}
+(function(){
+  const box=document.getElementById("rateStars");
+  if(box)box.querySelectorAll("[data-star]").forEach(b=>{b.addEventListener("click",()=>{RATE_VAL=+b.dataset.star;paintStars();rateMsg("");});});
+  const again=document.getElementById("rateAgain");
+  if(again)again.addEventListener("click",()=>{RATE_SENT=false;RATE_VAL=0;["rateOpinion","rateFix","rateIdeas"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});renderRateUs();});
+  const send=document.getElementById("rateSend");
+  if(send)send.addEventListener("click",async()=>{
+    if(!((typeof sbServerSession==="function")&&sbServerSession())){renderRateUs();return;}
+    if(!RATE_VAL){rateMsg(T("اختر عدد النجوم أولًا — اضغط على النجوم فوق.","Choose your star rating first — tap the stars above."));return;}
+    const val=id=>{const el=document.getElementById(id);return el?el.value.trim().slice(0,1000):"";};
+    send.disabled=true;send.style.opacity=.6;
+    try{
+      const r=await sbCall(SB.from("feedback").insert({user_id:SESSION.uid,rating:RATE_VAL,opinion:val("rateOpinion"),fix_suggestions:val("rateFix"),ideas:val("rateIdeas")}));
+      if(r&&r.error)throw r.error;
+      RATE_SENT=true;renderRateUs();
+    }catch(e){rateMsg((typeof sbErrText==="function")?sbErrText(e):T("حدث خطأ أثناء الإرسال — حاول مرة أخرى.","An error occurred while sending — please try again."));}
+    finally{send.disabled=false;send.style.opacity=1;}
+  });
+})();
+/* ---------- owner dashboard: every submitted rating, newest first ---------- */
+let OWFB_AT=0;
+async function loadOwnerFeedback(force){
+  const box=document.getElementById("owFbList");if(!box)return;
+  if(!((typeof isOwnerSession==="function")&&isOwnerSession()))return;
+  if(!((typeof sbServerSession==="function")&&sbServerSession())){
+    box.innerHTML=`<p class="small">${T("التقييمات محفوظة على السيرفر — بتظهر هنا لما تكون داخل بحساب المالك الأونلاين.","Ratings are stored on the server — they appear here when you are signed in with the online owner account.")}</p>`;
+    return;
+  }
+  if(!force&&Date.now()-OWFB_AT<30000&&box.dataset.done)return;
+  box.innerHTML=`<p class="small">${T("جارٍ تحميل التقييمات…","Loading ratings…")}</p>`;
+  try{
+    const r=await sbCall(SB.from("feedback").select("*").order("created_at",{ascending:false}).limit(100));
+    if(r&&r.error)throw r.error;
+    const rows=(r&&r.data)||[];
+    OWFB_AT=Date.now();box.dataset.done="1";
+    if(!rows.length){box.innerHTML=`<p class="small">${T("لا توجد تقييمات واردة بعد.","No ratings submitted yet.")}</p>`;return;}
+    const nameOf=uid=>{
+      const p=(typeof SB_PROFILES_BY_ID!=="undefined")?SB_PROFILES_BY_ID[uid]:null;
+      if(p)return (p.nickname||"").trim()||(p.display_name||"").trim()||(p.email||"");
+      const acc=Object.values(ACCOUNTS||{}).find(a=>a._uid===uid);
+      return acc?(acc.name||acc.email||""):"";
+    };
+    const stars=n=>`<span style="color:#d9a521;font-size:1.05rem;letter-spacing:2px">${"★".repeat(Math.max(0,Math.min(5,n||0)))}${"☆".repeat(Math.max(0,5-Math.max(0,Math.min(5,n||0))))}</span>`;
+    const when=ts=>{try{return new Date(ts).toLocaleString(LANG==="en"?"en-GB":"ar-EG",{dateStyle:"medium",timeStyle:"short"});}catch(e){return "";}};
+    const block=(lbl,txt)=>txt?`<div style="margin-top:4px"><span class="small" style="font-weight:700">${lbl}</span><div>${escHTML(txt)}</div></div>`:"";
+    box.innerHTML=rows.map(rw=>`<div class="owrow" style="align-items:flex-start"><span class="grow">${stars(rw.rating)} <b>${escHTML(nameOf(rw.user_id)||T("مستخدم","User"))}</b> <span class="small">${escHTML(when(rw.created_at))}</span>${block(T("الرأي العام:","General opinion:"),rw.opinion)}${block(T("نصلّح إيه:","To fix:"),rw.fix_suggestions)}${block(T("نضيف إيه:","To add:"),rw.ideas)}</span></div>`).join("");
+  }catch(e){
+    box.innerHTML=`<p class="small">${T("تعذّر تحميل التقييمات من السيرفر دلوقتي — حاول مرة أخرى بعد لحظات.","Could not load ratings from the server right now — try again in a moment.")}</p>`;
+  }
+}
+const _ssRate=showScreen;
+showScreen=function(id){
+  _ssRate(id);
+  if(id==="scr-settings"){try{renderRateUs();}catch(e){}try{loadOwnerFeedback(false);}catch(e){}}
+};
+try{renderRateUs();}catch(e){}
+</script>
+<script>
+"use strict";
+/* ================= SITE CONFIG — owner actions with a public effect =================
+   The home announcement, the show/hide state of experiments, and the duels
+   section switch are PUBLIC state: they live on the server in the Supabase
+   `site_config` key/value table, NOT in one browser's session. Every client
+   — registered or guest — reads the table at boot and applies the values;
+   the owner panel writes them (upsert by key). Keys: "announcement" (text),
+   "hidden_exps" (JSON array of experiment numbers), "duels_enabled"
+   ("1"/"0"). If the server is unreachable (or the table is not provisioned
+   yet), the app keeps working with the in-session defaults and the owner is
+   told honestly in the panel that the change applied to this session only. */
+window.__siteCfg={loaded:false,duels:true};
+let CFG_LOADING=false;
+function applyDuelsVisibility(){
+  const off=window.__siteCfg&&window.__siteCfg.duels===false;
+  document.querySelectorAll('[data-nav="scr-duel"]').forEach(b=>{b.style.display=off?"none":"";});
+}
+function applySiteConfig(map){
+  if(!map)return;
+  if("announcement" in map){
+    ADMIN.announcement=String(map.announcement||"");
+    const inp=document.getElementById("owAnnInput");
+    if(inp&&document.activeElement!==inp)inp.value=ADMIN.announcement;
+  }
+  if("hidden_exps" in map){
+    try{let arr=map.hidden_exps;
+      if(typeof arr==="string")arr=JSON.parse(arr||"[]");
+      if(Array.isArray(arr))ADMIN.hidden=new Set(arr.map(Number).filter(n=>n>=1&&n<=60));
+    }catch(e){}
+  }
+  if("duels_enabled" in map)window.__siteCfg.duels=String(map.duels_enabled)!=="0";
+  try{renderExps();}catch(e){}
+  try{const q=document.getElementById("thSearch");renderTheory(q?q.value.trim():"");}catch(e){}
+  applyDuelsVisibility();
+  try{renderOwnerBits();}catch(e){}
+}
+async function sbLoadSiteConfig(){
+  if(window.__siteCfg.loaded||CFG_LOADING)return window.__siteCfg.loaded;
+  if(!(window.__sbOn&&__sbOn()))return false;
+  CFG_LOADING=true;
+  try{
+    const r=await sbCall(SB.from("site_config").select("key,value"));
+    if(r&&r.error)throw r.error;
+    const map={};((r&&r.data)||[]).forEach(row=>{map[row.key]=row.value;});
+    applySiteConfig(map);
+    window.__siteCfg.loaded=true;
+    return true;
+  }catch(e){return false;}
+  finally{CFG_LOADING=false;}
+}
+async function sbSaveSiteConfig(key,value){
+  const msg=document.getElementById("owCfgMsg");
+  if(!((typeof isOwnerSession==="function")&&isOwnerSession()&&(typeof sbServerSession==="function")&&sbServerSession())){
+    if(msg)msg.textContent=T("اتطبّق في الجلسة دي بس — الحفظ الدائم للكل بيتم من حساب المالك الأونلاين.","Applied in this session only — permanent saving for everyone happens from the online owner account.");
+    return;
+  }
+  try{
+    const r=await sbCall(SB.from("site_config").upsert({key:key,value:String(value)},{onConflict:"key"}));
+    if(r&&r.error)throw r.error;
+    if(msg)msg.textContent=T("اتحفظ على السيرفر ✓ — هيوصل لكل المستخدمين والزوار أول ما يفتحوا الموقع.","Saved on the server ✓ — it will reach every user and guest as soon as they open the site.");
+  }catch(e){
+    if(msg)msg.textContent=T("اتطبّق في جلستك، لكن الحفظ على السيرفر ما تمش — جدول إعدادات الموقع (site_config) لسه مش جاهز على السيرفر.","Applied in your session, but the server save did not complete — the site-config table (site_config) is not ready on the server yet.");
+  }
+}
+(function(){
+  const panel=document.getElementById("ownerPanel");
+  if(panel)panel.addEventListener("click",e=>{
+    const b=e.target.closest("[data-dueltgl]");if(!b)return;
+    window.__siteCfg.duels=!(window.__siteCfg.duels!==false);
+    applyDuelsVisibility();
+    try{fillOwnerPanel();}catch(err){}
+    sbSaveSiteConfig("duels_enabled",window.__siteCfg.duels?"1":"0");
+  });
+})();
+const _ssCfg=showScreen;
+showScreen=function(id){
+  if(id==="scr-duel"&&window.__siteCfg&&window.__siteCfg.duels===false&&!((typeof isOwnerSession==="function")&&isOwnerSession()))id="scr-home";
+  _ssCfg(id);
+  if(!window.__siteCfg.loaded&&(id==="scr-home"||id==="scr-settings"))sbLoadSiteConfig();
+};
+(function bootCfg(){
+  sbLoadSiteConfig();
+  let n=0;const iv=setInterval(()=>{n++;sbLoadSiteConfig();if(window.__siteCfg.loaded||n>=15)clearInterval(iv);},900);
+})();
 </script>
 </body>
 </html>
