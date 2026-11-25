@@ -633,11 +633,22 @@ button{touch-action:manipulation}
 
     <div id="homeTeacher" style="display:none">
       <div class="card" style="border-color:var(--teal)">
-        <div class="row between"><h2 style="margin:0" id="htTitle">مساحة المعلم</h2><span class="chip l0" id="htChip">للمعلم</span></div>
-        <p class="small" style="margin-top:6px" id="htDesc">ابنِ كورسات مخصصة من تجارب المختبر لطلابك، واطلب تجارب جديدة من المالك.</p>
+        <div class="row between"><h2 style="margin:0" id="htTitle">كورسات المعلمين</h2><span class="chip l0" id="htChip">كورسات خاصة</span></div>
+        <p class="small" style="margin-top:6px" id="htDesc">كورسات خاصة بيعدّها معلمك من تجارب المختبر ويرتّبها لك بالترتيب.</p>
         <button class="btn primary block" id="homeTeacherBtn" style="margin-top:8px">افتح مساحة المعلم</button>
       </div>
       <div id="homeCourses"></div>
+      <div class="card" id="joinCard">
+        <h2 style="margin:0" id="jcH">انضم لكورس معلمك</h2>
+        <p class="small" style="margin-top:6px" id="jcDesc">اكتب كود الكورس اللي اداهولك معلمك — ولو الكورس مقفول بكلمة سر اكتبها كمان. الكورس هيظهر لك تحت على طول وتمشي فيه بالترتيب.</p>
+        <label class="fldlbl" for="jcCode" id="jcCodeLbl">كود الكورس</label>
+        <input class="fld" id="jcCode" type="text" dir="ltr" maxlength="12" placeholder="IL-XXXXXX" autocomplete="off">
+        <label class="fldlbl" for="jcPass" id="jcPassLbl">كلمة سر الكورس (لو الكورس مقفول)</label>
+        <input class="fld" id="jcPass" type="password" maxlength="40" autocomplete="off">
+        <button class="btn primary block" id="jcJoin" style="margin-top:10px">انضم للكورس</button>
+        <p class="small" id="jcMsg" style="margin-top:6px"></p>
+      </div>
+      <div id="homeEnrolled"></div>
     </div>
 
     <h2 data-i18n="home_levels">اختر مستواك</h2>
@@ -729,9 +740,13 @@ button{touch-action:manipulation}
       <div class="balance"><i id="duelBalance" style="width:50%"></i><em></em></div>
       <div class="card">
         <h3 id="duelTitle"></h3>
+        <p class="small" id="duelQ" style="margin:2px 0 8px"></p>
         <canvas class="sim" id="duelCanvas" width="640" height="300"></canvas>
-        <label class="lbl" for="duelRange" data-i18n="duel_rg_lbl">اسحب على الرسم أو هنا لوضع علامتك</label>
-        <input type="range" id="duelRange" class="unplaced" min="0" max="100" value="0">
+        <div id="duelOpts" class="opts" style="display:none;margin-top:10px"></div>
+        <div id="duelRangeRow">
+        <label class="lbl" for="duelRange" data-i18n="duel_rg_lbl">اسحب على الرسم أو هنا لوضع علامتك</label> <b id="duelVal"></b>
+        <input type="range" id="duelRange" class="unplaced" min="0" max="1000" value="0">
+        </div>
         <div class="row" style="align-items:center;gap:8px;margin:8px 0"><div class="timerbar" style="flex:1"><i id="duelTimer" style="width:100%"></i></div><span class="duelclock" id="duelClock">٢٠ ث</span></div>
         <button class="btn primary block" id="duelConfirm" data-i18n="duel_confirm" disabled>أكّد التوقع</button>
         <div class="feedback" id="duelFeedback"></div>
@@ -751,9 +766,21 @@ button{touch-action:manipulation}
     </div>
     <div id="teacherBody">
       <div class="card">
+        <h2 style="margin-top:0" id="tcHowH">إزاي مساحة المعلم بتشتغل؟</h2>
+        <ol class="thtopics" id="tcHowList">
+          <li>بتعمل كورس خاص: عنوان + تجارب من الـ٦٠ بالترتيب اللي يعجبك، ولو حابب تحط له كلمة سر.</li>
+          <li>الكورس بيظهر في منطقة «كورسات المعلمين» في الصفحة الرئيسية — وبيتولّد له كود انضمام خاص بيه.</li>
+          <li>بتبعت الكود (وكلمة السر لو حطيتها) لطلابك بأي طريقة — واتساب، في الفصل، أي وسيلة.</li>
+          <li>كل طالب بيكتب الكود في نفس المنطقة في الرئيسية، فينضم للكورس ويمشي في تجاربه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.</li>
+        </ol>
+      </div>
+      <div class="card">
         <h2 style="margin-top:0" id="tcNewH">إنشاء كورس مخصص</h2>
         <label class="fldlbl" for="tcTitle" id="tcTitleLbl">عنوان الكورس</label>
         <input class="fld" id="tcTitle" type="text" maxlength="60" placeholder="مثال: مراجعة الكهرباء قبل الامتحان">
+        <label class="fldlbl" for="tcPass" id="tcPassLbl">كلمة سر الكورس (اختياري)</label>
+        <input class="fld" id="tcPass" type="password" maxlength="40" autocomplete="off" placeholder="اتركها فاضية لو الكورس بالكود بس">
+        <p class="small" style="margin-top:4px" id="tcPassHint">الكورس بيظهر في منطقة «كورسات المعلمين» في الرئيسية. الطالب يكتب كود الانضمام — ولو حطيت كلمة سر هنا، مش هيدخل غير بيها. تقدر تغيّرها أو تشيلها في أي وقت من «إدارة» الكورس تحت.</p>
         <p class="small" style="margin-top:10px" id="tcPickLbl">اختر تجارب الكورس من الـ60 — اضغط «إضافة» لكل تجربة، والترتيب اللي تختار بيه هو ترتيب الكورس:</p>
         <div id="tcSel" style="margin:8px 0"></div>
         <div id="tcPick" style="max-height:300px;overflow-y:auto"></div>
@@ -764,6 +791,19 @@ button{touch-action:manipulation}
         <h2 style="margin-top:0" id="tcMineH">كورساتي</h2>
         <div id="tcMine"></div>
         <div id="tcDetail" style="margin-top:10px"></div>
+        <div id="tcManage" style="display:none;margin-top:12px;border-top:2px solid var(--surface2);padding-top:12px">
+          <h3 style="margin-top:0" id="tcManH">إدارة الكورس</h3>
+          <div id="tcManBody"></div>
+          <label class="fldlbl" for="tcNewPass" id="tcNewPassLbl">تعيين / تغيير كلمة السر</label>
+          <input class="fld" id="tcNewPass" type="password" maxlength="40" autocomplete="off" placeholder="كلمة سر جديدة">
+          <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:8px">
+            <button class="btn sm primary" id="tcManSavePass">حفظ كلمة السر</button>
+            <button class="btn sm" id="tcManClearPass">إزالة كلمة السر</button>
+            <button class="btn sm" id="tcManRegen">كود انضمام جديد</button>
+            <button class="btn sm" id="tcManClose">إغلاق الإدارة</button>
+          </div>
+          <p class="small" id="tcManMsg" style="margin-top:6px"></p>
+        </div>
       </div>
       <div class="card">
         <h2 style="margin-top:0" id="trH">طلب تجربة جديدة</h2>
@@ -782,6 +822,14 @@ button{touch-action:manipulation}
         <div id="trMine" style="margin-top:8px"></div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ COURSE ============ -->
+<section class="screen" id="scr-course">
+  <div class="wrap">
+    <button class="btn sm" data-nav="scr-home" id="csBack">→ الرئيسية</button>
+    <div id="csBody" style="margin-top:10px"></div>
   </div>
 </section>
 
@@ -1079,6 +1127,8 @@ button{touch-action:manipulation}
       <h3 style="margin-top:14px">طلبات التجارب</h3>
       <p class="small">طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».</p>
       <div id="owReqList"></div>
+      <p class="small" id="owCourseFlowP" style="margin-top:8px">كده بيتم الربط: المعلم يبعت طلب تجربة من مساحته ← أنت تنشئ له كورسًا خاصًا من الطلب ده بالتجارب اللي تختارها ← الكورس بيظهر في مساحة المعلم وفي منطقة «كورسات المعلمين» بالرئيسية ← المعلم يبعت كود الانضمام (ويحط كلمة سر لو حابب من «إدارة» الكورس) ← طلابه بينضموا بالكود ويمشوا في التجارب بالترتيب.</p>
+      <div id="owCourseBuilder"></div>
       <h3 style="margin-top:14px" data-i18n="ow_fb_h">تقييمات وآراء المستخدمين</h3>
       <p class="small" data-i18n="ow_fb_d">كل التقييمات الواردة من قسم «قيّمنا» في الإعدادات — الأحدث أولًا.</p>
       <div id="owFbList"></div>
@@ -8119,6 +8169,1359 @@ showScreen=function(id){
   sbLoadSiteConfig();
   let n=0;const iv=setInterval(()=>{n++;sbLoadSiteConfig();if(window.__siteCfg.loaded||n>=15)clearInterval(iv);},900);
 })();
+</script>
+
+<style>
+.czcode{font-size:1.35rem;font-weight:800;letter-spacing:.12em;background:var(--surface2);border:1px dashed var(--teal);border-radius:10px;padding:10px 14px;text-align:center;direction:ltr;margin-top:4px}
+.czbar{height:9px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.czbar i{display:block;height:100%;background:var(--teal);border-radius:99px}
+.czbadge{width:30px;height:30px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.czbadge.done{background:var(--teal);color:#fff}
+.czbadge.next{background:var(--amber);color:#231a04}
+</style>
+<script>
+"use strict";
+/* ================= TEACHER COURSES — HOME ZONE, JOIN BY CODE + PASSWORD, COURSE PATH =================
+   THE FLOW (one connected system, explained in the Teacher Space and the owner
+   dashboard too):
+   1) A teacher builds a private course in the Teacher Space: title + experiments
+      from the 60 IN ORDER + an optional course password. Every course gets a
+      unique join code (IL-XXXXXX) at creation.
+   2) The course lives in ONE place: the "Teacher courses" area on Home —
+      visible to every signed-in user — and in the teacher's own list inside
+      the Teacher Space. The owner sees every course there too.
+   3) The teacher sends the code (and the password, if set) to his students by
+      any channel. A student types code (+ password) in the join card in that
+      same Home area; a correct password is required before enrolment sticks.
+   4) The course then opens on its own screen (scr-course) as an ordered path:
+      numbered steps in the teacher's order, each marked done / next / upcoming
+      from the student's own completed set, a progress bar, and a Continue
+      button that jumps to the first unfinished experiment. Enrolment is kept
+      in the student's account progress snapshot (and mirrored to the server
+      account metadata), so it survives sign-out and refresh.
+   5) The owner closes the loop from his dashboard: each experiment request
+      from a teacher carries a "Create a course for this teacher" action that
+      builds the course (chosen experiments, in order) straight into that
+      teacher's space, with its join code shown to the owner to pass on; the
+      teacher then sets the password himself from the course's Manage panel.
+   Course passwords are stored only as a salted hash on the course object —
+   never in plain text. Server sync stays on the existing courses table
+   (teacher_id, title, exp_ids); join code + password hash are pushed
+   best-effort if the table carries those columns, and server-loaded courses
+   become joinable by code for students as well. */
+if(!Array.isArray(S.enrolledCourses))S.enrolledCourses=[];
+let CZ_CUR=null,CZ_MANAGE_ID=null,CZ_SEQ=3000000;
+function czHash(s){let h=5381;for(let i=0;i<s.length;i++){h=((h<<5)+h+s.charCodeAt(i))|0;}return "h"+(h>>>0).toString(36);}
+function czAll(){const out=[];Object.keys(ACCOUNTS).forEach(em=>{const a=ACCOUNTS[em];if(a&&Array.isArray(a.courses))a.courses.forEach(c=>{c._by=em;out.push(c);});});return out;}
+function czKey(c){return c?(c.sid?("S:"+c.sid):("L:"+c.id)):"";}
+function czByKey(k){if(!k)return null;return czAll().find(c=>czKey(c)===k)||null;}
+function czByCode(code){if(!code)return null;const n=String(code).trim().toUpperCase();if(!n)return null;return czAll().find(c=>(c.code||"").toUpperCase()===n)||null;}
+function czGenCode(){const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789";let code="";do{let r="";for(let i=0;i<6;i++)r+=A[Math.floor(Math.random()*A.length)];code="IL-"+r;}while(czByCode(code));return code;}
+function czMine(c){return !!((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&c&&c._by===SESSION.email);}
+function czEnrolled(key){return (S.enrolledCourses||[]).some(e=>e.key===key);}
+function czDoneCount(c){let d=0;(c.exps||[]).forEach(n=>{if(S.done&&S.done.has(n))d++;});return d;}
+function czEnsureCodes(){try{czAll().forEach(c=>{if(!c.code)c.code=czGenCode();});}catch(e){}}
+function czPersistEnroll(){
+  try{saveCurrentAccount();}catch(e){}
+  try{if(typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.auth.updateUser({data:{enrolled_courses:S.enrolledCourses||[]}}).catch(()=>{});}catch(e){}
+}
+function czSyncServerFields(c){
+  try{
+    if(!c||!c.sid||typeof sbServerSession!=="function"||!sbServerSession()||typeof SB==="undefined"||!SB)return;
+    SB.from("courses").update({join_code:c.code||null,pass_hash:c.passH||null,pass_salt:c.passSalt||null}).eq("id",c.sid).then(()=>{},()=>{});
+  }catch(e){}
+}
+function czStudentsOf(c){
+  const key=czKey(c),out=[];
+  Object.keys(ACCOUNTS).forEach(em=>{
+    const a=ACCOUNTS[em];if(!a)return;
+    const lists=[];
+    if(a.progress&&Array.isArray(a.progress.enrolledCourses))lists.push(a.progress.enrolledCourses);
+    if(Array.isArray(a.enrolled))lists.push(a.enrolled);
+    if(em===SESSION.email&&Array.isArray(S.enrolledCourses))lists.push(S.enrolledCourses);
+    if(lists.some(l=>l.some(e=>e&&(e.key===key||(c.code&&e.code===c.code)))))out.push({email:em,name:(LANG==="en"?(a.nameEn||a.name):a.name)||em});
+  });
+  return out;
+}
+/* ---------- the Home zone: one area for teachers' courses, for everyone signed in ---------- */
+function czCourseCard(c,showCode){
+  const tot=(c.exps||[]).length;
+  const joined=czEnrolled(czKey(c));
+  return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR(tot)} ${T("تجربة","experiments")}</span></div><p class="small" style="margin-top:4px">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")}</p><div class="row" style="margin-top:6px;gap:6px;flex-wrap:wrap">${c.passH?`<span class="chip l1">🔒 ${T("مقفول بكلمة سر","Password-locked")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}${joined?`<span class="chip l0">✓ ${T("منضم","Joined")}</span>`:""}${showCode&&c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""}</div><button class="btn block" data-course="${escHTML(czKey(c))}" style="margin-top:8px">${joined?T("افتح الكورس — كمّل من حيث وقفت","Open the course — continue where you left off"):T("افتح الكورس","Open the course")}</button></div>`;
+}
+function czMemberCount(c){const l=czStudentsOf(c).length;return Math.max(l,(c&&c._srvMembers)||0);}
+function czZone(){
+  const box=document.getElementById("homeTeacher");if(!box)return;
+  const signed=(SESSION.mode==="user"||SESSION.mode==="owner");
+  box.style.display=signed?"block":"none";
+  if(!signed)return;
+  czEnsureCodes();
+  const teacher=canTeacher();
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+  set("htTitle",T("كورسات المعلمين","Teacher courses"));
+  set("htChip",teacher?T("مساحة المعلم","Teacher space"):T("كورسات خاصة","Private courses"));
+  set("htDesc",teacher
+    ?T("هنا كورساتك الخاصة: ابنِ كورسًا مرتّبًا من تجارب المختبر، وابعث كود الانضمام (وكلمة السر لو حطيتها) لطلابك — هينضموا من نفس المنطقة دي ويمشوا في تجارب الكورس بالترتيب اللي اخترته.","Your private courses live here: build an ordered course from the lab's experiments and send the join code (and the password, if you set one) to your students — they join from this very area and follow your experiments in your order.")
+    :T("كورسات خاصة بيعدّها معلمك من تجارب المختبر ويرتّبها لك بالترتيب. لو معلمك ادالك كود كورس، انضم بيه من هنا وامشِ في التجارب خطوة بخطوة.","Private courses your teacher builds from the lab's experiments, arranged in order for you. If your teacher gave you a course code, join with it here and walk the experiments step by step."));
+  const hb=document.getElementById("homeTeacherBtn");
+  if(hb){hb.style.display=teacher?"":"none";hb.textContent=T("افتح مساحة المعلم","Open the teacher space");}
+  set("jcH",T("انضم لكورس معلمك","Join your teacher's course"));
+  set("jcDesc",T("اكتب كود الكورس اللي اداهولك معلمك — ولو الكورس مقفول بكلمة سر اكتبها كمان. الكورس هيظهر لك تحت على طول وتمشي فيه بالترتيب.","Enter the course code your teacher gave you — and the course password too if the course is locked with one. The course appears below right away and you follow it in order."));
+  set("jcCodeLbl",T("كود الكورس","Course code"));
+  set("jcPassLbl",T("كلمة سر الكورس (لو الكورس مقفول)","Course password (if the course is locked)"));
+  set("jcJoin",T("انضم للكورس","Join the course"));
+  const list=document.getElementById("homeCourses");
+  if(list){
+    if(teacher){
+      const cs=visibleCourses();
+      list.innerHTML=cs.length?("<h2 style=\"margin-top:14px\">"+T("كورساتي الخاصة","My private courses")+"</h2>"+cs.map(c=>czCourseCard(c,true)).join("")):"";
+      list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
+    }else{
+      /* students see every teacher's course as a card in this same area —
+         title, teacher and lock state — entry itself stays gated by the
+         join code (+ password) and by enrolment on the course screen.
+         Courses already joined are not repeated here: they live in the
+         «Courses you joined» section below, with their progress. */
+      const cs=czAll().filter(c=>!czEnrolled(czKey(c)));
+      list.innerHTML=cs.length?("<h2 style=\"margin-top:14px\">"+T("كورسات المعلمين","Teacher courses")+"</h2>"+cs.map(c=>czCourseCard(c,false)).join("")):"";
+      list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
+    }
+  }
+  const en=document.getElementById("homeEnrolled");
+  if(en){
+    const es=S.enrolledCourses||[];
+    en.innerHTML=es.length?("<h2 style=\"margin-top:14px\">"+T("كورسات انضممت إليها","Courses you joined")+"</h2>"+es.map(e=>{
+      const c=czByKey(e.key);
+      if(!c)return `<div class="card"><b>${escHTML(e.title||"")}</b><p class="small" style="margin-top:4px">${T("الكورس ده لم يعد متاحًا.","This course is no longer available.")}</p><button class="btn sm" data-czleave="${escHTML(e.key)}" style="margin-top:6px">${T("إزالة من قائمتي","Remove from my list")}</button></div>`;
+      const tot=(c.exps||[]).length,dn=czDoneCount(c);
+      return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR(dn)} / ${AR(tot)} ${T("منجزة","done")}</span></div><p class="small" style="margin-top:4px">${T("كورس:","Course by:")} ${escHTML(c.byName||"")}</p><div class="czbar" style="margin-top:8px"><i style="width:${tot?Math.round(dn/tot*100):0}%"></i></div><div class="row" style="margin-top:10px;gap:8px"><button class="btn primary grow" data-course="${escHTML(czKey(c))}">${T("افتح الكورس","Open the course")}</button><button class="btn sm" data-czleave="${escHTML(e.key)}">${T("مغادرة","Leave")}</button></div></div>`;
+    }).join("")):"";
+    en.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
+    en.querySelectorAll("[data-czleave]").forEach(b=>{b.onclick=()=>{const gone=czByKey(b.dataset.czleave);S.enrolledCourses=(S.enrolledCourses||[]).filter(x=>x.key!==b.dataset.czleave);czPersistEnroll();try{if(gone&&gone.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.from("course_members").delete().eq("course_id",gone.sid).eq("student_id",SESSION.uid).then(()=>{},()=>{});}catch(e){}czZone();};});
+  }
+}
+renderTeacherHome=function(){try{czZone();}catch(e){}};
+/* ---------- join by code (+ password) ---------- */
+(function(){
+  const b=document.getElementById("jcJoin");if(!b)return;
+  b.onclick=()=>{
+    const msg=document.getElementById("jcMsg");
+    const say=t=>{if(msg)msg.textContent=t;};
+    if(!((SESSION.mode==="user"||SESSION.mode==="owner"))){say(T("الانضمام للكورسات محتاج حساب مسجل — الزائر ما بيتحفظلوش تقدم.","Joining a course needs a registered account — guest progress is not saved."));return;}
+    const codeEl=document.getElementById("jcCode");
+    const code=((codeEl&&codeEl.value)||"").trim().toUpperCase();
+    if(!code){say(T("اكتب كود الكورس الأول.","Enter the course code first."));return;}
+    const c=czByCode(code);
+    if(!c){say(T("الكود ده مش موجود — راجعه مع معلمك وحاول تاني. (الكود بيبقى شكله IL-XXXXXX)","That code was not found — check it with your teacher and try again. (Codes look like IL-XXXXXX)"));return;}
+    const key=czKey(c);
+    if(czMine(c)){say(T("ده كورسك أنت — فتحته لك.","This is your own course — opening it for you."));openCourse(key);return;}
+    if(czEnrolled(key)){say(T("أنت منضم للكورس ده أصلًا — فتحته لك.","You already joined this course — opening it."));openCourse(key);return;}
+    if(c.passH){
+      const pwEl=document.getElementById("jcPass");
+      const pw=(pwEl&&pwEl.value)||"";
+      if(!pw){say(T("الكورس ده مقفول بكلمة سر — اكتب كلمة السر اللي اداهالك معلمك.","This course is locked with a password — enter the password your teacher gave you."));return;}
+      if(czHash(pw+"|"+(c.passSalt||c.code||""))!==c.passH){say(T("كلمة السر غلط — راجعها مع معلمك وحاول تاني.","Wrong password — check it with your teacher and try again."));return;}
+    }
+    S.enrolledCourses.push({key:key,code:c.code||code,title:c.title||"",byName:c.byName||""});
+    czPersistEnroll();
+    /* record the membership on the server too (course_members) so the teacher
+       sees this student in his member count from any device — best-effort:
+       the local enrolment above already stands if the table is unreachable. */
+    try{if(c.sid&&typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB)SB.from("course_members").insert({course_id:c.sid,student_id:SESSION.uid}).then(()=>{},()=>{});}catch(e){}
+    const pwEl2=document.getElementById("jcPass");if(pwEl2)pwEl2.value="";
+    say(T("انضممت للكورس بنجاح — فتحته لك دلوقتي.","You joined the course — opening it now."));
+    czZone();
+    openCourse(key);
+  };
+})();
+/* ---------- the course screen: an ordered path with the student's own progress ---------- */
+openCourse=function(arg){
+  let c=null;
+  if(typeof arg==="string")c=czByKey(arg);
+  if(!c&&arg!=null)c=czAll().find(x=>x.id===+arg)||null;
+  if(!c)return;
+  CZ_CUR=czKey(c);
+  try{sessionStorage.setItem("il_course_key",CZ_CUR);}catch(e){}
+  showScreen("scr-course");
+  renderCourseScreen();
+};
+function renderCourseScreen(){
+  const body=document.getElementById("csBody");if(!body)return;
+  const back=document.getElementById("csBack");if(back)back.textContent=T("→ الرئيسية","← Home");
+  if(!CZ_CUR){try{CZ_CUR=sessionStorage.getItem("il_course_key");}catch(e){}}
+  const c=CZ_CUR?czByKey(CZ_CUR):null;
+  if(!c){
+    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${T("الكورس مش متاح","Course unavailable")}</h2><p class="small">${T("الكورس ده مش موجود أو اتحذف. ارجع للرئيسية وافتح كورسًا من منطقة «كورسات المعلمين».","This course does not exist or was deleted. Go back Home and open a course from the Teacher courses area.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية","Back to Home")}</button></div>`;
+    const g=document.getElementById("csGoHome");if(g)g.onclick=()=>showScreen("scr-home");
+    return;
+  }
+  const key=czKey(c),mine=czMine(c),owner=isOwnerSession(),enrolled=czEnrolled(key);
+  if(!mine&&!owner&&!enrolled){
+    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${escHTML(c.title||"")}</h2><p class="small">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")} — ${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</p><p style="margin-top:10px">${T("الكورس ده خاص بطلاب هذا المعلم. لو أنت من طلابه، انضم بكود الكورس (وكلمة السر لو مقفول) من منطقة «كورسات المعلمين» في الرئيسية، وبعدها هيفتح لك هنا بتجاربه مرتبة خطوة بخطوة.","This course is private to this teacher's students. If you are one of them, join with the course code (and password if locked) from the Teacher courses area on Home — then it opens here with its experiments ordered step by step.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية للانضمام","Back to Home to join")}</button></div>`;
+    const g=document.getElementById("csGoHome");if(g)g.onclick=()=>showScreen("scr-home");
+    return;
+  }
+  const exps=(c.exps||[]).filter(n=>CATALOG.find(e=>e.n===n));
+  const dn=exps.filter(n=>S.done&&S.done.has(n)).length;
+  const next=exps.find(n=>!(S.done&&S.done.has(n))&&expVisible(n));
+  const students=mine?czStudentsOf(c):[];
+  body.innerHTML=
+   `<div class="card">
+      <div class="row between"><h2 style="margin:0">${escHTML(c.title||"")}</h2><span class="chip l0">${AR(exps.length)} ${T("تجربة","experiments")}</span></div>
+      <p class="small" style="margin-top:6px">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")} ${c.passH?`· <span class="chip l1">${T("مقفول بكلمة سر","Password-locked")}</span>`:`· <span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</p>
+      ${mine?`<p class="small" style="margin-top:10px">${T("كود الانضمام اللي تبعته لطلابك:","The join code you send your students:")}</p><div class="czcode">${escHTML(c.code||"—")}</div><p class="small" style="margin-top:6px">${T("انضم لحد دلوقتي:","Joined so far:")} <b>${AR(czMemberCount(c))}</b> ${T("طالب — تغيير كلمة السر أو الكود من «إدارة» الكورس في مساحة المعلم، والطلاب المنضمون أصلًا مش هيتأثروا.","students — change the password or code from the course's Manage panel in the Teacher Space; already-enrolled students are not affected.")}</p><button class="btn block" id="csManage" style="margin-top:8px">${T("إدارة الكورس في مساحة المعلم","Manage the course in the Teacher Space")}</button>`:""}
+      <h3 style="margin-top:16px">${T("تقدّمك في الكورس","Your progress in this course")}</h3>
+      <div class="czbar"><i style="width:${exps.length?Math.round(dn/exps.length*100):0}%"></i></div>
+      <p class="small" style="margin-top:6px">${AR(dn)} ${T("من","of")} ${AR(exps.length)} ${T("تجارب أنجزتها في الكورس ده.","experiments completed in this course.")}</p>
+      ${next?`<button class="btn primary block" id="csNext" style="margin-top:8px">${dn?T("كمّل من حيث وقفت: تجربة ","Continue where you left off: experiment "):T("ابدأ الكورس: تجربة ","Start the course: experiment ")}${AR(next)} — ${escHTML(expTitle(next))}</button>`:`<p style="margin-top:10px"><span class="chip l0">${T("أنجزت كل تجارب الكورس — برافو عليك!","You completed every experiment in this course — well done!")}</span></p>`}
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">${T("مسار الكورس — بالترتيب","Course path — in order")}</h2>
+      ${exps.map((n,i)=>{
+        const e=CATALOG.find(x=>x.n===n)||{lvl:0};
+        const done=S.done&&S.done.has(n),vis=expVisible(n),isNext=next===n;
+        return `<div class="owrow"><span class="czbadge ${done?"done":isNext?"next":""}">${done?"✓":AR(i+1)}</span><span class="grow"><b>${escHTML(expTitle(n))}</b> <span class="chip l${e.lvl}">${LVL[e.lvl]}</span> ${done?`<span class="chip l0">${T("أنجزتها","Completed")}</span>`:isNext?`<span class="chip l1">${T("التالية","Next")}</span>`:vis?"":`<span class="chip l2">${T("مخفية مؤقتًا","Temporarily hidden")}</span>`}</span><button class="btn sm" data-czexp="${n}" ${vis?"":"disabled"}>${T("افتح التجربة","Open experiment")}</button></div>`;
+      }).join("")}
+    </div>`;
+  body.querySelectorAll("[data-czexp]").forEach(b=>{b.onclick=()=>openExp(+b.dataset.czexp);});
+  const nx=document.getElementById("csNext");if(nx&&next)nx.onclick=()=>openExp(next);
+  const mg=document.getElementById("csManage");if(mg)mg.onclick=()=>{showScreen("scr-teacher");czOpenManage(c.id);};
+}
+/* ---------- teacher space: labels, my-courses list with codes, manage panel ---------- */
+function czTeacherLabels(){
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+  set("tcHowH",T("إزاي مساحة المعلم بتشتغل؟","How the Teacher Space works"));
+  const hl=document.getElementById("tcHowList");
+  if(hl)hl.innerHTML=[
+    T("بتعمل كورس خاص: عنوان + تجارب من الـ٦٠ بالترتيب اللي يعجبك، ولو حابب تحط له كلمة سر.","You build a private course: a title + experiments from the 60 in your order, plus a password if you want one."),
+    T("الكورس بيظهر في منطقة «كورسات المعلمين» في الصفحة الرئيسية — وبيتولّد له كود انضمام خاص بيه.","The course appears in the Teacher courses area on Home — with its own generated join code."),
+    T("بتبعت الكود (وكلمة السر لو حطيتها) لطلابك بأي طريقة — واتساب، في الفصل، أي وسيلة.","You send the code (and the password, if set) to your students by any channel — WhatsApp, in class, anything."),
+    T("كل طالب بيكتب الكود في نفس المنطقة في الرئيسية، فينضم للكورس ويمشي في تجاربه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.","Each student enters the code in that same Home area, joins the course, and follows its experiments in order, step by step — with progress saved to his account.")
+  ].map(t=>`<li>${t}</li>`).join("");
+  set("tcPassLbl",T("كلمة سر الكورس (اختياري)","Course password (optional)"));
+  const ph=document.getElementById("tcPass");if(ph)ph.placeholder=T("اتركها فاضية لو الكورس بالكود بس","Leave empty for a code-only course");
+  set("tcPassHint",T("الكورس بيظهر في منطقة «كورسات المعلمين» في الرئيسية. الطالب يكتب كود الانضمام — ولو حطيت كلمة سر هنا، مش هيدخل غير بيها. تقدر تغيّرها أو تشيلها في أي وقت من «إدارة» الكورس تحت.","The course appears in the Teacher courses area on Home. The student enters the join code — and if you set a password here, nobody joins without it. You can change or remove it any time from the course's Manage panel below."));
+  set("tcManH",T("إدارة الكورس","Manage course"));
+  set("tcNewPassLbl",T("تعيين / تغيير كلمة السر","Set / change the password"));
+  set("tcManSavePass",T("حفظ كلمة السر","Save password"));
+  set("tcManClearPass",T("إزالة كلمة السر","Remove password"));
+  set("tcManRegen",T("كود انضمام جديد","New join code"));
+  set("tcManClose",T("إغلاق الإدارة","Close"));
+}
+const _rtsCz=renderTeacherSpace;
+renderTeacherSpace=function(openId){_rtsCz(openId);try{czTeacherLabels();}catch(e){}};
+renderTcMine=function(){
+  const m=document.getElementById("tcMine");if(!m)return;
+  czEnsureCodes();
+  const cs=myCourses();
+  m.innerHTML=cs.length?cs.map(c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span> ${c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""} ${c.passH?`<span class="chip l1">${T("بكلمة سر","Password")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcman="${c.id}">${T("إدارة","Manage")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
+    :("<p class=\"small\">"+T("لسه ما أنشأتش أي كورس.","You have not created any course yet.")+"</p>");
+  m.querySelectorAll("[data-tcopen]").forEach(b=>{b.onclick=()=>openCourse(+b.dataset.tcopen);});
+  m.querySelectorAll("[data-tcman]").forEach(b=>{b.onclick=()=>czOpenManage(+b.dataset.tcman);});
+  m.querySelectorAll("[data-tcdel]").forEach(b=>{b.onclick=()=>{const cs2=myCourses();const i=cs2.findIndex(c=>c.id===+b.dataset.tcdel);if(i>=0)cs2.splice(i,1);const d=document.getElementById("tcDetail");if(d)d.innerHTML="";const mg=document.getElementById("tcManage");if(mg)mg.style.display="none";CZ_MANAGE_ID=null;renderTcMine();czZone();};});
+};
+function czOpenManage(id){
+  const c=myCourses().find(x=>x.id===id);if(!c)return;
+  CZ_MANAGE_ID=id;
+  if(!c.code)c.code=czGenCode();
+  const mg=document.getElementById("tcManage");if(!mg)return;
+  mg.style.display="block";
+  const students=czStudentsOf(c);
+  const body=document.getElementById("tcManBody");
+  if(body)body.innerHTML=`<h3 style="margin:0 0 6px">${escHTML(c.title||"")}</h3>
+    <p class="small">${T("كود الانضمام (ابعته لطلابك زي ما هو):","Join code (send it to your students exactly as shown):")}</p>
+    <div class="czcode">${escHTML(c.code)}</div>
+    <p class="small" style="margin-top:8px">${c.passH?T("الكورس مقفول بكلمة سر دلوقتي — الطالب بيكتب الكود وكلمة السر معًا في الرئيسية.","The course is password-locked — students enter the code and the password together on Home."):T("الكورس مفتوح بكود الانضمام بس — أي طالب معاه الكود يقدر ينضم.","The course is open with the join code only — any student with the code can join.")}</p>
+    <p class="small" style="margin-top:10px"><b>${T("الطلاب المنضمون:","Enrolled students:")} ${AR(czMemberCount(c))}</b>${(c._srvMembers||0)>students.length?` <span class="small">(${T("العدد الإجمالي من الخادم — يشمل طلابًا انضموا من أجهزة أخرى","total from the server — includes students who joined from other devices")})</span>`:""}</p>
+    ${students.length?students.map(s=>`<div class="owrow"><span class="grow"><b>${escHTML(s.name||"")}</b> <span class="small" dir="ltr">${escHTML(s.email||"")}</span></span></div>`).join(""):`<p class="small">${T("لسه محدش انضم — ابعت الكود (وكلمة السر لو فيه) لطلابك.","No one has joined yet — send the code (and the password, if any) to your students.")}</p>`}`;
+  const msg=document.getElementById("tcManMsg");if(msg)msg.textContent="";
+  const np=document.getElementById("tcNewPass");if(np)np.value="";
+  mg.scrollIntoView({behavior:"smooth",block:"center"});
+}
+(function(){
+  const cur=()=>myCourses().find(x=>x.id===CZ_MANAGE_ID);
+  const say=t=>{const m=document.getElementById("tcManMsg");if(m)m.textContent=t;};
+  const refresh=()=>{if(CZ_MANAGE_ID!=null)czOpenManage(CZ_MANAGE_ID);renderTcMine();czZone();};
+  const sp=document.getElementById("tcManSavePass");
+  if(sp)sp.onclick=()=>{const c=cur();if(!c)return;const v=((document.getElementById("tcNewPass")||{}).value||"").trim();if(!v){say(T("اكتب كلمة السر الجديدة الأول.","Type the new password first."));return;}c.passSalt=c.code||"";c.passH=czHash(v+"|"+c.passSalt);czSyncServerFields(c);refresh();say(T("اتحفظت كلمة السر — الطلاب الجدد هيدخلوا بيها من دلوقتي.","Password saved — new students will join with it from now on."));};
+  const cp=document.getElementById("tcManClearPass");
+  if(cp)cp.onclick=()=>{const c=cur();if(!c)return;c.passH="";czSyncServerFields(c);refresh();say(T("اتشالت كلمة السر — الكورس بقى بكود الانضمام بس.","Password removed — the course is code-only now."));};
+  const rg=document.getElementById("tcManRegen");
+  if(rg)rg.onclick=()=>{const c=cur();if(!c)return;c.code=czGenCode();/* the password hash keeps its own stored salt (passSalt), so the password itself stays valid under the new code */czSyncServerFields(c);refresh();say(T("اتولّد كود انضمام جديد — الكود القديم وقف، ابعت الجديد لطلابك. كلمة السر زي ما هي، والمنضمون أصلًا لسه جوه الكورس.","A new join code was generated — the old code stopped working; send the new one to your students. The password is unchanged, and students already enrolled stay in the course."));};
+  const cl=document.getElementById("tcManClose");
+  if(cl)cl.onclick=()=>{const mg=document.getElementById("tcManage");if(mg)mg.style.display="none";CZ_MANAGE_ID=null;};
+})();
+/* course creation: same flow as before, plus join code + optional password */
+(function(){
+  const cr=document.getElementById("tcCreate");if(!cr)return;
+  cr.onclick=()=>{
+    const msg=document.getElementById("tcMsg");
+    const title=((document.getElementById("tcTitle")||{}).value||"").trim();
+    if(!title){if(msg)msg.textContent=T("اكتب عنوانًا للكورس أولًا.","Write a course title first.");return;}
+    if(!tcDraft.length){if(msg)msg.textContent=T("اختر تجربة واحدة على الأقل للكورس.","Choose at least one experiment for the course.");return;}
+    const a=curAccount();if(!a)return;
+    const pw=(((document.getElementById("tcPass")||{}).value)||"").trim();
+    const c={id:Date.now(),title:title,exps:tcDraft.slice(),by:a.email,byName:(LANG==="en"?(a.nameEn||a.name):a.name)||a.email,code:czGenCode(),passH:"",passSalt:""};
+    if(pw){c.passSalt=c.code;c.passH=czHash(pw+"|"+c.passSalt);}
+    myCourses().push(c);
+    tcDraft=[];document.getElementById("tcTitle").value="";const pe=document.getElementById("tcPass");if(pe)pe.value="";
+    if(msg)msg.textContent=T("اتعمل الكورس بكود الانضمام ","Course created with join code ")+c.code+T(" — ابعت الكود"," — send the code")+(pw?T(" وكلمة السر"," and the password"):"")+T(" لطلابك، وهيظهر لهم في منطقة «كورسات المعلمين» في الرئيسية ويمشوا فيه بالترتيب."," to your students; it appears for them in the Teacher courses area on Home and they follow it in order.");
+    renderTcPick();renderTcSel();renderTcMine();czZone();
+    setTimeout(()=>czSyncServerFields(c),2600);
+  };
+})();
+/* ---------- owner: turn a teacher's experiment request into his private course ---------- */
+let CZ_OWREQ=-1,CZ_OWDRAFT=[],CZ_OWTITLE=null;
+function czOwRender(){
+  const w=document.getElementById("owCourseBuilder");if(!w)return;
+  if(CZ_OWREQ<0||!(typeof EXP_REQUESTS!=="undefined"&&EXP_REQUESTS[CZ_OWREQ])){w.innerHTML="";return;}
+  const r=EXP_REQUESTS[CZ_OWREQ];
+  w.innerHTML=`<div style="border:1px solid var(--amber);border-radius:12px;padding:12px;margin-top:10px">
+    <h4 style="margin:0 0 6px">${T("إنشاء كورس خاص للمعلم","Create a private course for the teacher")}: ${escHTML(r.byName||"")} — ${T("بناءً على طلبه:","based on the request:")} «${escHTML(r.topic||"")}»</h4>
+    <label class="fldlbl" for="owCrTitle">${T("عنوان الكورس","Course title")}</label>
+    <input class="fld" id="owCrTitle" type="text" maxlength="60" value="${escHTML(CZ_OWTITLE!=null?CZ_OWTITLE:(r.topic||""))}">
+    <p class="small" style="margin-top:8px">${T("اختر التجارب اللي هتتحط في الكورس، بالترتيب اللي هيمشي بيه الطلاب:","Choose the experiments that go into the course, in the order students will follow:")}</p>
+    <div>${CZ_OWDRAFT.length?CZ_OWDRAFT.map((n,i)=>`<div class="owrow"><span class="grow"><b>${AR(i+1)}.</b> ${escHTML(expTitle(n))}</span><button class="btn sm" data-owcrm="${i}">✕</button></div>`).join(""):`<span class="small">${T("لسه ما اخترتش تجارب.","No experiments chosen yet.")}</span>`}</div>
+    <div style="max-height:220px;overflow-y:auto;margin-top:6px">${CATALOG.filter(e=>expVisible(e.n)).map(e=>`<div class="owrow"><span class="grow"><b>${AR(e.n)}.</b> ${escHTML(expTitle(e.n))}</span><button class="btn sm" data-owcadd="${e.n}">${CZ_OWDRAFT.indexOf(e.n)>=0?T("إزالة","Remove"):T("إضافة","Add")}</button></div>`).join("")}</div>
+    <button class="btn primary block" id="owCrCreate" style="margin-top:10px">${T("إنشاء الكورس للمعلم","Create the course for the teacher")}</button>
+    <p class="small" id="owCrMsg" style="margin-top:6px"></p>
+  </div>`;
+  w.querySelectorAll("[data-owcadd]").forEach(b=>{b.onclick=()=>{const ti=document.getElementById("owCrTitle");if(ti)CZ_OWTITLE=ti.value;const n=+b.dataset.owcadd;const i=CZ_OWDRAFT.indexOf(n);if(i>=0)CZ_OWDRAFT.splice(i,1);else CZ_OWDRAFT.push(n);czOwRender();};});
+  w.querySelectorAll("[data-owcrm]").forEach(b=>{b.onclick=()=>{const ti=document.getElementById("owCrTitle");if(ti)CZ_OWTITLE=ti.value;CZ_OWDRAFT.splice(+b.dataset.owcrm,1);czOwRender();};});
+  const cb=document.getElementById("owCrCreate");
+  if(cb)cb.onclick=()=>{
+    const msg=document.getElementById("owCrMsg");const say=t=>{if(msg)msg.textContent=t;};
+    const title=((document.getElementById("owCrTitle")||{}).value||"").trim();
+    if(!title){say(T("اكتب عنوان الكورس.","Write the course title."));return;}
+    if(!CZ_OWDRAFT.length){say(T("اختر تجربة واحدة على الأقل.","Choose at least one experiment."));return;}
+    const acc=ACCOUNTS[r.by];
+    if(!acc){say(T("حساب المعلم مش ظاهر في الجلسة دي — الكورس ما اتعملش.","The teacher's account is not visible in this session — the course was not created."));return;}
+    if(!Array.isArray(acc.courses))acc.courses=[];
+    const c={id:Date.now(),title:title,exps:CZ_OWDRAFT.slice(),by:r.by,byName:r.byName||acc.name||r.by,code:czGenCode(),passH:""};
+    acc.courses.push(c);
+    try{
+      if(typeof sbServerSession==="function"&&sbServerSession()&&typeof SB!=="undefined"&&SB&&acc._uid){
+        SB.from("courses").insert({teacher_id:acc._uid,title:c.title,exp_ids:c.exps}).select().then(rr=>{if(!rr.error&&rr.data&&rr.data[0]){c.sid=rr.data[0].id;czSyncServerFields(c);}},()=>{});
+      }
+    }catch(e){}
+    CZ_OWDRAFT=[];
+    say(T("اتعمل الكورس واتضاف لمساحة المعلم بكود الانضمام ","The course was created and added to the teacher's space with join code ")+c.code+T(" — بلّغ المعلم بالكود، وهو يقدر يحط كلمة سر للكورس من «إدارة» الكورس في مساحته، وطلابه هينضموا من منطقة «كورسات المعلمين» في الرئيسية."," — tell the teacher the code; he can set a course password from the course's Manage panel in his space, and his students join from the Teacher courses area on Home."));
+    czZone();
+  };
+}
+const _fopCz=fillOwnerPanel;
+fillOwnerPanel=function(){
+  _fopCz();
+  try{
+    const p=document.getElementById("owCourseFlowP");
+    if(p)p.textContent=T("كده بيتم الربط: المعلم يبعت طلب تجربة من مساحته ← أنت تنشئ له كورسًا خاصًا من الطلب ده بالتجارب اللي تختارها ← الكورس بيظهر في مساحة المعلم وفي منطقة «كورسات المعلمين» بالرئيسية ← المعلم يبعت كود الانضمام (ويحط كلمة سر لو حابب من «إدارة» الكورس) ← طلابه بينضموا بالكود ويمشوا في التجارب بالترتيب.","How it connects: the teacher sends an experiment request from his space → you create a private course for him from that request with the experiments you pick → the course appears in his Teacher Space and in the Teacher courses area on Home → the teacher sends the join code (and can set a password from the course's Manage panel) → his students join with the code and follow the experiments in order.");
+    const rq=document.getElementById("owReqList");
+    if(rq)rq.querySelectorAll(".owrow").forEach((row,i)=>{
+      const b=document.createElement("button");
+      b.className="btn sm";b.style.marginTop="6px";
+      b.textContent=T("إنشاء كورس لهذا المعلم","Create a course for this teacher");
+      b.onclick=()=>{CZ_OWREQ=i;CZ_OWDRAFT=[];CZ_OWTITLE=null;czOwRender();const w=document.getElementById("owCourseBuilder");if(w)w.scrollIntoView({behavior:"smooth",block:"center"});};
+      row.appendChild(b);
+    });
+  }catch(e){}
+};
+/* ---------- persistence: enrolments ride the account progress snapshot ---------- */
+const _snapCz=snapProgress;
+snapProgress=function(){const p=_snapCz();try{p.enrolledCourses=JSON.parse(JSON.stringify(S.enrolledCourses||[]));}catch(e){p.enrolledCourses=[];}return p;};
+const _loadCz=loadProgress;
+loadProgress=function(p){_loadCz(p);S.enrolledCourses=(p&&Array.isArray(p.enrolledCourses))?p.enrolledCourses.filter(x=>x&&x.key):[];};
+/* ---------- server extras: students can discover courses by code; enrolments restored ---------- */
+let CZ_EXTRAS_RUN=false;
+async function czServerExtras(uid,role){
+  if(typeof SB==="undefined"||!SB||typeof sbCall!=="function")return;
+  try{
+    const gu=await sbCall(SB.auth.getUser());
+    const md=gu&&gu.data&&gu.data.user&&gu.data.user.user_metadata;
+    if(md&&Array.isArray(md.enrolled_courses))md.enrolled_courses.forEach(e=>{if(e&&e.key&&!czEnrolled(e.key))S.enrolledCourses.push(e);});
+  }catch(e){}
+  try{
+    const cs=await sbCall(SB.from("courses").select("*").order("created_at",{ascending:true}).limit(200));
+    if(cs.error||!cs.data)return;
+    let pmap={};
+    try{const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url,email").limit(1000));if(!pr.error&&pr.data)pr.data.forEach(p=>{pmap[p.id]=p;});}catch(e){}
+    cs.data.forEach(row=>{
+      const tp=pmap[row.teacher_id]||{};
+      const em=(tp.email||"").toLowerCase();
+      let acct=null,acctKey=null;
+      if(em&&ACCOUNTS[em]){acct=ACCOUNTS[em];acctKey=em;}
+      else Object.keys(ACCOUNTS).forEach(k=>{if(!acct&&ACCOUNTS[k]&&ACCOUNTS[k]._uid===row.teacher_id){acct=ACCOUNTS[k];acctKey=k;}});
+      if(!acct){
+        acctKey=em||("uid:"+row.teacher_id);
+        ACCOUNTS[acctKey]={name:tp.display_name||acctKey,nameEn:tp.display_name||acctKey,email:em||"",phone:"",dob:"",role:"teacher",progress:freshProgress(),courses:[],_uid:row.teacher_id,_server:true};
+        acct=ACCOUNTS[acctKey];
+      }
+      if(!Array.isArray(acct.courses))acct.courses=[];
+      const ex=czAll().find(x=>x.sid===row.id);
+      if(ex){if(row.join_code)ex.code=row.join_code;if(row.pass_hash)ex.passH=row.pass_hash;if(row.pass_salt)ex.passSalt=row.pass_salt;return;}
+      acct.courses.push({id:++CZ_SEQ,sid:row.id,title:row.title,exps:Array.isArray(row.exp_ids)?row.exp_ids:[],by:acctKey,byName:tp.display_name||acct.name||acctKey,code:row.join_code||"",passH:row.pass_hash||"",passSalt:row.pass_salt||""});
+    });
+  }catch(e){}
+  /* memberships from the server (course_members): restore MY enrolments even
+     on a fresh device, and give teachers/owner the true member count of each
+     of their courses. Best-effort — local state already covers this device. */
+  try{
+    const mem=await sbCall(SB.from("course_members").select("course_id").eq("student_id",uid).limit(500));
+    if(!mem.error&&mem.data)mem.data.forEach(row=>{
+      const c=czAll().find(x=>x.sid===row.course_id);
+      if(c&&!czEnrolled(czKey(c)))S.enrolledCourses.push({key:czKey(c),code:c.code||"",title:c.title||"",byName:c.byName||""});
+    });
+  }catch(e){}
+  try{
+    if(role==="teacher"||role==="owner"){
+      const mine=czAll().filter(c=>c.sid&&(role==="owner"||czMine(c)));
+      if(mine.length){
+        const rows=await sbCall(SB.from("course_members").select("course_id").in("course_id",mine.map(c=>c.sid)).limit(2000));
+        if(!rows.error&&rows.data){const cnt={};rows.data.forEach(r=>{cnt[r.course_id]=(cnt[r.course_id]||0)+1;});mine.forEach(c=>{c._srvMembers=cnt[c.sid]||0;});}
+      }
+    }
+  }catch(e){}
+}
+if(typeof sbLoadExtras==="function"){
+  const _leCz=sbLoadExtras;
+  sbLoadExtras=async function(uid,role){
+    await _leCz(uid,role);
+    try{await czServerExtras(uid,role);}catch(e){}
+    CZ_EXTRAS_RUN=true;
+    try{czZone();if(currentScreen==="scr-course")renderCourseScreen();}catch(e){}
+  };
+}
+/* ---------- navigation & language hooks ---------- */
+const _ssCz=showScreen;
+showScreen=function(id){
+  _ssCz(id);
+  try{
+    if(id==="scr-course"){if(!CZ_CUR)CZ_CUR=sessionStorage.getItem("il_course_key");renderCourseScreen();}
+    if(id==="scr-home")czZone();
+  }catch(e){}
+};
+const _rhCz=renderHome;
+renderHome=function(){_rhCz();try{czZone();}catch(e){}};
+const _alCz=applyLang;
+applyLang=function(l){_alCz(l);try{czZone();czTeacherLabels();if(currentScreen==="scr-course")renderCourseScreen();if(currentScreen==="scr-teacher"&&CZ_MANAGE_ID!=null)czOpenManage(CZ_MANAGE_ID);}catch(e){}};
+try{czEnsureCodes();czZone();czTeacherLabels();}catch(e){}
+</script>
+
+<script>
+"use strict";
+/* ================= REAL APPARATUS SCENES FOR THE "generic" EXPERIMENTS =================
+   27 experiments (the 24 former choice labs converted to marker predictions,
+   plus #16/#39/#50) all shared ONE generic gauge drawing in drawScene's else
+   branch — a semicircle, a needle and signal bars that belong to no apparatus
+   at all. In a duel (givens panel hidden by design) that left the player with
+   a question and a bare scale: nothing to look at, nothing to base an estimate
+   on. Each of those experiments now paints its OWN apparatus — the setup the
+   question describes (transformer windings, syringe, compass under a wire,
+   gamma source and lead plate…) — with the player's guess as a ghost indicator
+   on the scene itself and the reveal animating the real outcome. The wrapper
+   follows the established drawScene override chain and falls through for every
+   other experiment, so all existing scenes are untouched. */
+function gsTxt(ctx,txt,x,y,o){o=o||{};ctx.fillStyle=o.c||C_INK;ctx.font=(o.b?"bold ":"")+(o.s||12)+"px sans-serif";ctx.textAlign=o.a||"center";ctx.fillText(txt,x,y);}
+function gsCap(ctx,w,txt){gsTxt(ctx,txt,w-16,22,{a:"right",s:13});}
+function gsGhost(ctx,draw){ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;draw();ctx.restore();}
+function gsMeter(ctx,cx,cy,r,g,tp,reveal,anim,label){
+  ctx.fillStyle="#ffffff";ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.fill();ctx.stroke();
+  ctx.strokeStyle=C_INK;ctx.lineWidth=1.5;
+  for(let i=0;i<=4;i++){const a=Math.PI*.75+i*(Math.PI*1.5)/4;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*(r-6),cy+Math.sin(a)*(r-6));ctx.lineTo(cx+Math.cos(a)*(r-1),cy+Math.sin(a)*(r-1));ctx.stroke();}
+  const needle=(frac,col,dash)=>{const a=Math.PI*.75+clamp(frac,0,1)*Math.PI*1.5;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(r-9),cy+Math.sin(a)*(r-9));ctx.stroke();ctx.restore();ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(cx,cy,3.5,0,7);ctx.fill();};
+  if(reveal)needle(tp*anim,C_RED,false);
+  else if(g!=null)needle(g,C_BLUE,true);
+  else gsTxt(ctx,LANG==="en"?"?":"؟",cx,cy+6,{b:1,s:16});
+  if(label)gsTxt(ctx,label,cx,cy+r+16,{s:11});
+}
+function gsFlame(ctx,x,y,s){ctx.fillStyle="rgba(224,138,0,.8)";ctx.beginPath();ctx.moveTo(x-9*s,y);ctx.quadraticCurveTo(x,y-26*s,x+9*s,y);ctx.quadraticCurveTo(x,y-8*s,x-9*s,y);ctx.fill();ctx.fillStyle="rgba(245,197,66,.9)";ctx.beginPath();ctx.moveTo(x-4*s,y);ctx.quadraticCurveTo(x,y-14*s,x+4*s,y);ctx.quadraticCurveTo(x,y-4*s,x-4*s,y);ctx.fill();}
+function gsThermo(ctx,x,yT,yB,frac,col,dash){
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(x-5,yT,10,yB-yT);ctx.beginPath();ctx.arc(x,yB+9,10,0,7);ctx.stroke();
+  if(frac!=null){const fh=(yB-yT)*clamp(frac,0,1);ctx.save();if(dash)ctx.globalAlpha=.55;ctx.fillStyle=col;ctx.fillRect(x-3,yB-fh,6,fh);ctx.beginPath();ctx.arc(x,yB+9,6.5,0,7);ctx.fill();ctx.restore();}
+}
+const GSCENE_PAINT={
+3(ctx,w,h,anim,g,tp,reveal){ // specific heat: equal masses, same heat — water +10°, iron = ?
+  gsCap(ctx,w,T("كتلتان متساويتان على نفس النار — المية طلعت ١٠ درجات بس","Two equal masses on the same flame — the water rose only 10 degrees"));
+  const by=196;
+  ctx.fillStyle="#8a5a2b";ctx.fillRect(70,by,150,10);ctx.fillRect(390,by,150,10);
+  gsFlame(ctx,145,by,1);gsFlame(ctx,465,by,1);
+  ctx.fillStyle="rgba(29,111,209,.45)";ctx.fillRect(95,120,100,66);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(90,112,110,74);
+  gsTxt(ctx,T("ماء","Water"),145,204,{s:12});
+  gsThermo(ctx,238,96,168,.083,C_BLUE,false);gsTxt(ctx,"+10°",238,84,{s:11,c:C_BLUE});
+  ctx.fillStyle="#5b6d77";ctx.fillRect(415,128,100,58);ctx.strokeStyle=C_INK;ctx.strokeRect(415,128,100,58);
+  ctx.fillStyle="rgba(224,60,0,"+(reveal?.25+.55*tp*anim:.18)+")";ctx.fillRect(415,128,100,58);
+  gsTxt(ctx,T("حديد","Iron"),465,204,{s:12});
+  if(!reveal&&g!=null)gsThermo(ctx,556,96,168,g,C_RED,true);
+  if(reveal)gsThermo(ctx,556,96,168,tp*anim,C_RED,false);
+  if(!reveal&&g==null)gsTxt(ctx,LANG==="en"?"?":"؟",556,84,{b:1,s:15,c:C_RED});
+  gsTxt(ctx,T("حرارة الحديد؟","Iron's rise?"),556,204,{s:12,c:C_RED});
+},
+7(ctx,w,h,anim,g,tp,reveal){ // drops mounding on a coin
+  gsCap(ctx,w,T("قطرات مية بتتكوّم على عملة معدنية — التوتر السطحي ماسكها","Water drops mounding on a coin — surface tension holds them"));
+  const cx=320,cy=168;
+  ctx.fillStyle="#d9a441";ctx.beginPath();ctx.ellipse(cx,cy,170,26,0,0,7);ctx.fill();ctx.strokeStyle="#a8742a";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(cx,cy-4,150,18,0,0,7);ctx.fill();
+  const dome=(frac,col,dash)=>{const dh=4+frac*52;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.fillStyle="rgba(90,160,230,.30)";ctx.beginPath();ctx.ellipse(cx,cy-8,120,-dh,0,Math.PI,0);ctx.closePath();if(!dash)ctx.fill();ctx.lineWidth=2.5;ctx.stroke();ctx.restore();};
+  dome(.16,"rgba(29,111,209,.7)",false);
+  if(!reveal&&g!=null)dome(g,C_BLUE,true);
+  if(reveal)dome(tp*anim,"rgba(29,111,209,.9)",false);
+  ctx.fillStyle="#46525a";ctx.fillRect(cx-5,34,10,44);ctx.fillStyle="rgba(90,160,230,.85)";ctx.beginPath();ctx.arc(cx,88,6,0,7);ctx.fill();
+  gsTxt(ctx,T("قطّارة","Dropper"),cx+44,52,{s:11});
+},
+10(ctx,w,h,anim,g,tp,reveal){ // Boyle: syringe compressed to half — new pressure?
+  gsCap(ctx,w,T("محقنة اتقفلت واتضغطت لنص الحجم بالظبط — الحرارة ثابتة","A sealed syringe compressed to exactly half its volume — temperature fixed"));
+  const y=104,bx0=70,bx1=430;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(bx0,y,360,44);
+  ctx.fillStyle="rgba(245,197,66,.4)";ctx.fillRect(bx0+3,y+3,177,38);
+  ctx.fillStyle="#46525a";ctx.fillRect(250,y-4,26,52);ctx.fillRect(276,y+16,110,12);
+  gsTxt(ctx,T("المكبس عند النص","Piston at half"),330,88,{s:11});
+  gsTxt(ctx,T("غاز محبوس","Trapped gas"),160,168,{s:12});
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(430,y+22);ctx.lineTo(492,116);ctx.stroke();
+  gsMeter(ctx,540,116,40,g,tp,reveal,anim,T("الضغط","Pressure"));
+},
+13(ctx,w,h,anim,g,tp,reveal){ // Oersted: wire over a compass
+  gsCap(ctx,w,T("سلك فيه تيار قوي فوق إبرة بوصلة (أورستد) — الإبرة هتنحرف قد إيه؟","A strong current in a wire above a compass needle (Oersted) — how far will it deflect?"));
+  const cx=320,cy=118;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,64,0,7);ctx.stroke();
+  gsTxt(ctx,"N",cx,44,{b:1,s:13});gsTxt(ctx,T("شمال","North"),cx,30,{s:10});
+  for(let i=0;i<4;i++){const a=i*Math.PI/2;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*56,cy+Math.sin(a)*56);ctx.lineTo(cx+Math.cos(a)*64,cy+Math.sin(a)*64);ctx.stroke();}
+  const needle=(frac,col,dash)=>{const a=-Math.PI/2+frac*Math.PI/2;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*46,cy-Math.sin(a)*46);ctx.lineTo(cx+Math.cos(a)*52,cy+Math.sin(a)*52);ctx.stroke();ctx.restore();};
+  needle(0,C_RED,false);
+  if(!reveal&&g!=null)needle(g,C_BLUE,true);
+  if(reveal)needle(tp*anim,C_RED,false);
+  ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(cx,cy,5,0,7);ctx.fill();
+  ctx.strokeStyle="#b87333";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(cx,6);ctx.lineTo(cx,44);ctx.moveTo(cx,192);ctx.lineTo(cx,206);ctx.stroke();
+  ctx.fillStyle="#b87333";ctx.beginPath();ctx.moveTo(cx,44);ctx.lineTo(cx-7,58);ctx.lineTo(cx+7,58);ctx.fill();
+  gsTxt(ctx,T("التيار ↑","Current ↑"),cx+52,26,{s:11});
+},
+14(ctx,w,h,anim,g,tp,reveal){ // electromagnet: 200 turns — how many clips?
+  gsCap(ctx,w,T("مغناطيس كهربائي بـ٢٠٠ لفة — هيشيل كام مشبك؟ (١٠٠ لفة شالت ٦)","An electromagnet with 200 turns — how many clips? (100 turns lifted 6)"));
+  ctx.fillStyle="#22303a";ctx.fillRect(56,66,54,34);gsTxt(ctx,T("بطارية","Battery"),83,118,{s:11});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(110,74);ctx.lineTo(196,74);ctx.moveTo(110,94);ctx.lineTo(196,150);ctx.stroke();
+  ctx.fillStyle="#8a5a2b";ctx.fillRect(196,96,250,22);ctx.strokeStyle=C_INK;ctx.strokeRect(196,96,250,22);
+  ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<16;i++){const x=206+i*15;ctx.beginPath();ctx.moveTo(x,92);ctx.lineTo(x+8,122);ctx.stroke();}
+  gsTxt(ctx,T("قلب حديدي — ٢٠٠ لفة","Iron core — 200 turns"),321,80,{s:12});
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(446,107);ctx.lineTo(540,107);ctx.lineTo(540,150);ctx.stroke();
+  const clip=(x,y,rot,col,dash)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);if(dash)ctx.setLineDash([4,3]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(-5,-11,10,22);ctx.restore();};
+  const hang=(frac,col,dash)=>{const n=Math.round(frac*24);for(let i=0;i<n;i++){const cx2=216+(i%12)*19,cy2=140+Math.floor(i/12)*26;clip(cx2,cy2,(i%2?.16:-.16),col,dash);}};
+  hang(.25,"#7d939e",false); // the known 6 clips of the 100-turn reference
+  if(!reveal&&g!=null)hang(g,C_BLUE,true);
+  if(reveal)hang(tp*anim,C_TEAL,false);
+  gsTxt(ctx,T("مشابك ورق","Paper clips"),560,196,{s:11});
+  ctx.fillStyle="#c9ccd1";for(let i=0;i<7;i++)clip(520+i*15,182,(i%3-1)*.5,"#9aa7ad",false);
+},
+15(ctx,w,h,anim,g,tp,reveal){ // induction: magnet in a coil + galvanometer
+  gsCap(ctx,w,T("مغناطيس بيتحرك رايح جاي جوه ملف — مؤشر الجلفانومتر هيوصل لفين؟","A magnet moving in and out of a coil — how far will the galvanometer swing?"));
+  ctx.fillStyle=C_RED;ctx.fillRect(52,96,64,30);ctx.fillStyle=C_BLUE;ctx.fillRect(116,96,64,30);
+  gsTxt(ctx,"N",84,116,{b:1,s:14,c:"#fff"});gsTxt(ctx,"S",148,116,{b:1,s:14,c:"#fff"});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(196,96);ctx.lineTo(238,96);ctx.moveTo(196,126);ctx.lineTo(238,126);ctx.stroke();
+  ctx.fillStyle=C_INK;ctx.beginPath();ctx.moveTo(238,111);ctx.lineTo(224,104);ctx.lineTo(224,118);ctx.fill();ctx.beginPath();ctx.moveTo(196,111);ctx.lineTo(210,104);ctx.lineTo(210,118);ctx.fill();
+  ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<6;i++){const x=252+i*17;ctx.beginPath();ctx.arc(x+8,111,13,Math.PI*.5,Math.PI*1.5);ctx.stroke();ctx.beginPath();ctx.arc(x+8,111,13,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
+  gsTxt(ctx,T("ملف","Coil"),302,160,{s:12});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(356,90);ctx.lineTo(452,90);ctx.lineTo(452,66);ctx.moveTo(356,132);ctx.lineTo(420,132);ctx.lineTo(420,150);ctx.stroke();
+  gsMeter(ctx,486,116,46,g,tp,reveal,anim,T("جلفانومتر","Galvanometer"));
+},
+16(ctx,w,h,anim,g,tp,reveal){ // capacitor charging at t = tau
+  gsCap(ctx,w,T("مكثف بيتشحن من بطارية عبر مقاومة — عدّى زمن قدّ الثابت الزمني τ بالظبط","A capacitor charging from a battery through a resistor — exactly one time constant τ has passed"));
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(90,58,380,118);
+  ctx.fillStyle=C_INK;ctx.fillRect(84,96,5,42);ctx.fillRect(97,106,3,22);gsTxt(ctx,T("بطارية","Battery"),88,196,{s:11});
+  ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();let zx=215;ctx.moveTo(zx,58);for(let i=0;i<6;i++){ctx.lineTo(zx+11,58+(i%2?13:-13));zx+=22;}ctx.lineTo(zx,58);ctx.stroke();gsTxt(ctx,"R",280,36,{s:12});
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(452,84);ctx.lineTo(452,150);ctx.moveTo(470,84);ctx.lineTo(470,150);ctx.stroke();gsTxt(ctx,"C",461,196,{s:12});
+  const shown=reveal?tp*anim:null;
+  if(shown!=null){ctx.fillStyle=C_RED;for(let i=0;i<Math.round(shown*6);i++)gsTxt(ctx,"+",440,96+i*10,{s:11,c:C_RED});ctx.fillStyle=C_BLUE;for(let i=0;i<Math.round(shown*6);i++)gsTxt(ctx,"−",482,96+i*10,{s:11,c:C_BLUE});}
+  const bar=(frac,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(520,58,26,118);if(!dash){ctx.fillStyle=col;ctx.fillRect(523,58+118*(1-frac),20,118*frac);}ctx.restore();};
+  gsTxt(ctx,T("الشحنة","Charge"),533,44,{s:11});
+  if(!reveal&&g!=null)bar(g,C_BLUE,true);
+  if(reveal)bar(tp*anim,C_TEAL,false);
+},
+17(ctx,w,h,anim,g,tp,reveal){ // Kirchhoff node: 5 A in, 2 A out one branch
+  gsCap(ctx,w,T("تيار ٥ أمبير وصل لعقدة واتفرّع — فرع خد ٢ أمبير، والتاني؟","A 5 A current reaches a node and branches — one branch took 2 A, the other?"));
+  const ny=118;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(36,ny);ctx.lineTo(268,ny);ctx.stroke();
+  ctx.fillStyle=C_INK;ctx.beginPath();ctx.moveTo(180,ny);ctx.lineTo(162,ny-7);ctx.lineTo(162,ny+7);ctx.fill();
+  gsTxt(ctx,"5 A",110,96,{b:1,s:15});
+  ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.arc(280,ny,9,0,7);ctx.fill();gsTxt(ctx,T("عقدة","Node"),280,ny+30,{s:11});
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(288,ny-4);ctx.lineTo(520,52);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(288,ny+4);ctx.lineTo(520,184);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(430,80);ctx.lineTo(414,76);ctx.lineTo(420,92);ctx.fill();
+  gsTxt(ctx,"2 A",470,44,{b:1,s:14,c:C_TEAL});
+  if(reveal){gsTxt(ctx,(tp*5).toFixed(1)+" A",470,208,{b:1,s:14,c:C_GOOD});}
+  else if(g!=null){gsGhost(ctx,()=>{ctx.beginPath();ctx.moveTo(430,158);ctx.lineTo(414,162);ctx.lineTo(420,146);ctx.stroke();});gsTxt(ctx,LANG==="en"?"? A":"؟ أمبير",470,208,{b:1,s:14,c:C_BLUE});}
+  else gsTxt(ctx,LANG==="en"?"? A":"؟ أمبير",470,208,{b:1,s:14});
+},
+19(ctx,w,h,anim,g,tp,reveal){ // heater energy: 2000 W x 1 h
+  gsCap(ctx,w,T("سخان ٢٠٠٠ واط اشتغل ساعة كاملة — استهلك طاقة قد إيه؟","A 2000 W heater ran for a full hour — how much energy did it use?"));
+  ctx.fillStyle="#46525a";ctx.fillRect(96,92,170,84);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(96,92,170,84);
+  ctx.strokeStyle=C_RED;ctx.lineWidth=4;ctx.beginPath();for(let i=0;i<3;i++){const y=112+i*22;ctx.moveTo(112,y);for(let x=0;x<5;x++)ctx.lineTo(112+(x+1)*27,y+(x%2?-6:6));}ctx.stroke();
+  gsTxt(ctx,"2000 W",181,196,{b:1,s:14,c:C_RED});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(356,92,32,0,7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(356,92);ctx.lineTo(356,68);ctx.moveTo(356,92);ctx.lineTo(374,100);ctx.stroke();
+  ctx.strokeStyle=C_AMBER;ctx.lineWidth=3;ctx.beginPath();ctx.arc(356,92,26,-Math.PI/2,-Math.PI/2+ (reveal?anim:1)*Math.PI*2);ctx.stroke();
+  gsTxt(ctx,T("ساعة كاملة","One full hour"),356,148,{s:11});
+  const bar=(frac,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(448,66,120,26);if(!dash){ctx.fillStyle=col;ctx.fillRect(451,69,114*frac,20);}ctx.restore();};
+  gsTxt(ctx,T("عداد الطاقة","Energy meter"),508,52,{s:11});
+  if(!reveal&&g!=null)bar(g,C_BLUE,true);
+  if(reveal)bar(tp*anim,C_TEAL,false);
+  gsTxt(ctx,"Wh",508,116,{s:12});
+},
+20(ctx,w,h,anim,g,tp,reveal){ // motor: battery reversed — new rotation direction/strength
+  gsCap(ctx,w,T("محرك DC — عكسنا أقطاب البطارية فالتيار انعكس. الدوران الجديد اتجاهه وقوته؟","A DC motor — we reversed the battery so the current flipped. The new rotation: direction and strength?"));
+  ctx.fillStyle=C_RED;ctx.fillRect(70,66,54,104);gsTxt(ctx,"N",97,124,{b:1,s:18,c:"#fff"});
+  ctx.fillStyle=C_BLUE;ctx.fillRect(516,66,54,104);gsTxt(ctx,"S",543,124,{b:1,s:18,c:"#fff"});
+  const rot=(frac,col,dash)=>{const a=(frac-.5)*2*1.05;ctx.save();ctx.translate(320,118);ctx.rotate(a);if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(-58,-26,116,52);ctx.beginPath();ctx.moveTo(-58,0);ctx.lineTo(58,0);ctx.stroke();ctx.restore();};
+  rot(.5,C_INK,false);
+  if(!reveal&&g!=null)rot(g,C_BLUE,true);
+  if(reveal)rot(.5+(tp-.5)*anim,C_TEAL,false);
+  const dirA=tp>=.5?1:-1;
+  if(reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,118,86,dirA>0?-.4:Math.PI-.9,dirA>0?.9:Math.PI+.4,dirA<0);ctx.stroke();}
+  ctx.fillStyle="#22303a";ctx.fillRect(272,196,96,26);gsTxt(ctx,"−  +",320,214,{b:1,s:13,c:"#7fd4ff"});
+  gsTxt(ctx,T("بطارية معكوسة الأقطاب","Battery reversed"),320,240,{s:11});
+},
+23(ctx,w,h,anim,g,tp,reveal){ // friction: box sliding to a stop on rough carpet
+  gsCap(ctx,w,T("صندوق اتزحلق على سجادة خشنة — هيقف بعد مسافة قد إيه؟","A box sliding on a rough carpet — how far before it stops?"));
+  const gy=184,x0=64,span=500;
+  ctx.fillStyle="#9c6b34";ctx.fillRect(30,gy,580,14);
+  ctx.strokeStyle="rgba(0,0,0,.25)";ctx.lineWidth=1.5;for(let x=40;x<600;x+=16){ctx.beginPath();ctx.moveTo(x,gy+12);ctx.lineTo(x+8,gy+2);ctx.stroke();}
+  const bx=reveal?x0+tp*anim*span:x0;
+  if(reveal){ctx.strokeStyle="rgba(70,82,90,.5)";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0,gy-2);ctx.lineTo(bx,gy-2);ctx.stroke();}
+  ctx.fillStyle="#b07a3f";ctx.fillRect(bx,gy-40,46,40);ctx.strokeStyle="#5f3d17";ctx.lineWidth=2;ctx.strokeRect(bx,gy-40,46,40);
+  if(!reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x0+56,gy-58);ctx.lineTo(x0+104,gy-58);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(x0+104,gy-58);ctx.lineTo(x0+92,gy-64);ctx.lineTo(x0+92,gy-52);ctx.fill();gsTxt(ctx,T("سرعة ابتدائية","Initial speed"),x0+80,gy-70,{s:11,c:C_TEAL});}
+  const flag=(frac,col,dash)=>{const fx=x0+frac*span;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fx,gy);ctx.lineTo(fx,gy-56);ctx.stroke();ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(fx,gy-56);ctx.lineTo(fx+20,gy-48);ctx.lineTo(fx,gy-40);ctx.fill();ctx.restore();};
+  if(!reveal&&g!=null)flag(g,C_BLUE,true);
+  if(reveal)flag(tp,C_GOOD,false);
+},
+26(ctx,w,h,anim,g,tp,reveal){ // inductive reactance: frequency doubled
+  gsCap(ctx,w,T("ملف حثي — ضاعفنا تردد المصدر للضعف. الممانعة الحثية الجديدة؟","An inductor — we doubled the source frequency. The new inductive reactance?"));
+  ctx.strokeStyle="rgba(125,147,158,.6)";ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<=150;x+=5){const y=64+Math.sin(x/150*Math.PI*2)*13;x===0?ctx.moveTo(56+x,y):ctx.lineTo(56+x,y);}ctx.stroke();gsTxt(ctx,"f",130,34,{s:12});
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=150;x+=5){const y=118+Math.sin(x/150*Math.PI*4)*13;x===0?ctx.moveTo(56+x,y):ctx.lineTo(56+x,y);}ctx.stroke();gsTxt(ctx,"2f",130,152,{b:1,s:13,c:C_TEAL});
+  gsTxt(ctx,T("مصدر متردد","AC source"),130,178,{s:11});
+  ctx.strokeStyle="#b87333";ctx.lineWidth=3.5;for(let i=0;i<5;i++){const x=268+i*24;ctx.beginPath();ctx.arc(x+12,104,15,Math.PI*.5,Math.PI*1.5);ctx.stroke();ctx.beginPath();ctx.arc(x+12,104,15,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
+  gsTxt(ctx,T("ملف حثي L","Inductor L"),328,152,{s:12});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(206,104);ctx.lineTo(262,104);ctx.moveTo(392,104);ctx.lineTo(452,104);ctx.stroke();
+  gsMeter(ctx,520,104,44,g,tp,reveal,anim,T("الممانعة Xᴸ","Reactance Xᴸ"));
+},
+28(ctx,w,h,anim,g,tp,reveal){ // transformer 100:500, 220 V in
+  gsCap(ctx,w,T("محوّل: ابتدائي ١٠٠ لفة وثانوي ٥٠٠ لفة، والدخل ٢٢٠ فولت — الخرج؟","A transformer: 100 primary turns, 500 secondary, 220 V in — the output?"));
+  ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(252,52,136,118);
+  ctx.strokeStyle="#b87333";ctx.lineWidth=3;for(let i=0;i<5;i++){const y=66+i*22;ctx.beginPath();ctx.arc(252,y+8,11,Math.PI*.5,Math.PI*1.5);ctx.stroke();}
+  for(let i=0;i<11;i++){const y=58+i*10;ctx.beginPath();ctx.arc(388,y+5,7,Math.PI*1.5,Math.PI*.5);ctx.stroke();}
+  gsTxt(ctx,T("ابتدائي ١٠٠ لفة","Primary 100 turns"),196,44,{s:12});gsTxt(ctx,T("ثانوي ٥٠٠ لفة","Secondary 500 turns"),452,44,{s:12});
+  ctx.fillStyle="rgba(245,197,66,.85)";ctx.beginPath();ctx.arc(150,111,20,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.stroke();gsTxt(ctx,"220 V",150,180,{b:1,s:13});
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(170,111);ctx.lineTo(238,111);ctx.moveTo(402,111);ctx.lineTo(452,96);ctx.stroke();
+  gsMeter(ctx,516,104,42,g,tp,reveal,anim,T("جهد الخرج","Output voltage"));
+},
+29(ctx,w,h,anim,g,tp,reveal){ // diode threshold: I-V knee
+  gsCap(ctx,w,T("دايود سيليكون في الانحياز الأمامي — التيار بيبدأ يزيد بجد عند أي جهد؟","A silicon diode in forward bias — at what voltage does the current really take off?"));
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(44,30,120,58);
+  ctx.fillStyle=C_INK;ctx.fillRect(52,52,5,14);ctx.fillRect(62,56,2,7);
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(86,59);ctx.lineTo(104,59);ctx.stroke();ctx.beginPath();ctx.moveTo(104,48);ctx.lineTo(104,70);ctx.lineTo(122,59);ctx.closePath();ctx.stroke();ctx.beginPath();ctx.moveTo(122,48);ctx.lineTo(122,70);ctx.stroke();ctx.beginPath();ctx.moveTo(122,59);ctx.lineTo(150,59);ctx.stroke();
+  gsTxt(ctx,T("دايود","Diode"),104,104,{s:11});
+  const ax=200,ay=196,aw=380,ah=130;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+aw,ay);ctx.moveTo(ax,ay);ctx.lineTo(ax,ay-ah);ctx.stroke();
+  gsTxt(ctx,T("الجهد","Voltage"),ax+aw-16,ay+18,{s:11});gsTxt(ctx,T("التيار","Current"),ax+22,ay-ah+6,{s:11});
+  const curve=(frac,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+frac*aw,ay);for(let i=1;i<=20;i++){const p=i/20;ctx.lineTo(ax+frac*aw+p*(aw-frac*aw)*.55,ay-Math.pow(p,2.2)*ah*.92);}ctx.stroke();ctx.restore();};
+  curve(.35,"rgba(125,147,158,.55)",false);
+  if(!reveal&&g!=null)gsGhost(ctx,()=>{const x=ax+g*aw;ctx.beginPath();ctx.moveTo(x,ay);ctx.lineTo(x,ay-ah);ctx.stroke();});
+  if(reveal){curve(tp,C_RED,false);const x=ax+tp*aw;ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(x,ay,5,0,7);ctx.fill();gsTxt(ctx,T("جهد العتبة","Threshold"),x,ay-ah-8,{s:11,c:C_RED});}
+},
+35(ctx,w,h,anim,g,tp,reveal){ // Franck-Hertz: first current drop
+  gsCap(ctx,w,T("أنبوبة فرانك–هيرتز (بخار زئبق) — التيار بيهبط فجأة أول مرة عند أي جهد؟","A Franck–Hertz tube (mercury vapour) — at what voltage does the current first drop suddenly?"));
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(70,84);ctx.lineTo(400,84);ctx.quadraticCurveTo(424,84,424,112);ctx.quadraticCurveTo(424,140,400,140);ctx.lineTo(70,140);ctx.quadraticCurveTo(46,140,46,112);ctx.quadraticCurveTo(46,84,70,84);ctx.stroke();
+  ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(66,96);ctx.lineTo(66,128);ctx.stroke();gsTxt(ctx,T("مهبط","Cathode"),66,160,{s:10});
+  ctx.strokeStyle=C_INK;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(268,84);ctx.lineTo(268,140);ctx.stroke();ctx.setLineDash([]);gsTxt(ctx,T("شبكة","Grid"),268,160,{s:10});
+  ctx.fillStyle=C_INK;ctx.fillRect(388,88,6,48);gsTxt(ctx,T("مصعد","Anode"),391,160,{s:10});
+  ctx.fillStyle="rgba(125,147,158,.7)";for(let i=0;i<14;i++){ctx.beginPath();ctx.arc(100+((i*53)%260),96+((i*37)%36),2.4,0,7);ctx.fill();}
+  const ax=452,ay=180,aw=150,ah=104;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+aw,ay);ctx.moveTo(ax,ay);ctx.lineTo(ax,ay-ah);ctx.stroke();
+  gsTxt(ctx,T("التيار × الجهد","Current × voltage"),ax+aw/2,ay+18,{s:10});
+  const curve=(frac,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ax,ay);for(let i=1;i<=30;i++){const p=i/30;const x=ax+p*frac*aw;const y=ay-(p*ah*.8)*(1-.35*Math.max(0,p-.92)/.08);ctx.lineTo(x,y);}ctx.stroke();};
+  curve(.55,"rgba(125,147,158,.55)");
+  if(!reveal&&g!=null)gsGhost(ctx,()=>{const x=ax+g*aw;ctx.beginPath();ctx.moveTo(x,ay);ctx.lineTo(x,ay-ah);ctx.stroke();});
+  if(reveal){curve(Math.max(tp,.03),C_RED);const x=ax+tp*aw;ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(x,ay-ah*.8,5,0,7);ctx.fill();gsTxt(ctx,T("أول هبوط","First drop"),x,ay-ah-8,{s:10,c:C_RED});}
+},
+37(ctx,w,h,anim,g,tp,reveal){ // Bohr: n=3 to n=2 photon wavelength
+  gsCap(ctx,w,T("إلكترون هيدروجين نزل من المستوى ٣ للمستوى ٢ — لون الفوتون المنبعث؟","A hydrogen electron fell from level 3 to level 2 — the emitted photon's colour?"));
+  const cx=225,cy=112;
+  ctx.strokeStyle="rgba(125,147,158,.65)";ctx.lineWidth=1.5;[30,56,82].forEach(r=>{ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();});
+  ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(cx,cy,10,0,7);ctx.fill();gsTxt(ctx,"H",cx,cy+4,{b:1,s:11});
+  gsTxt(ctx,"n=3",cx+92,cy-72,{s:11});gsTxt(ctx,"n=2",cx+66,cy-46,{s:11});
+  const eR=reveal?56:82,eA2=reveal?-.5:-.7;
+  ctx.fillStyle=C_BLUE;ctx.beginPath();ctx.arc(cx+eR*Math.cos(eA2),cy+eR*Math.sin(eA2),6,0,7);ctx.fill();
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx+76,cy-30);ctx.lineTo(cx+60,cy-16);ctx.stroke();ctx.fillStyle=C_TEAL;ctx.beginPath();ctx.moveTo(cx+60,cy-16);ctx.lineTo(cx+68,cy-14);ctx.lineTo(cx+62,cy-24);ctx.fill();
+  const hue=tp2=>Math.round((1-tp2)*270);
+  const wave=(frac,col)=>{ctx.strokeStyle=col;ctx.lineWidth=3;ctx.beginPath();for(let x=0;x<=170;x+=6){const y=112+Math.sin(x/13)*10;x===0?ctx.moveTo(360+x,y):ctx.lineTo(360+x,y);}ctx.stroke();};
+  if(reveal)wave(tp,"hsl("+hue(tp)+",85%,50%)");
+  else wave(0,"rgba(125,147,158,.6)");
+  gsTxt(ctx,T("فوتون منبعث","Emitted photon"),445,84,{s:11});
+  if(!reveal&&g!=null)gsTxt(ctx,T("توقعك: ","Your guess: ")+Math.round(380+g*320)+" nm",445,150,{s:11,c:C_BLUE});
+  if(reveal)gsTxt(ctx,Math.round(380+tp*320)+" nm",445,150,{b:1,s:13,c:C_GOOD});
+},
+39(ctx,w,h,anim,g,tp,reveal){ // LDR in bright light — its resistance?
+  gsCap(ctx,w,T("مقاومة ضوئية LDR تحت نور قوي — مقاومتها هتبقى قد إيه؟","An LDR under bright light — what will its resistance be?"));
+  ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(84,58,19,0,7);ctx.fill();
+  ctx.strokeStyle="rgba(224,138,0,.85)";ctx.lineWidth=2.5;for(let i=0;i<5;i++){const a=.25+i*.32;ctx.beginPath();ctx.moveTo(84+Math.cos(a)*25,58+Math.sin(a)*25);ctx.lineTo(196+Math.cos(a)*30,104+Math.sin(a)*22);ctx.stroke();}
+  gsTxt(ctx,T("نور قوي","Bright light"),84,100,{s:11,c:C_AMBER});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(150,138,290,54);
+  ctx.fillStyle=C_INK;ctx.fillRect(146,156,4,18);ctx.fillRect(157,160,2,10);gsTxt(ctx,T("بطارية","Battery"),150,210,{s:10});
+  ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(295,138,17,0,7);ctx.fill();ctx.strokeStyle=C_TEAL;ctx.lineWidth=2.5;ctx.stroke();ctx.beginPath();ctx.moveTo(283,138);ctx.lineTo(307,138);ctx.stroke();
+  gsTxt(ctx,"LDR",295,142,{b:1,s:9,c:C_TEAL});
+  ctx.strokeStyle=C_AMBER;ctx.lineWidth=2;for(let i=0;i<2;i++){ctx.beginPath();ctx.moveTo(272+i*13,110);ctx.lineTo(284+i*13,122);ctx.stroke();ctx.beginPath();ctx.moveTo(284+i*13,122);ctx.lineTo(278+i*13,120);ctx.moveTo(284+i*13,122);ctx.lineTo(283+i*13,115);ctx.stroke();}
+  ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(440,165);ctx.lineTo(472,146);ctx.stroke();
+  gsMeter(ctx,518,138,42,g,tp,reveal,anim,T("المقاومة","Resistance"));
+},
+38(ctx,w,h,anim,g,tp,reveal){ // transistor: IC = beta x IB
+  gsCap(ctx,w,T("ترانزستور β = 100 وتيار قاعدته 0.2 مللي أمبير — تيار المجمّع؟","A transistor with β = 100 and base current 0.2 mA — the collector current?"));
+  ctx.fillStyle="#22303a";ctx.fillRect(52,84,48,30);gsTxt(ctx,T("بطارية","Battery"),76,132,{s:10});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(100,99);ctx.lineTo(196,99);ctx.stroke();
+  ctx.strokeStyle=C_RED;ctx.lineWidth=2.5;ctx.beginPath();let zx=130;ctx.moveTo(zx,99);for(let i=0;i<4;i++){ctx.lineTo(zx+8,99+(i%2?9:-9));zx+=16;}ctx.lineTo(zx,99);ctx.stroke();
+  gsTxt(ctx,"IB = 0.2 mA",150,74,{s:11,c:C_RED});
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(268,112,30,0,7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(238,112);ctx.lineTo(258,112);ctx.moveTo(258,92);ctx.lineTo(284,74);ctx.moveTo(258,132);ctx.lineTo(284,150);ctx.stroke();
+  gsTxt(ctx,"β = 100",268,168,{b:1,s:12});
+  ctx.beginPath();ctx.moveTo(284,74);ctx.lineTo(380,74);ctx.lineTo(380,66);ctx.moveTo(238,112);ctx.lineTo(120,112);ctx.lineTo(120,196);ctx.lineTo(430,196);ctx.stroke();
+  gsMeter(ctx,452,74,40,g,tp,reveal,anim,T("تيار المجمّع IC","Collector current IC"));
+},
+40(ctx,w,h,anim,g,tp,reveal){ // Malus: polarizer at 45 degrees
+  gsCap(ctx,w,T("ضوء مستقطب عدى من مرشح مدوّر ٤٥° — كام في المية هينفذ؟ (مالوس)","Polarised light through a filter rotated 45° — what percentage gets through? (Malus)"));
+  ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.arc(52,112,17,0,7);ctx.fill();gsTxt(ctx,T("مصدر","Source"),52,150,{s:10});
+  ctx.strokeStyle="rgba(224,138,0,.75)";ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<110;x+=6){const y=112+Math.sin(x/9)*8;x===0?ctx.moveTo(76+x,y):ctx.lineTo(76+x,y);}ctx.stroke();
+  const pol=(x,deg)=>{ctx.save();ctx.translate(x,112);ctx.fillStyle="rgba(29,111,209,.16)";ctx.beginPath();ctx.arc(0,0,42,0,7);ctx.fill();ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.stroke();ctx.rotate(deg);ctx.lineWidth=1.6;for(let i=-3;i<=3;i++){ctx.beginPath();ctx.moveTo(i*11,-38);ctx.lineTo(i*11,38);ctx.stroke();}ctx.restore();};
+  pol(232,0);pol(368,Math.PI/4);
+  gsTxt(ctx,T("مستقطِب أول","First polariser"),232,180,{s:10});gsTxt(ctx,T("مدوّر ٤٥°","Rotated 45°"),368,180,{s:10});
+  const bright=reveal?tp*anim:(g!=null?g*.8:.1);
+  ctx.fillStyle="rgba(245,197,66,"+bright+")";ctx.fillRect(492,62,72,100);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(492,62,72,100);
+  if(!reveal&&g!=null)gsGhost(ctx,()=>{ctx.strokeRect(488,58,80,108);});
+  gsTxt(ctx,T("الشاشة","Screen"),528,180,{s:10});
+},
+43(ctx,w,h,anim,g,tp,reveal){ // binding energy curve, Fe-56 at the peak
+  gsCap(ctx,w,T("منحنى طاقة الربط لكل نيوكليون — الحديد-56 عند القمة. قيمته؟","The binding-energy-per-nucleon curve — iron-56 sits at the peak. Its value?"));
+  const ax=90,ay=188,aw=470,ah=128;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(ax+aw,ay);ctx.moveTo(ax,ay);ctx.lineTo(ax,ay-ah);ctx.stroke();
+  gsTxt(ctx,T("الكتلة العددية","Mass number"),ax+aw-30,ay+18,{s:10});gsTxt(ctx,"MeV",ax+16,ay-ah-4,{s:10});
+  const pts=[[.02,.12],[.1,.55],[.2,.78],[.3,.92],[.38,1],[.5,.97],[.7,.9],[1,.8]];
+  ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();pts.forEach((p,i)=>{const x=ax+p[0]*aw,y=ay-p[1]*ah;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.stroke();
+  const feX=ax+.38*aw,feY=ay-ah;
+  ctx.fillStyle=C_INK;[[.1,.55,"He"],[.38,1,"Fe-56"],[.92,.83,"U"]].forEach(m=>{ctx.beginPath();ctx.arc(ax+m[0]*aw,ay-m[1]*ah,4.5,0,7);ctx.fill();gsTxt(ctx,m[2],ax+m[0]*aw,ay-m[1]*ah-12,{s:11,b:1});});
+  const hline=(frac,col,dash)=>{const y=ay-frac*ah;ctx.save();if(dash)ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ax,y);ctx.lineTo(feX,y);ctx.stroke();ctx.restore();};
+  if(!reveal&&g!=null)hline(g,C_BLUE,true);
+  if(reveal)hline(tp*anim,C_GOOD,false);
+},
+44(ctx,w,h,anim,g,tp,reveal){ // gamma through thin lead
+  gsCap(ctx,w,T("أشعة جاما بتعدي من لوح رصاص رفيع — كام في المية هيوصل للكاشف؟","Gamma rays crossing a thin lead plate — what percentage reaches the detector?"));
+  ctx.fillStyle="#46525a";ctx.fillRect(52,78,58,74);ctx.fillStyle=C_AMBER;ctx.font="bold 26px sans-serif";ctx.textAlign="center";ctx.fillText("☢",81,124);
+  gsTxt(ctx,T("مصدر جاما","Gamma source"),81,172,{s:11});
+  ctx.fillStyle="#5b6d77";ctx.fillRect(300,44,20,150);ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(300,44,20,150);gsTxt(ctx,T("رصاص رفيع","Thin lead"),310,214,{s:11});
+  const ray=(y,pass,col,dash)=>{ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=184;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(112+x,yy):ctx.lineTo(112+x,yy);}ctx.stroke();if(pass){ctx.beginPath();for(let x=0;x<=150;x+=8){const yy=y+Math.sin(x/10)*5;x===0?ctx.moveTo(322+x,yy):ctx.lineTo(322+x,yy);}ctx.stroke();}ctx.restore();};
+  const rows=[70,100,130,160,186];
+  rows.forEach(y=>ray(y,false,C_AMBER,false));
+  const passN=reveal?Math.round(tp*5):(g!=null?Math.round(g*5):-1);
+  rows.forEach((y,i)=>{if(i<passN)ray(y,true,reveal?C_TEAL:C_BLUE,!reveal);});
+  ctx.fillStyle="#22303a";ctx.fillRect(486,74,84,84);gsTxt(ctx,reveal?T("وصل!","Detected!"):(LANG==="en"?"?":"؟"),528,124,{b:1,s:15,c:"#7fd4ff"});gsTxt(ctx,T("كاشف","Detector"),528,178,{s:11});
+},
+47(ctx,w,h,anim,g,tp,reveal){ // laser spot after 100 m
+  gsCap(ctx,w,T("شعاع ليزر سافر ١٠٠ متر — قطر بقعته على الشاشة بقى قد إيه؟","A laser beam travelled 100 metres — how wide is its spot on the screen now?"));
+  ctx.fillStyle="#46525a";ctx.fillRect(46,94,72,40);ctx.fillStyle=C_RED;ctx.fillRect(112,106,10,16);gsTxt(ctx,T("ليزر","Laser"),82,156,{s:11});
+  const spread=.16;
+  ctx.strokeStyle="rgba(211,56,44,.75)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(122,114);ctx.lineTo(548,114-170*spread);ctx.moveTo(122,114);ctx.lineTo(548,114+170*spread);ctx.stroke();
+  ctx.fillStyle="rgba(211,56,44,.1)";ctx.beginPath();ctx.moveTo(122,114);ctx.lineTo(548,114-170*spread);ctx.lineTo(548,114+170*spread);ctx.closePath();ctx.fill();
+  gsTxt(ctx,"100 m",330,196,{s:12});
+  ctx.fillStyle="#ece5cf";ctx.fillRect(548,44,14,140);ctx.strokeStyle=C_INK;ctx.strokeRect(548,44,14,140);
+  const spot=(frac,col,dash)=>{const r=3+frac*30;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.fillStyle="rgba(211,56,44,.35)";ctx.beginPath();ctx.ellipse(555,114,7,r,0,0,7);if(!dash)ctx.fill();ctx.lineWidth=2;ctx.stroke();ctx.restore();};
+  if(!reveal&&g!=null)spot(g,C_BLUE,true);
+  if(reveal)spot(tp*anim,C_RED,false);
+  gsTxt(ctx,T("الشاشة","Screen"),555,204,{s:10});
+},
+48(ctx,w,h,anim,g,tp,reveal){ // optical fibre critical angle
+  gsCap(ctx,w,T("ليف ضوئي: قلب ١٫٤٨ وغلاف ١٫٤٦ — الزاوية الحرجة للانعكاس الكلي؟","An optical fibre: core 1.48, cladding 1.46 — the critical angle for total internal reflection?"));
+  ctx.fillStyle="rgba(125,147,158,.35)";ctx.fillRect(46,84,548,66);
+  ctx.fillStyle="rgba(127,212,255,.35)";ctx.fillRect(46,100,548,34);
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.strokeRect(46,84,548,66);ctx.beginPath();ctx.moveTo(46,100);ctx.lineTo(594,100);ctx.moveTo(46,134);ctx.lineTo(594,134);ctx.stroke();
+  gsTxt(ctx,T("غلاف ١٫٤٦","Cladding 1.46"),110,76,{s:10});gsTxt(ctx,T("قلب ١٫٤٨","Core 1.48"),110,121,{s:10});
+  ctx.strokeStyle=C_RED;ctx.lineWidth=2.5;ctx.beginPath();let x=52,y=117,up=false;ctx.moveTo(x,y);while(x<560){x+=54;y=up?134:100;up=!up;ctx.lineTo(x,y);}ctx.stroke();
+  const ix=470,iy=168;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(ix,iy,44,0,7);ctx.stroke();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(ix,iy,43,0,7);ctx.fill();
+  ctx.beginPath();ctx.moveTo(ix-40,iy);ctx.lineTo(ix+40,iy);ctx.stroke();gsTxt(ctx,T("حدّ القلب والغلاف","Core–cladding boundary"),ix,iy+62,{s:10});
+  ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(ix,iy-40);ctx.lineTo(ix,iy+16);ctx.stroke();ctx.setLineDash([]);gsTxt(ctx,T("العمودي","Normal"),ix+22,iy-30,{s:9});
+  const rayA=(frac,col,dash)=>{const a=frac*Math.PI/2;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(ix,iy);ctx.lineTo(ix-Math.sin(a)*38,iy-Math.cos(a)*38);ctx.stroke();ctx.restore();};
+  if(!reveal&&g!=null)rayA(g,C_BLUE,true);
+  if(reveal)rayA(tp,C_RED,false);
+},
+50(ctx,w,h,anim,g,tp,reveal){ // galvanometer: coil between magnet poles
+  gsCap(ctx,w,T("تيار صغير جدًا في ملف بين قطبي مغناطيس — مؤشر الجلفانومتر هينحرف قد إيه؟","A tiny current in a coil between magnet poles — how far will the galvanometer needle deflect?"));
+  ctx.fillStyle=C_RED;ctx.fillRect(196,36,66,44);gsTxt(ctx,"N",229,66,{b:1,s:16,c:"#fff"});
+  ctx.fillStyle=C_BLUE;ctx.fillRect(378,36,66,44);gsTxt(ctx,"S",411,66,{b:1,s:16,c:"#fff"});
+  ctx.strokeStyle="rgba(125,147,158,.5)";ctx.lineWidth=1.5;for(let i=0;i<4;i++){ctx.beginPath();ctx.moveTo(262,44+i*10);ctx.lineTo(378,44+i*10);ctx.stroke();}
+  const coil=(frac,col,dash)=>{ctx.save();ctx.translate(320,86);ctx.rotate((frac-.5)*.5);if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=3;ctx.strokeRect(-34,-6,68,58);ctx.restore();};
+  coil(.5,"#b87333",false);
+  if(!reveal&&g!=null)coil(g,C_BLUE,true);
+  if(reveal)coil(.5+(tp-.5)*anim,C_TEAL,false);
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(320,196,120,Math.PI*1.15,Math.PI*1.85);ctx.stroke();
+  for(let i=0;i<=6;i++){const a=Math.PI*1.15+i*(Math.PI*.7)/6;ctx.beginPath();ctx.moveTo(320+Math.cos(a)*112,196+Math.sin(a)*112);ctx.lineTo(320+Math.cos(a)*120,196+Math.sin(a)*120);ctx.stroke();}
+  const needle=(frac,col,dash)=>{const a=Math.PI*1.5+(frac-.5)*Math.PI*.7;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(320,196);ctx.lineTo(320+Math.cos(a)*104,196+Math.sin(a)*104);ctx.stroke();ctx.restore();};
+  needle(.5,C_RED,false);
+  if(!reveal&&g!=null)needle(g,C_BLUE,true);
+  if(reveal)needle(.5+(tp-.5)*anim,C_RED,false);
+  ctx.fillStyle=C_INK;ctx.beginPath();ctx.arc(320,196,5,0,7);ctx.fill();
+},
+56(ctx,w,h,anim,g,tp,reveal){ // Meissner: field inside the superconductor
+  gsCap(ctx,w,T("موصل فائق اتبرّد تحت حرارته الحرجة جوه مجال مغناطيسي — المجال جواه؟","A superconductor cooled below its critical temperature inside a magnetic field — the field inside it?"));
+  ctx.fillStyle=C_RED;ctx.fillRect(258,26,60,34);ctx.fillStyle=C_BLUE;ctx.fillRect(318,26,60,34);
+  gsTxt(ctx,"N",288,50,{b:1,s:14,c:"#fff"});gsTxt(ctx,"S",348,50,{b:1,s:14,c:"#fff"});
+  ctx.strokeStyle="rgba(29,111,209,.55)";ctx.lineWidth=2;
+  for(let i=-2;i<=2;i++){const off=i*36;ctx.beginPath();ctx.moveTo(318+off*.4,60);ctx.bezierCurveTo(318+off*1.7,96,318+off*1.7,120,318+off*.9,132);ctx.stroke();ctx.beginPath();ctx.moveTo(318+off*.9,182);ctx.lineTo(318+off*.9,204);ctx.stroke();}
+  ctx.fillStyle="rgba(127,212,255,.5)";ctx.beginPath();ctx.moveTo(222,132);ctx.lineTo(414,132);ctx.lineTo(428,182);ctx.lineTo(208,182);ctx.closePath();ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.stroke();
+  gsTxt(ctx,T("موصل فائق — أبرد من Tc","Superconductor — below Tc"),318,168,{b:1,s:12});
+  gsTxt(ctx,"❄",240,152,{s:14});gsTxt(ctx,"❄",392,152,{s:14});
+  if(!reveal&&g!=null&&g>.04)gsGhost(ctx,()=>{const n=Math.max(1,Math.round(g*4));for(let i=0;i<n;i++){const x=262+i*36;ctx.beginPath();ctx.moveTo(x,136);ctx.lineTo(x,178);ctx.stroke();}});
+  if(reveal&&tp>.04){ctx.strokeStyle="rgba(29,111,209,.5)";for(let i=0;i<Math.max(1,Math.round(tp*4));i++){const x=280+i*36;ctx.beginPath();ctx.moveTo(x,136);ctx.lineTo(x,178);ctx.stroke();}}
+  gsTxt(ctx,T("خطوط المجال بتنحني حوالين الموصل — وجواه؟","The field lines bend around the block — and inside it?"),318,222,{s:11});
+},
+58(ctx,w,h,anim,g,tp,reveal){ // gold nanoparticles: absorption peak
+  gsCap(ctx,w,T("محلول جسيمات ذهب نانوية (٢٠ نانومتر) — لونه أحمر ياقوتي. بيمتص أي لون بقوة؟","A gold-nanoparticle solution (20 nm) — ruby red. Which colour does it absorb strongly?"));
+  const sx=110,sw=420,sy=36;
+  const grad=ctx.createLinearGradient(sx,0,sx+sw,0);["#7a4fd0","#1d6fd1","#3fae5a","#f5c542","#e08a00","#e0483c"].forEach((c,i,a)=>grad.addColorStop(i/(a.length-1),c));
+  ctx.fillStyle=grad;ctx.fillRect(sx,sy,sw,16);ctx.strokeStyle=C_INK;ctx.strokeRect(sx,sy,sw,16);
+  gsTxt(ctx,T("الطيف المرئي","Visible spectrum"),sx+sw/2,sy-8,{s:10});
+  const dip=(frac,col,dash)=>{const x=sx+frac*sw;ctx.save();if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x-9,sy);ctx.lineTo(x,sy+15);ctx.lineTo(x+9,sy);ctx.stroke();ctx.restore();};
+  if(!reveal&&g!=null)dip(g,C_BLUE,true);
+  if(reveal)dip(tp,C_INK,false);
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(238,96);ctx.lineTo(402,96);ctx.lineTo(388,186);ctx.lineTo(252,186);ctx.closePath();ctx.stroke();
+  ctx.fillStyle="rgba(176,32,52,.65)";ctx.fillRect(254,120,132,62);
+  ctx.strokeStyle="rgba(63,174,90,.9)";ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(120,140);ctx.lineTo(252,140);ctx.stroke();
+  ctx.strokeStyle="rgba(63,174,90,.25)";ctx.beginPath();ctx.moveTo(388,140);ctx.lineTo(470,140);ctx.stroke();
+  gsTxt(ctx,T("شعاع أخضر بيتوهن جوه المحلول","A green beam fading inside the solution"),320,208,{s:11});
+},
+60(ctx,w,h,anim,g,tp,reveal){ // entanglement: correlation of paired measurements
+  gsCap(ctx,w,T("زوج فوتونات متشابك — بنقيس الاتنين بنفس الاتجاه. النتيجتين هيتفقوا كام مرة؟","An entangled photon pair — both measured in the same direction. How often will the results agree?"));
+  ctx.fillStyle=C_AMBER;ctx.beginPath();ctx.moveTo(320,74);ctx.lineTo(338,96);ctx.lineTo(320,118);ctx.lineTo(302,96);ctx.closePath();ctx.fill();gsTxt(ctx,T("مصدر التشابك","Entanglement source"),320,140,{s:10});
+  const wv=(x0,x1,y,col)=>{ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();for(let x=0;x<=x1-x0;x+=6){const yy=y+Math.sin(x/11)*7;x===0?ctx.moveTo(x0+x,yy):ctx.lineTo(x0+x,yy);}ctx.stroke();};
+  wv(150,296,96,C_TEAL);wv(344,490,96,C_TEAL);
+  const det=(x)=>{ctx.fillStyle="rgba(29,111,209,.16)";ctx.beginPath();ctx.arc(x,96,30,0,7);ctx.fill();ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(x,96);for(let i=-2;i<=2;i++){ctx.beginPath();ctx.moveTo(i*9,-26);ctx.lineTo(i*9,26);ctx.stroke();}ctx.restore();};
+  det(118);det(522);gsTxt(ctx,T("كاشف أ","Detector A"),118,148,{s:10});gsTxt(ctx,T("كاشف ب","Detector B"),522,148,{s:10});
+  const row=(frac,col,dash)=>{const match=Math.round(frac*10);for(let i=0;i<10;i++){const x=170+i*32;const same=i<match;ctx.save();if(dash)ctx.setLineDash([4,3]);ctx.fillStyle=same?col:"#c9ccd1";ctx.beginPath();ctx.arc(x,192,8,0,7);ctx.fill();ctx.fillStyle=same?col:C_RED;ctx.beginPath();ctx.arc(x+13,192,8,0,7);ctx.fill();ctx.restore();}};
+  gsTxt(ctx,T("١٠ قياسات: كل زوج نقطتين","10 measurements: each pair is two dots"),320,168,{s:10});
+  if(!reveal&&g!=null)row(g,C_BLUE,true);
+  else if(reveal)row(tp*anim,C_TEAL,false);
+  else{ctx.fillStyle=C_INK;for(let i=0;i<10;i++){gsTxt(ctx,"؟",170+i*32+6,198,{s:12});}}
+}
+};
+const _drawSceneGsPrev=drawScene;
+drawScene=function(exp,ctx,w,h,anim,guessPct,truePct,reveal){
+  const P=(exp&&exp.scene==="generic")?GSCENE_PAINT[exp.n]:null;
+  if(P){
+    ctx.clearRect(0,0,w,h);
+    try{P(ctx,w,h,anim,guessPct,truePct,reveal,exp);}catch(e){}
+    drawAxis(ctx,w,h,exp.min,exp.max,exp.unit,guessPct,reveal?truePct:null);
+    return;
+  }
+  return _drawSceneGsPrev(exp,ctx,w,h,anim,guessPct,truePct,reveal);
+};
+</script>
+
+<script>
+"use strict";
+/* ================= DUEL ROUNDS — THE REAL SCENE + QUESTION + INPUT FOR ALL 60 =================
+   Every duel round is built by duelBuildRound(exp) for the experiment actually
+   drawn: the SAME scene the training lab shows, the experiment's own duel
+   question, the input that fits its engine (blind-axis marker / value slider /
+   option buttons / 0-1 prediction), and a truth computed from the SAME physical
+   model the training lab uses (marker models, erfc heat profile, Ohm's law,
+   fringe models, decay law, gate evaluation…). The givens PANEL stays hidden —
+   estimation is by eye from the scene alone, as agreed for duels.
+   Error containment: building or painting any single round can never take the
+   match down — a failed builder falls back to a safe round for that experiment,
+   and a failed paint is swallowed per frame. */
+function duelFmt(R,v){return fmtVal(v,R.unit);}
+function duelOverlayAxis(ctx,W,H,guessPct,reveal){
+  const y=H-22,x0=38,x1=W-38;
+  ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+  const tri=(pct,col,lbl,dy)=>{if(pct==null)return;const x=x0+(x1-x0)*pct;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x-7,y-26);ctx.lineTo(x+7,y-26);ctx.fill();ctx.fillRect(x-1,y-14,2,10);ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(lbl,x,y-30-(dy||0));};
+  tri(guessPct,C_BLUE,T("أنت","You"),0);
+  if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
+}
+function duelBuildMarker(exp){
+  let truePct;
+  const M=(typeof MARKER_MODELS!=="undefined"&&MARKER_MODELS[exp.n])?MARKER_MODELS[exp.n]():null;
+  if(M&&typeof M.trueVal==="number")truePct=clamp((M.trueVal-exp.min)/(exp.max-exp.min),.02,.98);
+  else{
+    const bias={16:rnd(.55,.72),36:rnd(.06,.3),50:rnd(.5,.7),6:rnd(.25,.9),24:rnd(.45,.7),57:rnd(.2,.6),18:rnd(.55,.78),49:rnd(.42,.54),55:rnd(.44,.53),59:rnd(.8,.9)};
+    truePct=clamp((bias[exp.n]!==undefined?bias[exp.n]:(exp.b!==undefined?exp.b:rnd(.3,.7)))+rnd(-.08,.08),.06,.94);
+  }
+  return {mode:"slider",marker:true,h:250,min:exp.min,max:exp.max,unit:exp.unit,truePct:truePct,
+    /* the round's question is the experiment's OWN estimation cue — the same
+       full question the training lab asks (setup + what to estimate) — never
+       the bare duel brief: the player must know WHAT he is estimating. */
+    q:((LANG==="en"&&(typeof CUE_EN!=="undefined"&&CUE_EN[exp.n]))||exp.cue||(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t),
+    ask:T("شاهد مشهد التجربة، واسحب علامتك على المحور لحد المكان اللي تتوقعه — بلا أرقام: عينك هي المقياس.","Watch the experiment's scene and drag your mark along the axis to where you expect the result — no numbers: your eye is the gauge.")};
+}
+function duelBuildChoice(exp){
+  const en=LANG==="en";
+  const head=(en&&CHOICE_EN[exp.n])?{q:CHOICE_EN[exp.n].q,opts:CHOICE_EN[exp.n].opts.slice(),ans:CHOICE_EN[exp.n].ans,ex:CHOICE_EN[exp.n].ex}
+    :{q:exp.q,opts:(exp.opts||[]).slice(),ans:exp.ans,ex:exp.ex};
+  const extras=((en&&CHOICE_EXTRA_EN[exp.n])?CHOICE_EXTRA_EN[exp.n]:(CHOICE_EXTRA[exp.n]||[])).map(r=>({q:r.q,opts:r.opts.slice(),ans:r.ans,ex:r.ex}));
+  const pool=[head].concat(extras).filter(r=>r&&r.q&&r.opts&&r.opts.length>=2);
+  const r=pool[ri(0,pool.length-1)];
+  const order=r.opts.map((_,i)=>i).sort(()=>Math.random()-.5);
+  return {mode:"choice",h:230,q:r.q,ask:T("بص على رسم الجهاز فوق، واختر الإجابة الأقرب لحدسك.","Look at the apparatus drawing above and choose the answer your intuition backs."),
+    opts:order.map(i=>r.opts[i]),ans:order.indexOf(r.ans),ex:r.ex||"",
+    drawTop(ctx){try{drawChoiceDiagram(ctx,exp.n);}catch(e){}}};
+}
+function duelUnitsRounds(){
+  function rr2(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+  const makers=[
+   ()=>{const tv=ri(8,26);const SC=12.2,PX=150,PY=196,OX=PX-13;
+     return {name:T("الطول","Length"),min:0,max:30,unit:"سم",trueVal:tv,
+      q:T("قلم رصاص على مكتب، وتحته موبايل حقيقي طوله ١٥ سم بيبدأ من نفس خط بداية القلم وبنفس مقياسه — قارن الطولين بعينك وخمّن طول القلم.","A pencil on a desk, with a real 15 cm phone under it starting at the pencil's exact start line and drawn at the same scale — compare the two lengths by eye and guess the pencil's length."),
+      draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,214);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,214,640,46);
+        const phY=148,phH=34,phW=15*SC;
+        ctx.strokeStyle="rgba(217,119,6,.6)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(OX,102);ctx.lineTo(OX,196);ctx.moveTo(OX+phW,102);ctx.lineTo(OX+phW,196);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle="#22303a";rr2(ctx,OX,phY,phW,phH,8);ctx.fill();ctx.fillStyle="#3d5a6b";rr2(ctx,OX+8,phY+6,phW-24,phH-12,4);ctx.fill();
+        ctx.fillStyle=C_INK;ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(T("موبايل ١٥ سم — نفس خط البداية ونفس المقياس","A 15 cm phone — same start line, same scale"),330,138);
+        const plen=tv*SC-35;
+        ctx.fillStyle="#c9ccd1";ctx.fillRect(PX-13,PY,5,17);ctx.fillStyle="#d9779a";ctx.fillRect(PX-8,PY,8,17);
+        ctx.fillStyle="#e8a13a";ctx.fillRect(PX,PY,plen,17);ctx.fillStyle="rgba(0,0,0,.15)";ctx.fillRect(PX,PY+12,plen,5);
+        ctx.fillStyle="#f2d5a0";ctx.beginPath();ctx.moveTo(PX+plen,PY);ctx.lineTo(PX+plen+22,PY+8.5);ctx.lineTo(PX+plen,PY+17);ctx.fill();
+        ctx.fillStyle="#333";ctx.beginPath();ctx.moveTo(PX+plen+13,PY+5);ctx.lineTo(PX+plen+22,PY+8.5);ctx.lineTo(PX+plen+13,PY+12);ctx.fill();
+        if(guess!=null&&!reveal){const gx=OX+guess*SC;ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,96);ctx.lineTo(gx,212);ctx.stroke();ctx.fillStyle=C_BLUE;ctx.font="12px sans-serif";ctx.fillText(T("توقعك","Your prediction"),gx,88);}
+        if(reveal){ctx.save();ctx.globalAlpha=anim;const ry=222;ctx.fillStyle="#ece5cf";ctx.fillRect(OX-4,ry,tv*SC+44,20);ctx.strokeStyle=C_INK;ctx.lineWidth=1;ctx.strokeRect(OX-4,ry,tv*SC+44,20);
+          for(let cm=0;cm<=Math.ceil(tv)+2;cm++){const x=OX+cm*SC;const tall=cm%5===0?12:7;ctx.beginPath();ctx.moveTo(x,ry+20);ctx.lineTo(x,ry+20-tall);ctx.stroke();if(cm%5===0){ctx.fillStyle=C_INK;ctx.font="10px sans-serif";ctx.fillText(cm,x,ry+32);}}
+          ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px sans-serif";ctx.fillText(T("الطول الحقيقي: ","True length: ")+tv+T(" سم"," cm"),OX+tv*SC/2,44);}}};},
+   ()=>{const tv=Math.round(rnd(1.2,6)*10)/10;
+     return {name:T("الكتلة","Mass"),min:.5,max:8,unit:"كجم",trueVal:tv,
+      q:T("بطيخة كاملة على طاولة المطبخ — مفيش ميزان. كبّر إطار توقعك أو صغّره لحد ما يطابق حجمها، وخمّن كتلتها بالكيلوجرام.","A whole watermelon on a kitchen table — no scale in sight. Size your guess frame to match it and guess its mass in kilograms."),
+      draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,200);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,200,640,60);
+        const cx=320,rxT=44+tv*10.5,ryT=rxT*.76,cy=200-ryT;
+        if(guess!=null&&!reveal){const rxG=44+guess*10.5,ryG=rxG*.76;ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,200-ryG,rxG,ryG,0,0,7);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(T("حجم توقعك","Your guessed size"),cx,Math.max(14,200-ryG*2-8));}
+        ctx.fillStyle="#2e8b57";ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.fill();
+        ctx.save();ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.clip();ctx.fillStyle="rgba(20,80,45,.55)";for(let i=-3;i<=3;i++)ctx.fillRect(cx+i*rxT/2.6-rxT/9,cy-ryT,rxT/4.5,ryT*2);ctx.restore();
+        ctx.strokeStyle="#1d5c38";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.stroke();
+        ctx.fillStyle="#5b4632";ctx.fillRect(cx-3,cy-ryT-8,6,9);
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(T("بطيخة كاملة — قارن حجمها ببطيخة السوق اللي تعرفها","A whole watermelon — compare its size with a market watermelon you know"),cx,26);
+        if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.fillStyle="#22303a";rr2(ctx,cx-95,216,190,32,6);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 19px monospace";ctx.fillText(tv.toFixed(1)+" kg",cx,239);ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px sans-serif";ctx.fillText(T("الكتلة الحقيقية: ","True mass: ")+tv.toFixed(1)+T(" كجم"," kg"),cx,52);}}};},
+   ()=>{const tv=Math.round(rnd(.4,2.6)*10)/10;
+     return {name:T("الحجم","Volume"),min:0,max:3,unit:"لتر",trueVal:tv,
+      q:T("دورق زجاجي سعته القصوى ٣ لتر وفيه كمية مية مجهولة — مفيش تدريج على الزجاج. خمّن حجم المية باللتر.","A glass jug whose maximum capacity is 3 litres, holding an unknown amount of water — no graduations on the glass. Guess the water's volume in litres."),
+      draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,222);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,222,640,38);
+        const top=34,bot=222,hMax=168;
+        const jug=()=>{ctx.beginPath();ctx.moveTo(238,top);ctx.lineTo(402,top);ctx.lineTo(388,bot);ctx.lineTo(252,bot);ctx.closePath();};
+        ctx.save();jug();ctx.clip();const fh=tv/3*hMax;ctx.fillStyle="rgba(29,111,209,.55)";ctx.fillRect(230,bot-fh,180,fh);ctx.fillStyle="rgba(29,111,209,.8)";ctx.fillRect(230,bot-fh,180,3);ctx.restore();
+        jug();ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.stroke();ctx.beginPath();ctx.moveTo(402,top+16);ctx.quadraticCurveTo(448,top+50,402,top+90);ctx.stroke();
+        if(guess!=null&&!reveal){const gy=bot-guess/3*hMax;ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(214,gy);ctx.lineTo(426,gy);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="12px sans-serif";ctx.textAlign="left";ctx.fillText(T("توقعك","Your prediction"),430,gy+4);}
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(T("دورق ٣ لتر — المية اللي فيه قد إيه؟","A 3-litre jug — how much water is in it?"),320,20);
+        if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.strokeStyle=C_GOOD;ctx.fillStyle=C_GOOD;ctx.lineWidth=2;ctx.font="12px sans-serif";ctx.textAlign="left";for(let l=.5;l<=3;l+=.5){const y=bot-l/3*hMax;ctx.beginPath();ctx.moveTo(404,y);ctx.lineTo(420,y);ctx.stroke();ctx.fillText(l.toFixed(1),424,y+4);}ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px sans-serif";ctx.textAlign="center";ctx.fillText(T("الحجم الحقيقي: ","True volume: ")+tv.toFixed(1)+T(" لتر"," L"),320,252);}}};},
+   ()=>{const tv=ri(35,95);
+     return {name:T("درجة الحرارة","Temperature"),min:10,max:100,unit:"°م",trueVal:tv,
+      q:T("كوباية شاي لسه معمولة والبخار طالع منها — مفيش ترمومتر. خمّن حرارة الشاي من كثافة البخار.","A freshly made cup of tea with steam rising — no thermometer. Guess the tea's temperature from the steam's density."),
+      draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,214);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,214,640,46);
+        ctx.fillStyle="#b03a2e";rr2(ctx,262,128,116,86,10);ctx.fill();ctx.strokeStyle="#b03a2e";ctx.lineWidth=9;ctx.beginPath();ctx.arc(392,168,24,0,7);ctx.stroke();
+        ctx.fillStyle="#8a4b12";ctx.beginPath();ctx.ellipse(320,130,54,10,0,0,7);ctx.fill();
+        ctx.fillStyle="#d8e0dc";ctx.beginPath();ctx.ellipse(320,218,86,10,0,0,7);ctx.fill();
+        const n=clamp(Math.round(tv/18),1,5);ctx.strokeStyle="rgba(160,180,190,.75)";ctx.lineWidth=3;
+        for(let i=0;i<n;i++){const sx=320+(i-(n-1)/2)*36;ctx.beginPath();for(let y=0;y<58;y+=6){const xx=sx+Math.sin(y/11+i*1.7)*6;y===0?ctx.moveTo(xx,116):ctx.lineTo(xx,116-y);}ctx.stroke();}
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24);
+        if(guess!=null&&!reveal){const gy=196-(guess-10)/90*128;ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(120,196);ctx.lineTo(120,68);ctx.stroke();ctx.beginPath();ctx.moveTo(108,gy);ctx.lineTo(132,gy);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="bold 12px sans-serif";ctx.fillText(T("توقعك","Your prediction"),120,Math.max(14,gy-8));}
+        if(reveal){ctx.save();ctx.globalAlpha=anim;const tx=486;ctx.strokeStyle=C_INK;ctx.lineWidth=2;rr2(ctx,tx-8,58,16,132,8);ctx.stroke();ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(tx,206,17,0,7);ctx.fill();ctx.stroke();const colH=(tv/110)*126*anim;ctx.fillRect(tx-4,190-colH,8,colH);ctx.fillStyle=C_GOOD;ctx.font="bold 16px sans-serif";ctx.textAlign="center";ctx.fillText(T("الحرارة الحقيقية: ","True temperature: ")+tv+" °C",tx,34);ctx.restore();}}};},
+   ()=>{const tv=Math.round(rnd(.9,3.1)*10)/10;
+     return {name:T("الزمن","Time"),min:.2,max:4,unit:"ثانية",trueVal:tv,
+      q:T("كرة على قمة منحدر طويل هتتدحرج لحد العلم اللي تحت — مفيش ساعة. خمّن الرحلة هتاخد كام ثانية.","A ball at the top of a long ramp will roll down to the flag at the bottom — no clock. Guess how many seconds the trip will take."),
+      draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,260);
+        const x0=84,y0=58,x1=520,y1=204;
+        ctx.strokeStyle=C_INK;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0,214);ctx.lineTo(x1,214);ctx.stroke();
+        ctx.fillStyle="#5b6d77";ctx.fillRect(40,214,560,8);
+        ctx.strokeStyle=C_GOOD;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1+16,y1-44);ctx.lineTo(x1+16,y1+8);ctx.stroke();ctx.fillStyle=C_GOOD;ctx.beginPath();ctx.moveTo(x1+16,y1-44);ctx.lineTo(x1+40,y1-36);ctx.lineTo(x1+16,y1-28);ctx.fill();
+        const p=reveal?anim*anim:0;const bx=x0+(x1-x0)*p,by=y0+(y1-y0)*p-14;
+        ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(bx,by,13,0,7);ctx.fill();ctx.fillStyle="rgba(255,255,255,.5)";ctx.beginPath();ctx.arc(bx-4,by-4,4,0,7);ctx.fill();
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="right";ctx.fillText(T("منحدر طويل وناعم — الكرة بتسرع وهي نازلة","A long, smooth ramp — the ball speeds up as it descends"),632,26);
+        if(reveal){ctx.fillStyle="#22303a";rr2(ctx,486,36,138,40,8);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 20px monospace";ctx.textAlign="center";ctx.fillText((anim*tv).toFixed(1)+" s",555,63);
+          if(anim>=1){ctx.fillStyle=C_GOOD;ctx.font="bold 15px sans-serif";ctx.fillText(T("الزمن الحقيقي: ","True time: ")+tv.toFixed(1)+T(" ث"," s"),320,246);}}}};}
+  ];
+  return makers;
+}
+function duelBuildUnits(){
+  const m=duelUnitsRounds()[ri(0,4)]();
+  return {mode:"slider",h:300,axis:false,min:m.min,max:m.max,unit:m.unit,trueVal:m.trueVal,truePct:(m.trueVal-m.min)/(m.max-m.min),
+    q:(LANG==="en"?(EN_D[1]||""):"أقرب تقدير عبر كميات مختلفة (طول/كتلة/حجم/حرارة/زمن) واختيار التحويل الصحيح بين الأنظمة."),
+    ask:T("الكمية دي: ","This round's quantity: ")+m.name+" — "+m.q,
+    draw(ctx,W,H,anim,guessPct,reveal){const gv=guessPct==null?null:m.min+guessPct*(m.max-m.min);m.draw(ctx,anim,gv,reveal);}};
+}
+function duelBuildHeat(exp){
+  const HL=20,METALS={cu:[1.11,"نحاس","Copper"],al:[0.97,"ألومنيوم","Aluminium"],br:[0.37,"نحاس أصفر","Brass"],fe:[0.23,"حديد","Iron"],st:[0.13,"صلب","Steel"]};
+  const compare=exp.variant==="compare";
+  const mA=compare?METALS.cu:pk([METALS.cu,METALS.al,METALS.br,METALS.fe]);
+  const mB=METALS.fe;
+  const hTime=compare?pk([40,50,60,80]):pk([30,40,50,60,75,90]);
+  const sA=Math.sqrt(mA[0]*hTime),sB=Math.sqrt(mB[0]*hTime);
+  const trueFront=Math.min(.97,1.813*sA/HL);
+  return {mode:"slider",h:300,axis:false,min:0,max:100,unit:"٪",trueVal:Math.round(trueFront*100),truePct:trueFront,live:true,
+    q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
+    ask:compare?T("قضيبان من نحاس وحديد اتسخّنوا من نفس المصدر لنفس المدة — جبهة حرارة النحاس (النقطة اللي حرارتها ٢٠٪ من المصدر) هتوصل لحد فين من طول القضيب؟","Two rods, copper and iron, heated from the same source for the same while — how far along the copper rod will its heat front (the point at 20% of the source's heat) reach?")
+      :T("قضيب من "+mA[1]+" اتسخّن من طرفه الشمال من مصدر ثابت لمدة — جبهة الحرارة (النقطة اللي حرارتها ٢٠٪ من المصدر) هتوصل لحد فين من طول القضيب؟","A rod of "+mA[2]+" was heated at its left end from a steady source for a while — how far along the rod will the heat front (the point at 20% of the source's heat) reach?"),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,300);
+      const rod=(y,sCm,label,show)=>{
+        const x0=70,x1=600;
+        for(let x=x0;x<x1;x+=6){const p=(x-x0)/(x1-x0);const t=show?erfc((p*HL)/(2*Math.max(sCm,.35))):0;
+          ctx.fillStyle=t<=0.05?"#5b6d77":`rgb(${200+Math.round(55*t)},${Math.round(160*(1-t))},40)`;ctx.fillRect(x,y,6,26);}
+        ctx.strokeStyle=C_INK;ctx.strokeRect(x0,y,x1-x0,26);
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="right";ctx.fillText(label,x0-8,y+18);
+        ctx.fillStyle="rgba(224,60,0,.9)";ctx.fillRect(x0-26,y-2,16,30);
+        const mx=x0+(x1-x0)*.5;ctx.strokeStyle="#fff";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(mx,y-6);ctx.lineTo(mx,y+32);ctx.stroke();
+        ctx.fillStyle=C_INK;ctx.font="11px sans-serif";ctx.textAlign="center";ctx.fillText(T("المنتصف","Midpoint"),mx,y+48);};
+      const demoS=0.9+0.45*Math.sin(anim*Math.PI*2); // neutral breathing demo before the reveal — never the round's truth
+      if(compare){rod(70,reveal?sA*Math.sqrt(anim):demoS,T("نحاس","Copper"),true);rod(180,reveal?sB*Math.sqrt(anim):demoS*Math.sqrt(mB[0]/mA[0]),T("حديد","Iron"),true);
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="right";ctx.fillText(T("نفس النار، نفس الزمن — مين يسرّب الحرارة أبعد؟","Same flame, same time — who leaks heat farther?"),632,34);}
+      else{rod(96,reveal?sA*Math.sqrt(anim):demoS,LANG==="en"?mA[2]:mA[1],true);
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="right";
+        ctx.fillText(T("الأحمر = سخن جدًا، والرمادي = لسه بارد — الحرارة بتسرح تدريجيًا","Red = very hot, grey = still cold — heat creeps gradually"),632,40);
+        ctx.fillText(T("شاهد القضيب وهو بيسخن، وقدّر الجبهة هتقف فين لما الزمن يخلص","Watch the rod heating up and judge where the front will stop when the time is up"),632,62);}
+      if(!reveal&&guessPct!=null){ctx.fillStyle=C_BLUE;ctx.fillRect(70+530*guessPct-2,compare?44:70,4,compare?196:110);ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(T("توقع الجبهة","Front prediction"),70+530*guessPct,compare?38:64);}
+    }};
+}
+function duelBuildCircuit(exp){
+  const parallel=!!exp.parallel;
+  function pickCfg(){for(let k=0;k<60;k++){const V=[6,9,12][ri(0,2)],R=[3,4,6,8,12][ri(0,4)];const I=V/(parallel?R/2:R);if(I>=0.75&&I<=4.2)return{V,R};}return{V:9,R:6};}
+  const cfg=pickCfg(),Req=parallel?cfg.R/2:cfg.R,I=cfg.V/Req;
+  return {mode:"slider",h:300,axis:true,min:0,max:5,unit:"أمبير",trueVal:I,truePct:I/5,
+    q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
+    ask:T("الدايرة قدامك ببطاريتها ومقاومتها، والأميتر متغطي — خمّن التيار الكلي اللي هيقيسه الأميتر لما الدايرة تتوصل.","The circuit is in front of you with its battery and resistor, and the ammeter is covered — guess the total current the ammeter will read once the circuit is connected."),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,300);
+      const V=cfg.V,R=cfg.R,on=reveal;
+      ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(70,45,500,150);
+      if(parallel){ctx.beginPath();ctx.moveTo(430,45);ctx.lineTo(430,195);ctx.stroke();}
+      ctx.fillStyle=C_INK;ctx.fillRect(60,100,8,50);ctx.fillRect(82,112,5,26);
+      ctx.font="13px sans-serif";ctx.textAlign="center";ctx.fillText(V+"V",74,215);
+      ctx.strokeStyle=C_RED;ctx.lineWidth=3;ctx.beginPath();let zx=250;ctx.moveTo(zx,45);for(let i=0;i<6;i++){ctx.lineTo(zx+12,45+(i%2?14:-14));zx+=24;}ctx.lineTo(zx,45);ctx.stroke();
+      ctx.fillStyle=C_INK;ctx.fillText("R = "+R+" Ω",310,25);
+      const lamp=(x,y,r,bright)=>{ctx.fillStyle=`rgba(245,197,66,${bright})`;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();ctx.beginPath();ctx.moveTo(x-r*.6,y+r*.6);ctx.lineTo(x+r*.6,y-r*.6);ctx.moveTo(x-r*.6,y-r*.6);ctx.lineTo(x+r*.6,y+r*.6);ctx.stroke();};
+      const bright=on?clamp(I/4,0.1,1):0.06;
+      lamp(570,120,24,bright);if(parallel)lamp(430,120,20,bright);
+      ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.fillText(parallel?T("مصباحان على التوازي","Two lamps in parallel"):T("مصباح","Lamp"),parallel?500:570,215);
+      ctx.fillStyle="#fff";ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.beginPath();ctx.arc(150,195,24,0,7);ctx.fill();ctx.stroke();
+      ctx.fillStyle=C_INK;ctx.font="bold 15px sans-serif";ctx.fillText(on?I.toFixed(2)+" A":(LANG==="en"?"?":"؟"),150,200);ctx.font="11px sans-serif";ctx.fillText(T("أميتر — التيار الكلي","Ammeter — total current"),150,232);
+      if(on){ctx.fillStyle=C_TEAL;const sp=I*30;const t=anim*3;for(let i=0;i<10;i++){const p=((t*sp+i*64)%500);ctx.beginPath();ctx.arc(70+p,45,3.5,0,7);ctx.fill();}}
+    }};
+}
+function duelBuildDigital(){
+  const gates={AND:(a,b)=>a&b,OR:(a,b)=>a|b,XOR:(a,b)=>a^b,NAND:(a,b)=>1-(a&b),NOR:(a,b)=>1-(a|b)};
+  const g1t=pk(["AND","OR","XOR","NAND"]),g2t=pk(["OR","AND","XOR"]);
+  const A=ri(0,1),B=ri(0,1),C=ri(0,1);
+  const X=gates[g1t](A,B),Y=gates[g2t](X,C);
+  return {mode:"choice",h:230,
+    q:(LANG==="en"?(EN_D[30]||""):"توقّع ناتج الدايرة الرقمية لمداخل معطاة قبل ما النتيجة تظهر."),
+    ask:T("المداخل: ","Inputs: ")+"A="+A+" B="+B+" C="+C+T(" — البوابة ١: "," — Gate 1: ")+g1t+T(" (مداخلها A وB ومخرجها X)، والبوابة ٢: "," (inputs A and B, output X), Gate 2: ")+g2t+T(" (مداخلها X وC). الناتج النهائي Y هيبقى 0 ولا 1؟"," (inputs X and C). Will the final output Y be 0 or 1?"),
+    opts:["Y = 0","Y = 1"],ans:Y,
+    ex:T("تتبّع الحساب: ","Step by step: ")+"X = "+g1t+"("+A+", "+B+") = "+X+" · Y = "+g2t+"("+X+", "+C+") = "+Y+".",
+    drawTop(ctx,state){
+      ctx.clearRect(0,0,640,230);
+      const chip=(x,y,txt,on)=>{ctx.fillStyle=on?"#0b766e":"#46525a";ctx.beginPath();ctx.arc(x,y,17,0,7);ctx.fill();ctx.fillStyle="#fff";ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText(txt,x,y+5);};
+      const wire=(x1,y1,x2,y2)=>{ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.stroke();};
+      const gate=(x,y,t)=>{ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.strokeRect(x,y-26,86,52);ctx.fillStyle=C_INK;ctx.font="bold 14px sans-serif";ctx.textAlign="center";ctx.fillText(t,x+43,y+5);};
+      ctx.fillStyle=C_INK;ctx.font="12px sans-serif";ctx.textAlign="center";
+      ctx.fillText("A",60,36);chip(60,62,""+A,!!A);
+      ctx.fillText("B",60,102);chip(60,128,""+B,!!B);
+      ctx.fillText("C",60,168);chip(60,194,""+C,!!C);
+      wire(77,62,170,88);wire(77,128,170,108);
+      gate(170,98,g1t);
+      ctx.fillStyle=C_INK;ctx.font="bold 13px sans-serif";ctx.fillText("X",300,66);
+      wire(256,98,330,88);
+      wire(77,194,330,118);
+      gate(330,98,g2t);
+      wire(416,98,520,98);
+      const revealed=state&&state.revealed;
+      ctx.fillStyle=revealed?(Y?"#f5c542":"#46525a"):"#e8e2d2";ctx.beginPath();ctx.arc(548,98,24,0,7);ctx.fill();ctx.strokeStyle=C_INK;ctx.lineWidth=2.5;ctx.stroke();
+      ctx.fillStyle=C_INK;ctx.font="bold 15px sans-serif";ctx.fillText("Y = "+(revealed?Y:"؟"),548,142);
+      ctx.font="12px sans-serif";ctx.fillText(T("بوابة ١ → X ← بوابة ٢ → Y","Gate 1 → X → Gate 2 → Y"),320,222);
+    }};
+}
+function duelBuildGeiger(){
+  const trueCount=ri(150,470);
+  return {mode:"slider",h:300,axis:true,min:0,max:600,unit:T("عدّة","counts"),trueVal:trueCount,truePct:trueCount/600,
+    q:(LANG==="en"?(EN_D[41]||""):"عدد العدّات المسجلة في زمن العدّ."),
+    ask:T("عينة مشعة على بعد ٢٠ سم من أنبوبة جايجر، وهنعدّ ١٠ ثوانٍ — خمّن إجمالي العدّات اللي هيسجلها العدّاد.","A radioactive sample 20 cm from a Geiger tube, and we will count for 10 seconds — guess the total counts the counter will record."),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,300);
+      ctx.fillStyle="#8a5a2b";ctx.fillRect(60,140,90,50);ctx.fillStyle=C_INK;ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(T("عينة مشعة","Radioactive sample"),105,205);
+      ctx.strokeStyle=C_INK;ctx.lineWidth=3;ctx.strokeRect(300,60,240,44);
+      ctx.fillStyle=C_INK;ctx.fillText(T("أنبوبة جايجر","Geiger tube"),420,130);
+      const count=reveal?Math.floor(trueCount*anim):null;
+      if(reveal&&anim<1){ctx.fillStyle="rgba(245,197,66,.9)";ctx.beginPath();ctx.arc(180+Math.random()*110,80+Math.random()*40,7,0,7);ctx.fill();}
+      ctx.fillStyle=C_RED;ctx.font="bold 40px monospace";ctx.fillText(count==null?(LANG==="en"?"???":"؟؟؟"):count,420,185);
+      ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.fillText(T("العدّاد","Counter"),420,42);
+      if(reveal){ctx.fillStyle=C_TEAL;for(let i=0;i<10;i++){const bh=Math.min(20,(trueCount/10*(0.6+((i*37)%10)/14))*anim*1.1);ctx.fillRect(70+i*52,224-bh,34,bh);}
+        ctx.fillStyle=C_INK;ctx.font="11px sans-serif";ctx.fillText(T("العدّات في كل ثانية — لاحظ العشوائية","Counts in each second — notice the randomness"),320,166);}
+    }};
+}
+function duelBuildPhoto(){
+  const metals=[["سيزيوم","Caesium",2.1],["صوديوم","Sodium",2.3],["زنك","Zinc",4.3],["بلاتين","Platinum",5.1]];
+  const m=metals[ri(0,3)],phi=m[2];
+  const f0=rnd(4,17),E0=0.4136*f0,KE0=Math.max(0,E0-phi),emits=KE0>0;
+  const fColor=f=>f<5?"#e0483c":f<7.5?"#e08a00":f<10?"#3fae5a":f<14?"#1d6fd1":"#7a4fd0";
+  return {mode:"slider",h:300,axis:true,min:0,max:5,unit:"eV",trueVal:Math.round(KE0*100)/100,truePct:KE0/5,
+    q:(LANG==="en"?(EN_D[33]||""):"هل هيحصل انبعاث، وكام أقصى طاقة للإلكترونات؟"),
+    ask:T("سطح من "+m[0]+" بيتسلّط عليه ضوء بلون الشعاع اللي شايفه — خمّن أقصى طاقة حركة للإلكترونات المنبعثة (وحط صفر لو حكمك إن مفيش انبعاث أصلًا).","A surface of "+m[1]+" with light of the beam colour you see shining on it — guess the maximum kinetic energy of the emitted electrons (put zero if your judgement is that there will be no emission at all)."),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,300);
+      ctx.fillStyle="#5b6d77";ctx.fillRect(430,30,26,170);
+      ctx.fillStyle=C_INK;ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(LANG==="en"?m[1]:m[0],443,218);
+      ctx.strokeStyle=fColor(f0);ctx.lineWidth=3;
+      const nPh=5;
+      for(let i=0;i<nPh;i++){const y=45+i*(150/Math.max(nPh-1,1));ctx.beginPath();for(let x=40;x<425;x+=8){const yy=y+Math.sin((x+(reveal?anim*160:0)+i*40)/16)*5;x===40?ctx.moveTo(x,yy):ctx.lineTo(x,yy);}ctx.stroke();}
+      if(reveal&&emits){ctx.fillStyle=C_TEAL;const sp=1+KE0;const t=anim*2;
+        for(let i=0;i<6;i++){const ex=425-((t*90*sp+i*53)%360);const ey=50+i*(140/5)+Math.sin(t*3+i)*6;ctx.beginPath();ctx.arc(ex,ey,5,0,7);ctx.fill();}}
+      ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="right";
+      ctx.fillText(T("لون الشعاع هو دليلك على تردده: البنفسجي أعلى ترددًا والأحمر أقل","The beam's colour is your guide to its frequency: violet is the highest frequency, red the lowest"),632,20);
+    }};
+}
+function duelBuildFringe(exp){
+  const kind=exp.kind;
+  const cfg={thin:{min:380,max:700,unit:"نانومتر",label:T("الطول الموجي للون التداخل الأبرز","Wavelength of the most prominent interference colour")},
+    oil:{min:0,max:100,unit:"٪",label:T("موضع لون الرتبة التانية عبر البقعة","Position of the second-order colour across the spot")},
+    double:{min:0,max:100,unit:"٪",label:T("موضع الهدبة المضيئة التانية عبر الشاشة","Position of the second bright fringe across the screen")},
+    grating:{min:380,max:700,unit:"نانومتر",label:T("الطول الموجي لخط الطيف","Wavelength of the spectral line")},
+    xrd:{min:10,max:80,unit:"درجة (2θ)",label:T("زاوية براج لأول قمة حيود","Bragg angle of the first diffraction peak")},
+    photon:{min:0,max:100,unit:"٪",label:T("موضع أول قمة جانبية في النمط المتراكم","Position of the first side peak in the accumulated pattern")},
+    electron:{min:0,max:40,unit:"مم",label:T("نصف قطر أول حلقة حيود","Radius of the first diffraction ring")}}[kind];
+  let fFr=0;const sideFr=Math.random()<.5?-1:1;let truePct;
+  if(kind==="double"||kind==="photon"){
+    const lam=pk([480,520,560,600,640]),Ld=pk([0.9,1.0,1.1,1.2]),dyT=pk([3.6,4.2,4.8,5.4]);
+    const d=Math.round(lam*Ld/dyT*1e-3*100)/100;
+    const dy=lam*1e-6*(Ld*1000)/d,frac=dy/30;fFr=2/frac;
+    const ord=kind==="double"?2:1;
+    truePct=clamp(.5+sideFr*ord*frac,.06,.94);
+  }else if(kind==="thin"){const t=pk([290,310,330,350,370,390]);const lam=Math.round(4*1.33*t/3);truePct=(lam-380)/320;
+  }else if(kind==="oil"){const t2=Math.round(2.5*550/(2*1.46)),t0=pk([800,950,1100,1250,1400]);const rho=1-t2/t0;truePct=(Math.round((1+rho)/2*1000)/10)/100;
+  }else if(kind==="grating"){const dnm=Math.round(1e6/600),th=pk([14,16,18,20,22,24]);const lam=Math.round(dnm*Math.sin(th*Math.PI/180));truePct=(lam-380)/320;
+  }else if(kind==="xrd"){const d=pk([0.20,0.24,0.28,0.32,0.36,0.40]);const twoTh=Math.round(2*Math.asin(0.154/(2*d))*180/Math.PI*10)/10;truePct=(twoTh-10)/70;
+  }else if(kind==="electron"){const V=pk([100,150,200,250,300,400]);const lamA=12.27/Math.sqrt(V),lamNm=lamA/10;const thB=Math.asin(lamNm/(2*0.335));const r=Math.round(100*Math.tan(2*thB)*10)/10;truePct=r/40;
+  }else truePct=.5;
+  truePct=clamp(truePct,.02,.98);
+  const trueVal=cfg.min+truePct*(cfg.max-cfg.min);
+  function intensity(x){
+    if(kind==="xrd")return Math.exp(-Math.pow((x-truePct)*9,2))+.6*Math.exp(-Math.pow((x-truePct-.22)*11,2))+.05;
+    if(kind==="electron")return Math.exp(-Math.pow((x-truePct)*8,2))+.5*Math.exp(-Math.pow((x-truePct-.25)*10,2))+.04;
+    if(kind==="photon"||kind==="double")return Math.pow(Math.cos((x-.5)*Math.PI*fFr),2)*Math.exp(-Math.pow((x-.5)*1.6,2))+.03;
+    return Math.pow(Math.abs(Math.sin(x*Math.PI*3+truePct*2)),1.5)*.8+.15;
+  }
+  return {mode:"slider",h:320,axis:true,min:cfg.min,max:cfg.max,unit:cfg.unit,trueVal:trueVal,truePct:truePct,
+    q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
+    ask:T("بص على جهاز التجربة ونمطها: ","Look at the apparatus and its pattern: ")+cfg.label+T(" — اسحب علامتك لمكان القمة على المحور."," — drag your mark to the peak's position on the axis."),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,320);
+      try{drawFringeDiagram(ctx,kind);}catch(e){}
+      ctx.fillStyle="#10161c";ctx.fillRect(24,198,592,52);
+      for(let x=30;x<610;x+=3){const p=(x-30)/580;const I=intensity(p)*(reveal?1:.25);
+        const hue=(1-p)*270;
+        ctx.fillStyle=(kind==="xrd"||kind==="electron"||kind==="photon")?`rgba(120,200,255,${I})`:`hsla(${hue},85%,55%,${I})`;
+        ctx.fillRect(x,204,3,40);}
+      ctx.strokeStyle="#5b6d77";ctx.strokeRect(30,204,580,40);
+      ctx.fillStyle="#9db3ba";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText(T("شاشة الرصد — النمط بيبان خافت قبل الكشف","Detection screen — the pattern shows dimly before the reveal"),320,262);
+      if(kind==="photon"&&reveal){ctx.fillStyle="#ffe9a8";const nDots=Math.floor(anim*260);let seed=7;const rand=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+        for(let i=0;i<nDots;i++){const x=rand();if(rand()>intensity(x))continue;ctx.fillRect(30+x*580,208+rand()*32,2.4,2.4);}}
+    }};
+}
+function duelBuildDecay(exp){
+  const carbon=exp.half===5730;
+  if(carbon){
+    const trueVal=ri(900,23500),remainPct=100*Math.pow(.5,trueVal/5730);
+    return {mode:"slider",h:300,axis:true,min:0,max:30000,unit:T("سنة","years"),trueVal:trueVal,truePct:trueVal/30000,
+      q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
+      ask:T("قطعة خشب أثرية: النقاط الخضراء تحت هي نسبة الكربون-14 المتبقية فيها (عمر النصف ٥٧٣٠ سنة — النص = عمر نصف، الربع = عمرين، التمن = تلاتة). خمّن عمرها بالسنين.","An ancient piece of wood: the green dots below are the fraction of its carbon-14 still remaining (half-life 5730 years — a half = one half-life, a quarter = two, an eighth = three). Guess its age in years."),
+      draw(ctx,W,H,anim,guessPct,reveal){
+        ctx.clearRect(0,0,640,300);
+        const cols=24,rows=10,tot=cols*rows,alive=Math.round(remainPct/100*tot);
+        let seed=13;const ord=[];for(let i=0;i<tot;i++)ord.push(i);
+        const rr=()=>{seed=(seed*48271)%2147483647;return seed/2147483647;};
+        for(let i=tot-1;i>0;i--){const j=Math.floor(rr()*(i+1));const t2=ord[i];ord[i]=ord[j];ord[j]=t2;}
+        const aliveSet=new Set(ord.slice(0,alive));
+        for(let i=0;i<tot;i++){const cx=70+(i%cols)*21,cy=50+Math.floor(i/cols)*20;
+          ctx.fillStyle=aliveSet.has(i)?C_TEAL:"#5b6d77";ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();}
+        ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="center";
+        ctx.fillText(T("ذرات العينة: الأخضر = كربون-14 لسه موجود، والرمادي = اضمحل","The sample's atoms: green = carbon-14 still present, grey = decayed"),320,26);
+        ctx.fillText(T("النسبة المتبقية باينة قدامك — عدّ أعمار النصف واضرب في ٥٧٣٠","The remaining fraction is in front of you — count the half-lives and multiply by 5730"),320,272);
+      }};
+  }
+  const hlCount=Math.round(rnd(.7,2.6)*10)/10,remainPct=100*Math.pow(.5,hlCount);
+  const tot=240;let seed=29;const ord=[];for(let i=0;i<tot;i++)ord.push(i);
+  const rr2=()=>{seed=(seed*48271)%2147483647;return seed/2147483647;};
+  for(let i=tot-1;i>0;i--){const j=Math.floor(rr2()*(i+1));const t2=ord[i];ord[i]=ord[j];ord[j]=t2;}
+  return {mode:"slider",h:300,axis:true,min:0,max:100,unit:"٪",trueVal:Math.round(remainPct*10)/10,truePct:remainPct/100,
+    q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
+    ask:T("عينة مشعة عدّى عليها زمن يساوي ","A radioactive sample, and a time equal to ")+NV(hlCount,1)+T(" عمر نصف — خمّن كام في المية منها لسه ما اضمحلش."," half-lives has passed — guess what percentage of it has not decayed yet."),
+    draw(ctx,W,H,anim,guessPct,reveal){
+      ctx.clearRect(0,0,640,300);
+      const aliveFrac=reveal?(1-(1-remainPct/100)*anim):1;
+      const alive=Math.round(aliveFrac*tot);
+      const aliveSet=new Set(ord.slice(0,alive));
+      const cols=24,rows=10;
+      for(let i=0;i<tot;i++){const cx=70+(i%cols)*21,cy=50+Math.floor(i/cols)*20;
+        ctx.fillStyle=aliveSet.has(i)?C_TEAL:"#5b6d77";ctx.beginPath();ctx.arc(cx,cy,6,0,7);ctx.fill();}
+      ctx.fillStyle=C_INK;ctx.font="13px sans-serif";ctx.textAlign="center";
+      ctx.fillText(T("ذرات العينة: الأخضر = لسه ما اضمحلش، والرمادي = اضمحل","The sample's atoms: green = not yet decayed, grey = decayed"),320,26);
+      ctx.fillText(T("كل عمر نصف بينصّف المتبقي مهما كان","Each half-life halves what remains, whatever it is"),320,272);
+    }};
+}
+function duelFallbackRound(exp){
+  if(exp.type==="choice"||exp.q)return duelBuildChoice(exp);
+  if(typeof exp.min==="number"&&typeof exp.max==="number"){
+    const truePct=rnd(.15,.85);
+    return {mode:"slider",marker:true,h:250,min:exp.min,max:exp.max,unit:exp.unit||"",truePct:truePct,
+      q:((LANG==="en"&&(typeof CUE_EN!=="undefined"&&CUE_EN[exp.n]))||exp.cue||(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t),
+      ask:T("شاهد مشهد التجربة واسحب علامتك لمكان توقعك.","Watch the experiment's scene and drag your mark to your prediction.")};
+  }
+  return {mode:"choice",h:230,q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,ask:"",opts:["0","1"],ans:ri(0,1),ex:"",drawTop(){}};
+}
+function duelBuildRound(exp){
+  try{
+    switch(exp.type){
+      case "marker":return duelBuildMarker(exp);
+      case "choice":return duelBuildChoice(exp);
+      case "units":return duelBuildUnits();
+      case "heat":return duelBuildHeat(exp);
+      case "circuit":return duelBuildCircuit(exp);
+      case "digital":return duelBuildDigital();
+      case "geiger":return duelBuildGeiger();
+      case "photo":return duelBuildPhoto();
+      case "fringe":return duelBuildFringe(exp);
+      case "decay":return duelBuildDecay(exp);
+      default:return duelFallbackRound(exp);
+    }
+  }catch(e){try{return duelFallbackRound(exp);}catch(e2){return {mode:"choice",h:230,q:exp.t||"",ask:"",opts:["0","1"],ans:0,ex:"",drawTop(){}};}}
+}
+/* ---------- match flow on the new rounds (replaces the generic-scene flow) ---------- */
+nextDuelRound=function(){
+  D.round++;
+  const exp=D.exps[D.round-1];
+  const R=duelBuildRound(exp);
+  D.R=R;D.exp=exp;D.mode=R.mode;D.marker=!!R.marker;
+  D.truePct=(R.mode==="slider")?R.truePct:null;
+  D.guess=null;D.sel=null;D.botPct=null;D.botCorrect=false;D.locked=false;
+  D.startT=performance.now();D.left=20;
+  $("#duelRoundLbl").textContent=LANG==="en"?("Round "+D.round+" of 5 — "+(EN_T[exp.n]||exp.t)):`الجولة ${AR(D.round)} من 5 — ${exp.t}`;
+  $("#duelDots").innerHTML=[1,2,3,4,5].map(i=>`<i class="${i<D.round?"on":i===D.round?"cur":""}"></i>`).join("");
+  $("#duelTitle").textContent=R.q||exp.t;
+  const qEl=$("#duelQ");if(qEl)qEl.textContent=R.ask||"";
+  $("#duelConfirm").disabled=true;$("#duelConfirm").textContent=T("أكّد التوقع","Confirm prediction");
+  $("#duelNext").style.display="none";
+  const fb=$("#duelFeedback");fb.className="feedback";fb.innerHTML="";
+  const cvEl=$("#duelCanvas");cvEl.height=R.h||300;
+  const ctx=cvEl.getContext("2d");
+  const rangeRow=$("#duelRangeRow"),optsBox=$("#duelOpts"),rg=$("#duelRange"),valEl=$("#duelVal");
+  if(R.mode==="choice"){
+    if(rangeRow)rangeRow.style.display="none";
+    if(optsBox){optsBox.style.display="block";
+      optsBox.innerHTML=R.opts.map((o,i)=>`<button class="opt" data-i="${i}"><span>${(LANG==="en"?["A","B","C"]:["أ","ب","ج"])[i]||""} —</span> ${escHTML(o)}</button>`).join("");
+      optsBox.querySelectorAll(".opt").forEach(b=>{b.onclick=()=>{if(D.locked)return;D.sel=+b.dataset.i;optsBox.querySelectorAll(".opt").forEach(x=>x.classList.toggle("sel",+x.dataset.i===D.sel));$("#duelConfirm").disabled=false;};});}
+  }else{
+    if(optsBox){optsBox.style.display="none";optsBox.innerHTML="";}
+    if(rangeRow)rangeRow.style.display="";
+    rg.value=0;rg.disabled=false;rg.classList.add("unplaced");
+    if(valEl)valEl.textContent="";
+  }
+  const drawD=(anim,reveal)=>{
+    try{
+      if(R.marker){drawDuelMarker(anim,reveal);return;}
+      if(R.mode==="choice"){if(R.drawTop)R.drawTop(ctx,{revealed:!!reveal,ans:R.ans});return;}
+      R.draw(ctx,640,R.h||300,anim,D.guess,reveal);
+      if(R.axis)duelOverlayAxis(ctx,640,R.h||300,D.guess,reveal);
+    }catch(e){}
+  };
+  D.drawD=drawD;
+  drawD(0,false);
+  if(R.live&&R.mode==="slider"){
+    const _RD=D;let _pvLast=0;
+    const pv=t=>{if(D!==_RD||D.locked||currentScreen!=="scr-duel")return;if(t-_pvLast<40){window.__raf=requestAnimationFrame(pv);return;}_pvLast=t;drawD((t%2800)/2800,false);window.__raf=requestAnimationFrame(pv);};
+    window.__raf=requestAnimationFrame(pv);
+  }
+  const clk=$("#duelClock");if(clk)clk.textContent=AR(20)+T(" ث","s");
+  rg.oninput=()=>{if(D.mode!=="slider")return;D.guess=rg.value/1000;rg.classList.remove("unplaced");$("#duelConfirm").disabled=false;
+    if(valEl)valEl.textContent=(D.R&&(D.R.mode==="slider"))?("= "+duelFmt(D.R,D.R.min+D.guess*(D.R.max-D.R.min))):"";
+    drawD(0,false);};
+  let duelDrag=null;
+  cvEl.onpointerdown=e=>{if(!D||D.locked||D.mode!=="slider")return;duelDrag={x:e.clientX,v:D.guess==null?0:D.guess};if(D.guess==null){D.guess=0;rg.value=0;rg.classList.remove("unplaced");$("#duelConfirm").disabled=false;if(valEl&&D.R)valEl.textContent="= "+duelFmt(D.R,D.R.min);drawD(0,false);}};
+  cvEl.onpointermove=e=>{if(!D||D.locked||!duelDrag||e.buttons===0||D.mode!=="slider")return;const r=e.target.getBoundingClientRect();const dx=(e.clientX-duelDrag.x)/r.width*640;D.guess=clamp(duelDrag.v+dx/(602-38),0,1);rg.value=Math.round(D.guess*1000);if(valEl&&D.R)valEl.textContent="= "+duelFmt(D.R,D.R.min+D.guess*(D.R.max-D.R.min));drawD(0,false);};
+  cvEl.onpointerup=()=>{duelDrag=null;};
+  D.timer=every(()=>{
+    D.left=Math.max(0,20-(performance.now()-D.startT)/1000);
+    $("#duelTimer").style.width=(D.left/20*100)+"%";
+    const ck=$("#duelClock");if(ck)ck.textContent=AR(Math.ceil(D.left))+T(" ث","s");
+    if(D.left<=0)confirmDuel(true);
+  },100);
+};
+confirmDuel=function(timedOut){
+  if(!D||D.locked||!D.R)return;
+  const R=D.R;
+  const hasMark=R.mode==="choice"?(D.sel!=null):(D.guess!=null);
+  if(!hasMark&&!timedOut)return;
+  D.locked=true;
+  clearInterval(D.timer);
+  const rg=$("#duelRange");if(rg)rg.disabled=true;
+  $("#duelConfirm").disabled=true;
+  const used=(performance.now()-D.startT)/1000;
+  const botTime=rnd(3,15);
+  let meErrF,boErrF;
+  if(R.mode==="choice"){
+    D.botCorrect=Math.random()<[0.66,0.76,0.86][D.lvl];
+    meErrF=(hasMark&&D.sel===R.ans)?0:1;
+    boErrF=D.botCorrect?0:1;
+  }else{
+    const botPct=clamp(D.truePct+duelBotErrFrac(D.lvl),0,1);
+    D.botPct=botPct;
+    meErrF=hasMark?Math.abs(D.guess-D.truePct):1;
+    boErrF=Math.abs(botPct-D.truePct);
+  }
+  const mePts=duelRoundPoints(meErrF,used,hasMark);
+  const boPts=duelRoundPoints(boErrF,botTime,true);
+  D.me+=mePts;D.bot+=boPts;
+  if(hasMark)D.marks=(D.marks||0)+1;
+  const t0=performance.now();
+  const step=t=>{const a=clamp((t-t0)/1200,0,1);try{D.drawD(a,true);}catch(e){}
+    if(a<1)window.__raf=requestAnimationFrame(step);};
+  window.__raf=requestAnimationFrame(step);
+  if(R.mode==="choice"){
+    const box=$("#duelOpts");
+    if(box)box.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;if(i===R.ans)b.classList.add("right");else if(i===D.sel)b.classList.add("wrong");b.disabled=true;});
+  }
+  $("#duelMeScore").textContent=AR(D.me);$("#duelBotScore").textContent=AR(D.bot);
+  const tot=D.me+D.bot;$("#duelBalance").style.width=(tot?D.me/tot*100:50)+"%";
+  const win=mePts>=boPts;
+  const fb=$("#duelFeedback");fb.className="feedback show "+(win?"good":"bad");
+  const pctS=v=>AR(Math.round(v*100))+T("٪","%");
+  if(!hasMark){
+    fb.innerHTML=LANG==="en"
+      ?`<b>Time out — you placed no prediction, so this round is lost (0 pts).</b> The bot scored ${boPts} pts. Next round, place your prediction before the timer ends.`
+      :`<b>الوقت خلص — ما حطّيتش أي توقع، فالجولة دي ضاعت (0 نقطة).</b> البوت أخد ${AR(boPts)} نقطة. الجولة الجاية حط توقعك قبل ما المؤقّت يخلص.`;
+  }else if(R.mode==="choice"){
+    const ok=D.sel===R.ans;
+    fb.innerHTML=(LANG==="en"
+      ?`<b>${win?"You won this round":"The bot won this round"}</b> — ${ok?"Your choice was correct":"Your choice was wrong"}: you ${mePts} pts — Bot ${boPts} pts (${D.botCorrect?"answered correctly":"answered wrong"}).`
+      :`<b>${win?"كسبت الجولة دي":"البوت كسب الجولة دي"}</b> — ${ok?"اختيارك كان صح":"اختيارك كان غلط"}: أنت ${AR(mePts)} نقطة — البوت ${AR(boPts)} نقطة (${D.botCorrect?"جاوب صح":"جاوب غلط"}).`)
+      +(R.ex?`<div style="margin-top:4px">${escHTML(R.ex)}</div>`:"");
+  }else{
+    const gV=duelFmt(R,R.min+D.guess*(R.max-R.min)),tV=duelFmt(R,R.min+D.truePct*(R.max-R.min)),bV=duelFmt(R,R.min+D.botPct*(R.max-R.min));
+    fb.innerHTML=(LANG==="en"
+      ?`<b>${win?"You won this round":"The bot won this round"}</b> — You: ${mePts} pts (error ${pctS(meErrF)} in ${used.toFixed(1)} s) — Bot: ${boPts} pts (error ${pctS(boErrF)}).`
+      :`<b>${win?"كسبت الجولة دي":"البوت كسب الجولة دي"}</b> — أنت: ${AR(mePts)} نقطة (خطأ ${pctS(meErrF)} في ${used.toFixed(1)} ث) — البوت: ${AR(boPts)} نقطة (خطأ ${pctS(boErrF)}).`)
+      +`<div style="margin-top:4px">${LANG==="en"?`Your mark: <b>${gV}</b> — the truth: <b>${tV}</b> — the bot's mark: ${bV}.`:`علامتك: <b>${gV}</b> — الصح: <b>${tV}</b> — علامة البوت: ${bV}.`}</div>`;
+  }
+  if(D.round>=5){
+    window.__duelSession=window.__duelSession||{played:0,won:0};window.__duelSession.played++;if(D.me>D.bot)window.__duelSession.won++;
+    const xp=(D.marks||0)===0?0:(D.me>D.bot?60:15);gainXP(xp,"duel");if(xp===60)S.duelWins=(S.duelWins||0)+1;
+    fb.innerHTML+=LANG==="en"
+    ?`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"You won the match!":D.me<D.bot?"The bot won this time":"A draw!"}</div>
+    <div>Final score: You ${D.me} — Bot ${D.bot}. You earned ${xp} XP, added to your balance.</div>
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">New match</button><button class="btn" id="dHome">Home</button></div>`
+    :`<div class="scorebig" style="margin-top:8px">${D.me>D.bot?"فزت بالمباراة!":D.me<D.bot?"البوت فاز المرة دي":"تعادل!"}</div>
+    <div>النتيجة النهائية: أنت ${AR(D.me)} — البوت ${AR(D.bot)}. كسبت ${AR(xp)} XP اتضافت لرصيدك.</div>
+    <div class="ctlrow" style="margin-top:10px"><button class="btn primary" id="dAgain">مباراة جديدة</button><button class="btn" id="dHome">الرئيسية</button></div>`;
+    $("#dAgain").onclick=()=>$("#duelStart").click();
+    $("#dHome").onclick=()=>{showScreen("scr-home");};
+  }else{
+    const nb=$("#duelNext");nb.style.display="block";nb.textContent=LANG==="en"?("Round "+(D.round+1)+" of 5"):`الجولة ${AR(D.round+1)} من 5`;
+    nb.onclick=()=>nextDuelRound();
+  }
+};
+/* test hooks (used by the 60/60 duel verification): build + paint every round */
+window.__duelTest={build:duelBuildRound,builders:{marker:duelBuildMarker,choice:duelBuildChoice,units:duelBuildUnits,heat:duelBuildHeat,circuit:duelBuildCircuit,digital:duelBuildDigital,geiger:duelBuildGeiger,photo:duelBuildPhoto,fringe:duelBuildFringe,decay:duelBuildDecay}};
 </script>
 </body>
 </html>
