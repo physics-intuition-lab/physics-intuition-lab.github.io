@@ -458,9 +458,21 @@ button{touch-action:manipulation}
 .ratestars button:active{transform:scale(1.15)}
 .ratestars button:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:8px}
 @media (prefers-reduced-motion: reduce){.btn,.opt,.lvlcard,.modecard,.gatebtn,.switch,.ratestars button{transition:none}}
+/* boot splash: the ONLY thing painted while the boot decision is made
+   (stored session restored -> straight into the app; no session -> sign-in).
+   It covers every screen and the bottom nav, so nothing — home, greeting,
+   nav — can flash for a single frame during load or refresh. */
+#bootSplash{position:fixed;inset:0;z-index:3000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+#bootSplash img{width:92px;height:92px;object-fit:contain}
+#bootSplash .bsbar{width:148px;height:5px;border-radius:99px;background:var(--line);overflow:hidden}
+#bootSplash .bsbar i{display:block;height:100%;width:40%;border-radius:99px;background:var(--teal);animation:bslide 1.1s ease-in-out infinite alternate}
+@keyframes bslide{from{transform:translateX(-60%)}to{transform:translateX(260%)}}
+@media (prefers-reduced-motion: reduce){#bootSplash .bsbar i{animation:none;width:100%}}
+@media print{#bootSplash{display:none!important}}
 </style>
 </head>
-<body>
+<body class="auth">
+<div id="bootSplash" aria-hidden="true"><img src="assets/logo.png" alt=""><div class="bsbar"><i></i></div></div>
 
 <!-- ============ AUTH (official entry: sign in / create account / guest preview) ============ -->
 <div class="guestbar" id="guestBar"></div>
@@ -571,6 +583,7 @@ button{touch-action:manipulation}
         <p class="small" style="margin-top:8px" data-i18n="auth_guest_d">الزائر يطّلع على المختبر لمدة ٥ دقائق فقط، ومن غير أي حفظ للتقدم. أنشئ حسابًا ليُحفظ تقدمك ورتبتك وترجع لهما في كل دخول.</p>
       </div>
     </div>
+    <p class="madeby" dir="ltr">Made by Mohamed Nader Lotfy Abouelnaga</p>
   </div>
 </section>
 
@@ -3545,7 +3558,11 @@ function confirmDuel(timedOut){
   }
 }
 $("#duelConfirm").onclick=()=>confirmDuel(false); // explicit false: a click is never a timeout (an event object must not read as "timed out")
-showScreen("scr-home");
+/* NOTE: no navigation at load here. A top-level showScreen("scr-home") used to
+   sit on this line: it flipped the visible screen to Home mid-parse, so the
+   home screen — greeting included — flashed for a frame on every load and
+   refresh before the auth boot switched to the sign-in screen. First
+   navigation belongs to the auth boot alone. */
 </script>
 <script>
 "use strict";
@@ -7190,6 +7207,17 @@ try{
 }catch(e){SB=null;}
 window.__sbOn=function(){return !!SB;};
 window.__sbRecoverySession=false;
+/* ---------- boot splash control: the splash (static HTML, first paint) stays
+   up until the boot decision is final — session restored into the app, or no
+   session and the sign-in screen is revealed. A hard 12s ceiling guarantees
+   the page can never sit behind the splash forever on a dead network. ------ */
+let BOOT_SPLASH_GONE=false;
+function bootHideSplash(){
+  if(BOOT_SPLASH_GONE)return;BOOT_SPLASH_GONE=true;
+  const sp=document.getElementById("bootSplash");
+  if(sp)sp.style.display="none";
+}
+setTimeout(()=>{try{bootHideSplash();}catch(e){}},12000);
 function sbServerSession(){return !!(SB&&typeof SESSION!=="undefined"&&SESSION&&SESSION.server&&SESSION.uid);}
 function sbCall(p){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("sb-timeout")),15000))]);}
 function sbParseWaitSeconds(m){
@@ -7369,6 +7397,12 @@ async function sbFetchProfile(uid){
 }
 async function sbEnterWithSession(session){
   if(!session||!session.user)return;
+  /* Re-entrancy guard: the auth-state event and an explicit sign-in handler
+     can deliver the SAME session in the same tick — enter exactly once, so
+     profile/ledger loads and enterApp never run twice for one session. */
+  if(window.__sbEnterLock===session.user.id)return;
+  window.__sbEnterLock=session.user.id;
+  try{
   const user=session.user,uid=user.id,email=(user.email||"").toLowerCase();
   const meta=user.user_metadata||{};
   const prof=await sbFetchProfile(uid);
@@ -7426,6 +7460,7 @@ async function sbEnterWithSession(session){
   enterApp();
   /* heavier extras load in the background, then refresh the affected screens */
   sbLoadExtras(uid,role).then(()=>{try{renderAll();}catch(e){}try{syncProfileUI();}catch(e){}try{renderTeacherHome();}catch(e){}}).catch(()=>{});
+  }finally{if(window.__sbEnterLock===session.user.id)window.__sbEnterLock=null;}
 }
 async function sbLoadExtras(uid,role){
   if(role==="owner"){await sbLoadOwnerExtras();}
@@ -7698,6 +7733,7 @@ showScreen=function(id){
     sbFlushXP();
     sbSyncAllProgress();
     SESSION={mode:"none",email:null,guestLeft:0,guestTimer:null,expired:false};
+    window.__sbEnterLock=null;
     try{SB.auth.signOut();}catch(e){}
     try{loadProgress(freshProgress());}catch(e){}
     CURRENT_USER.name="محمد";CURRENT_USER.nameEn="Mohamed";
@@ -7705,24 +7741,73 @@ showScreen=function(id){
   }
 };
 /* ---------- boot: restore a live server session; password-recovery links ---------- */
+/* The screen the user was on when the page was refreshed (this tab only —
+   sessionStorage, navigation state only, never user data). Snapshotted
+   BEFORE any enterApp call can overwrite it, then re-applied after the
+   session is restored, so a refresh returns the user to the very screen
+   they left instead of dumping them on Home or, worse, the sign-in page. */
+let SB_BOOT_OPEN=true,SB_AUTO_BUSY=false,SB_BOOT_SCREEN=null;
+try{
+  const _bs=sessionStorage.getItem("il_last_screen"),_be=sessionStorage.getItem("il_last_exp");
+  if(_bs&&_bs!=="scr-login")SB_BOOT_SCREEN={id:_bs,exp:_be?parseInt(_be,10):null};
+}catch(e){}
+function sbRestoreScreen(w){
+  if(!w||!w.id)return;
+  try{
+    if(w.id==="scr-exp"){if(w.exp)openExp(w.exp);else showScreen("scr-exps");return;}
+    showScreen(w.id);
+  }catch(e){}
+}
+async function sbAutoEnter(session,wantScreen){
+  if(!session||!session.user)return false;
+  if(typeof SESSION==="undefined"||!SESSION||SESSION.mode!=="none")return false;
+  if(SB_AUTO_BUSY)return false;
+  SB_AUTO_BUSY=true;
+  try{
+    await sbEnterWithSession(session);
+    if(wantScreen&&SESSION&&SESSION.mode!=="none")sbRestoreScreen(wantScreen);
+    return !!(SESSION&&SESSION.mode!=="none");
+  }catch(e){return false;}
+  finally{SB_AUTO_BUSY=false;}
+}
 if(SB){
   try{
-    SB.auth.onAuthStateChange(ev=>{
+    SB.auth.onAuthStateChange((ev,sess)=>{
       if(ev==="PASSWORD_RECOVERY"){
         window.__sbRecoverySession=true;
         document.body.classList.add("auth");
         showScreen("scr-login");
         if(typeof authTab==="function")authTab("forgot");
         authMsg("rcMsg",T("تم التحقق من هويتك — اكتب كلمة السر الجديدة في حقلها واضغط «تعيين كلمة سر جديدة».","Your identity is verified — type the new password in its field and press “Set new password”."),true);
+        bootHideSplash();
+        return;
       }
+      /* Fallback restore path: if the one-shot getSession below stalls (a
+         known gotrue lock/refresh stall in some webviews) or fails once, the
+         auth event still delivers the stored session — restore from it, so a
+         signed-in user is never stranded on the sign-in screen by a refresh. */
+      if(SB_BOOT_OPEN&&(ev==="INITIAL_SESSION"||ev==="SIGNED_IN")&&sess)sbAutoEnter(sess,SB_BOOT_SCREEN);
     });
   }catch(e){}
-  sbCall(SB.auth.getSession()).then(async res=>{
-    const data=res&&res.data;
-    if(data&&data.session&&typeof SESSION!=="undefined"&&SESSION.mode==="none"){
-      await sbEnterWithSession(data.session);
+  (async()=>{
+    /* Restore with one retry: the old single getSession call raced a 15s
+       timeout and swallowed every failure, so one stalled read silently
+       logged the user out on refresh. Now a failure is retried once, the
+       auth-event path above covers a stall, and the splash only lifts when
+       the outcome is final — app restored, or definitively no session. */
+    let entered=false;
+    for(let i=0;i<2&&!entered;i++){
+      try{
+        const res=await sbCall(SB.auth.getSession());
+        const sess=res&&res.data&&res.data.session;
+        if(!sess)break;
+        entered=await sbAutoEnter(sess,SB_BOOT_SCREEN);
+      }catch(e){await new Promise(r=>setTimeout(r,700));}
     }
-  }).catch(()=>{});
+    while(SB_AUTO_BUSY)await new Promise(r=>setTimeout(r,150));
+    SB_BOOT_OPEN=false;
+    bootHideSplash();
+  })();
 }else{
   /* the library itself failed to load: say so cleanly, keep local/guest mode */
   try{
@@ -7734,7 +7819,26 @@ if(SB){
       card.appendChild(n);
     }
   }catch(e){}
+  bootHideSplash();
 }
+/* ---------- remember the current screen (this tab only) ----------
+   Every navigation records just the screen id (+ open experiment number) in
+   sessionStorage — throwaway navigation state, never user data. The boot
+   restore above reads it back so a refresh with a live session lands on the
+   very screen the user left. Arriving at the sign-in screen (explicit
+   sign-out, guest expiry) clears it, so no stale screen can be restored
+   for a different person on the same tab. */
+const _ssBootRec=showScreen;
+showScreen=function(id){
+  _ssBootRec(id);
+  try{
+    if(id==="scr-login"){sessionStorage.removeItem("il_last_screen");sessionStorage.removeItem("il_last_exp");}
+    else{
+      sessionStorage.setItem("il_last_screen",id);
+      if(id==="scr-exp"&&typeof curExp!=="undefined"&&curExp&&curExp.n)sessionStorage.setItem("il_last_exp",String(curExp.n));
+    }
+  }catch(e){}
+};
 </script>
 <script>
 "use strict";
