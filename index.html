@@ -4062,6 +4062,42 @@ function duelDrawMatch(lvl){
   }
   return pool.slice(0,5);
 }
+/* ============ ONE LABEL LAYOUT FOR EVERY DUEL RESULT AXIS ============
+   The marker triangles always stay at their marks' true x. The LABELS are
+   laid out by MEASURED text width: spread horizontally inside their row
+   first, and any label that still cannot fit is stacked one row higher,
+   with a thin leader line back down to its triangle. «أنت» / «الصح» /
+   «البوت» therefore can never overprint each other or run off the canvas
+   edge, on any duel result axis — both axis painters below use this. */
+function duelAxisLabels(ctx,marks,axisY,W,triTopY){
+  ctx.save();
+  ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
+  const items=marks.filter(m=>m&&m.l!=null).map(m=>({x:m.x,c:m.c,l:m.l,home:m.home||0,w:ctx.measureText(m.l).width,lx:0,row:0}));
+  items.sort((a,b)=>a.x-b.x);
+  const placed=[];
+  const clampX=it=>Math.max(it.w/2+6,Math.min(W-it.w/2-6,it.x));
+  const fitsRow=(it,row,lx)=>placed.every(p=>p.row!==row||Math.abs(p.lx-lx)>=(p.w+it.w)/2+8);
+  items.forEach(it=>{
+    let done=false;
+    for(let row=it.home;row<=it.home+4&&!done;row++){
+      let lx=clampX(it);
+      const rowItems=placed.filter(p=>p.row===row).sort((a,b)=>a.lx-b.lx);
+      for(const p of rowItems){const md=(p.w+it.w)/2+8;if(Math.abs(lx-p.lx)<md)lx=(lx>=p.lx)?p.lx+md:p.lx-md;}
+      lx=Math.max(it.w/2+6,Math.min(W-it.w/2-6,lx));
+      if(fitsRow(it,row,lx)){it.lx=lx;it.row=row;placed.push(it);done=true;}
+    }
+    if(!done){it.lx=clampX(it);it.row=it.home+4;placed.push(it);}
+  });
+  items.forEach(it=>{
+    const baseY=axisY-32-14*it.row;
+    if(Math.abs(it.lx-it.x)>5||it.row!==it.home){
+      ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle=it.c;ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(it.lx,baseY+4);ctx.lineTo(it.x,triTopY);ctx.stroke();ctx.restore();
+    }
+    ctx.fillStyle=it.c;ctx.fillText(it.l,it.lx,baseY);
+  });
+  ctx.restore();
+}
 /* Marker-type rounds run the experiment's OWN scene (drawScene) behind a BLIND
    axis — line and markers only, no numbers and no unit — by temporarily
    swapping the axis painter, so the duel stays an eye-only estimate of the
@@ -4073,18 +4109,13 @@ function drawDuelMarker(anim,reveal){
     const y=h-34,x0=38,x1=w-38;
     c2.strokeStyle=C_INK;c2.lineWidth=2;c2.beginPath();c2.moveTo(x0,y);c2.lineTo(x1,y);c2.stroke();
     const marks=[];
-    if(D.guess!=null)marks.push({p:D.guess,c:C_BLUE,l:T("أنت","You"),dy:0});
-    if(reveal){if(D.truePct!=null)marks.push({p:D.truePct,c:C_GOOD,l:T("الصح","Truth"),dy:14});if(D.botPct!=null)marks.push({p:D.botPct,c:C_RED,l:T("البوت","Bot"),dy:0});}
-    marks.forEach(m=>{m.x=x0+(x1-x0)*m.p;m.lx=m.x;
+    if(D.guess!=null)marks.push({p:D.guess,c:C_BLUE,l:T("أنت","You"),home:0});
+    if(reveal){if(D.truePct!=null)marks.push({p:D.truePct,c:C_GOOD,l:T("الصح","Truth"),home:1});if(D.botPct!=null)marks.push({p:D.botPct,c:C_RED,l:T("البوت","Bot"),home:0});}
+    marks.forEach(m=>{m.x=x0+(x1-x0)*m.p;
       c2.fillStyle=m.c;c2.beginPath();c2.moveTo(m.x,y-16);c2.lineTo(m.x-7,y-28);c2.lineTo(m.x+7,y-28);c2.fill();c2.fillRect(m.x-1,y-16,2,12);});
-    /* when two marks land close together (a near-perfect guess), their
-       labels would overprint into one smudge — the triangles stay at the
-       true spots, but the LABELS are spread at least 48px apart */
-    const srt=marks.slice().sort((a,b)=>a.lx-b.lx);
-    for(let i=1;i<srt.length;i++)if(srt[i].lx-srt[i-1].lx<48)srt[i].lx=srt[i-1].lx+48;
-    for(let i=srt.length-1;i>=0;i--){if(srt[i].lx>w-32)srt[i].lx=w-32;if(i<srt.length-1&&srt[i+1].lx-srt[i].lx<48)srt[i].lx=srt[i+1].lx-48;if(srt[i].lx<32)srt[i].lx=32;}
-    c2.font="12px 'IBM Plex Sans Arabic',sans-serif";c2.textAlign="center";
-    marks.forEach(m=>{c2.fillStyle=m.c;c2.fillText(m.l,m.lx,y-32-m.dy);});
+    /* the triangles stay at the true spots; the LABELS go through the one
+       shared duel-axis layout (measured spread + row stacking + leaders) */
+    duelAxisLabels(c2,marks,y,w,y-28);
   };
   try{window.__duelPaint=(D.R&&D.R.conv)||null;
     const sd=(D.R&&D.R.sceneData&&D.R.sceneData.length&&typeof duelBandRows==="function")?D.R.sceneData:null;
@@ -10143,8 +10174,11 @@ const GSCENE_PAINT={
   if(reveal)rot(.5+(tp-.5)*anim,C_TEAL,false);
   const dirA=tp>=.5?1:-1;
   if(reveal){ctx.strokeStyle=C_TEAL;ctx.lineWidth=3;ctx.beginPath();ctx.arc(320,118,86,dirA>0?-.4:Math.PI-.9,dirA>0?.9:Math.PI+.4,dirA<0);ctx.stroke();}
-  ctx.fillStyle="#22303a";ctx.fillRect(272,196,96,26);gsTxt(ctx,"−  +",320,214,{b:1,s:13,c:"#7fd4ff"});
-  gsTxt(ctx,window.__duelPaint?T("بطارية معكوسة — التيار "+window.__duelPaint.str+"٪ من الأصلي","Battery reversed — current "+window.__duelPaint.str+"% of the original"):T("بطارية معكوسة الأقطاب","Battery reversed"),320,240,{s:11});
+  /* the battery box lives at the TOP-left, clear of the axis band at the
+     bottom of the scene: the result markers' triangles ride that axis at
+     their true positions and can never strike the box there */
+  ctx.fillStyle="#22303a";ctx.fillRect(40,34,96,26);gsTxt(ctx,"−  +",88,52,{b:1,s:13,c:"#7fd4ff"});
+  gsTxt(ctx,window.__duelPaint?T("بطارية معكوسة — التيار "+window.__duelPaint.str+"٪ من الأصلي","Battery reversed — current "+window.__duelPaint.str+"% of the original"):T("بطارية معكوسة الأقطاب","Battery reversed"),148,52,{s:11,a:"left"});
 },
 23(ctx,w,h,anim,g,tp,reveal){ // friction: box sliding to a stop on rough carpet
   gsCap(ctx,w,T("صندوق اتزحلق على سجادة خشنة — هيقف بعد مسافة قد إيه؟","A box sliding on a rough carpet — how far before it stops?"));
@@ -10470,9 +10504,13 @@ function duelBand(ctx,lines,W){
 function duelOverlayAxis(ctx,W,H,guessPct,reveal){
   const y=H-22,x0=38,x1=W-38;
   ctx.strokeStyle=C_INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
-  const tri=(pct,col,lbl,dy)=>{if(pct==null)return;const x=x0+(x1-x0)*pct;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x-7,y-26);ctx.lineTo(x+7,y-26);ctx.fill();ctx.fillRect(x-1,y-14,2,10);ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(lbl,x,y-30-(dy||0));};
+  const marks=[];
+  const tri=(pct,col,lbl,home)=>{if(pct==null)return;const x=x0+(x1-x0)*pct;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x-7,y-26);ctx.lineTo(x+7,y-26);ctx.fill();ctx.fillRect(x-1,y-14,2,10);marks.push({x:x,c:col,l:lbl,home:home});};
   tri(guessPct,C_BLUE,T("أنت","You"),0);
-  if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),14);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
+  if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),1);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
+  /* same shared label layout as the marker axis: measured spread, row
+     stacking and leaders — labels never overprint each other here either */
+  duelAxisLabels(ctx,marks,y,W,y-26);
 }
 /* ================= DUEL MODELS FOR THE CONVERTED MARKER EXPERIMENTS =================
    The 24 experiments converted from choice to marker labs (CONV_MARKER) have
@@ -10701,7 +10739,11 @@ function duelUnitsRounds(){
         ctx.strokeStyle="#1d5c38";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(cx,cy,rxT,ryT,0,0,7);ctx.stroke();
         ctx.fillStyle="#5b4632";ctx.fillRect(cx-3,cy-ryT-8,6,9);
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("بطيخة كاملة — قارن حجمها ببطيخة السوق اللي تعرفها","A whole watermelon — compare its size with a market watermelon you know"),cx,26,"center",17,640);
-        if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.fillStyle="#22303a";rr2(ctx,cx-95,216,190,32,6);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 19px monospace";ctx.fillText(tv.toFixed(1)+" kg",cx,239);ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("الكتلة الحقيقية: ","True mass: ")+tv.toFixed(1)+T(" كجم"," kg"),cx,52);}}};},
+        if(reveal){ctx.save();ctx.globalAlpha=anim;ctx.fillStyle="#22303a";rr2(ctx,cx-95,216,190,32,6);ctx.fill();ctx.fillStyle="#7fd4ff";ctx.font="bold 19px monospace";ctx.fillText(tv.toFixed(1)+" kg",cx,239);
+          /* the true-mass label rides its own dark plate BELOW the scale
+             readout — it can never sit over the caption band at the top of
+             the scene, however many rows that caption wraps to */
+          const mLbl=T("الكتلة الحقيقية: ","True mass: ")+tv.toFixed(1)+T(" كجم"," kg");ctx.font="bold 14px 'IBM Plex Sans Arabic',sans-serif";const mLw=ctx.measureText(mLbl).width+30;ctx.fillStyle="#22303a";rr2(ctx,cx-mLw/2,254,mLw,30,6);ctx.fill();ctx.fillStyle=C_GOOD;ctx.fillText(mLbl,cx,274);ctx.restore();}}};},
    ()=>{const tv=Math.round(rnd(.4,2.6)*10)/10;
      return {name:T("الحجم","Volume"),min:0,max:3,unit:"لتر",trueVal:tv,
       q:T("دورق زجاجي سعته القصوى ٣ لتر وفيه كمية مية مجهولة — مفيش تدريج على الزجاج. خمّن حجم المية باللتر.","A glass jug whose maximum capacity is 3 litres, holding an unknown amount of water — no graduations on the glass. Guess the water's volume in litres."),
@@ -10724,7 +10766,7 @@ function duelUnitsRounds(){
         for(let i=0;i<n;i++){const sx=320+(i-(n-1)/2)*36;ctx.beginPath();for(let y=0;y<58;y+=6){const xx=sx+Math.sin(y/11+i*1.7)*6;y===0?ctx.moveTo(xx,116):ctx.lineTo(xx,116-y);}ctx.stroke();}
         ctx.fillStyle=C_INK;ctx.font="13px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("بخار أكتر وكثيف = شاي أسخن","More, denser steam = hotter tea"),320,24,"center",17,640);
         if(guess!=null&&!reveal){const gy=196-(guess-10)/90*128;ctx.save();ctx.setLineDash([5,4]);ctx.strokeStyle=C_BLUE;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(120,196);ctx.lineTo(120,68);ctx.stroke();ctx.beginPath();ctx.moveTo(108,gy);ctx.lineTo(132,gy);ctx.stroke();ctx.restore();ctx.fillStyle=C_BLUE;ctx.font="bold 12px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("توقعك","Your prediction"),120,Math.max(14,gy-8));}
-        if(reveal){ctx.save();ctx.globalAlpha=anim;const tx=486;ctx.strokeStyle=C_INK;ctx.lineWidth=2;rr2(ctx,tx-8,58,16,132,8);ctx.stroke();ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(tx,206,17,0,7);ctx.fill();ctx.stroke();const colH=(tv/110)*126*anim;ctx.fillRect(tx-4,190-colH,8,colH);ctx.fillStyle=C_GOOD;ctx.font="bold 16px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("الحرارة الحقيقية: ","True temperature: ")+tv+" °C",tx,34);ctx.restore();}}};},
+        if(reveal){ctx.save();ctx.globalAlpha=anim;const tx=486;ctx.strokeStyle=C_INK;ctx.lineWidth=2;rr2(ctx,tx-8,58,16,132,8);ctx.stroke();ctx.fillStyle=C_RED;ctx.beginPath();ctx.arc(tx,206,17,0,7);ctx.fill();ctx.stroke();const colH=(tv/110)*126*anim;ctx.fillRect(tx-4,190-colH,8,colH);ctx.fillStyle=C_GOOD;ctx.font="bold 16px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";ctx.fillText(T("الحرارة الحقيقية: ","True temperature: ")+tv+" °C",tx,50);ctx.restore();}}};},
    ()=>{const tv=Math.round(rnd(.9,3.1)*10)/10;
      return {name:T("الزمن","Time"),min:.2,max:4,unit:"ثانية",trueVal:tv,
       q:T("كرة على قمة منحدر طويل هتتدحرج لحد العلم اللي تحت — مفيش ساعة. خمّن الرحلة هتاخد كام ثانية.","A ball at the top of a long ramp will roll down to the flag at the bottom — no clock. Guess how many seconds the trip will take."),
