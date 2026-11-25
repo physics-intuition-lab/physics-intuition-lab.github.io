@@ -1717,7 +1717,11 @@ function xpEarnedSince(ms){if(!Array.isArray(S.xpLog))return 0;let s=0;for(const
 function doneVisibleCount(){let c=0;if(S.done&&S.done.forEach)S.done.forEach(n=>{if(expVisible(n))c++;});return c;}
 function nextVisibleExp(exp){for(let n=exp.n+1;n<=60;n++){const e=CATALOG.find(x=>x.n===n);if(e&&expVisible(n))return e;}return null;}
 function rankOf(xp){let ri2=0;for(let i=0;i<RANKS.length;i++){if(xp>=RANKS[i][1])ri2=i;}const nx=RANKS[ri2+1]||null;return{cur:[LANG==="en"?RANK_EN[ri2]:RANKS[ri2][0],RANKS[ri2][1]],next:nx?[LANG==="en"?RANK_EN[ri2+1]:nx[0],nx[1]]:null};}
-function fmtVal(v,unit){const d=(unit==="مم"||unit==="بيكومتر"||unit==="أنجستروم"||unit==="ثانية"||unit==="درجة (2θ)")?1:0;if(d)return v.toFixed(1)+" "+unit;if(v!==0&&Math.abs(v)<1)return (Math.round(v*1000)/1000)+" "+unit;return Math.round(v)+" "+unit;}
+function fmtVal(v,unit){const d=(unit==="مم"||unit==="بيكومتر"||unit==="أنجستروم"||unit==="ثانية"||unit==="درجة (2θ)")?1:0;if(d)return v.toFixed(1)+" "+unit;if(v!==0&&Math.abs(v)<1)return (Math.round(v*1000)/1000)+" "+unit;/* integers print as integers; anything else keeps the decimals the axis
+   itself shows (up to 2, trailing zeros trimmed by the number conversion) —
+   a value like 1.5 atm must never be rounded up to "2" in a result line,
+   a marker label or an axis tick, in duels or anywhere else */
+return (Number.isInteger(v)?v:Math.round(v*100)/100)+" "+unit;}
 
 /* ================= NAVIGATION ================= */
 let currentScreen="scr-login";
@@ -1941,12 +1945,12 @@ function renderRank(){
    month, all-time = the balance itself. The podium shows the top 3; the signed-in
    player's row or podium card is always highlighted. */
 let rankPeriod="week";
-const BOARD_BOTS=[
- {ar:"سارة م.",en:"Sara M.",week:95,month:310,all:1240},
- {ar:"عمر خ.",en:"Omar K.",week:80,month:265,all:1110},
- {ar:"ليان ع.",en:"Layan A.",week:72,month:240,all:985},
- {ar:"كريم س.",en:"Karim S.",week:54,month:190,all:860},
- {ar:"نور هـ.",en:"Nour H.",week:41,month:150,all:745}];
+/* The board shows REAL data only — never sample people or invented numbers.
+   In server mode sbPaintBoard replaces this with the get_leaderboard RPC
+   rows; in every other mode the only real standing available is the current
+   user's own, computed from their own dated XP ledger. When there are no
+   real rows at all, the board says so honestly instead of inventing names. */
+const BOARD_EMPTY_HTML=()=>`<p class="small" style="text-align:center;padding:16px 8px">${T("لسه مفيش نتائج — كن أول من يصعد على اللوحة","No results yet — be the first to climb the board")}</p>`;
 function renderBoard(){
   const board=$("#weekBoard");if(!board)return;
   $$("#boardTabs .fchip").forEach(c=>{
@@ -1959,12 +1963,15 @@ function renderBoard(){
   if(p)p.textContent=T("بيتحسب من سجل مكاسب XP المؤرّخ بتاعك — نفس السجل اللي بيبني رصيدك الكلي: الأسبوعي مكاسب الأسبوع الحالي، والشهري مكاسب الشهر الحالي، والكل هو رصيدك من أول يوم.","Computed from your dated XP gains ledger — the same ledger that builds your total balance: weekly counts this calendar week's gains, monthly this month's, and all-time is your balance since day one.");
   const mine=rankPeriod==="all"?S.xp:xpEarnedSince(rankPeriod==="week"?weekStartMs():monthStartMs());
   const myName=(typeof displayName==="function")?displayName():(LANG==="en"?CURRENT_USER.nameEn:CURRENT_USER.name);
-  const rows=BOARD_BOTS.map(b=>({name:LANG==="en"?b.en:b.ar,xp:b[rankPeriod]})).concat([{name:myName,xp:mine,me:true}]).sort((a,b)=>b.xp-a.xp);
+  /* the ONLY row this local board may show is the current user's own real
+     standing for the period (from their own dated ledger); with no real
+     earnings yet there are no rows — an honest empty state, not samples */
+  const rows=mine>0?[{name:myName,xp:mine,me:true}]:[];
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const myAv=(typeof avatarHTML==="function")?avatarHTML(26):"";
   const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
   const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
-  board.innerHTML=`<div class="podium">${pod}</div>`+rest+
+  board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
 
@@ -2954,7 +2961,9 @@ function startUnits(exp){
       }};
   }
   function makeMass(){
-    const tv=Math.round(rnd(1.2,6)*10)/10;
+    /* the givens state a medium market watermelon weighs 4–6 kg, so the drawn
+       truth is drawn INSIDE that stated range — never outside it */
+    const tv=Math.round(rnd(4,6)*10)/10;
     return {est:true,name:"الكتلة",unit:"كجم",min:.5,max:8,step:.1,dec:1,trueVal:tv,revDur:1300,
       prompt:"بطيخة على طاولة المطبخ — مفيش ميزان باين. الإطار المتقطع الأزرق هو حجم توقعك: كبّره وصغّره من السلايدر لحد ما يطابق إحساسك بكتلتها، وخمّن كام كيلوجرام.",
       draw(ctx,rev,guess){
@@ -3528,7 +3537,12 @@ function startGeiger(exp){
 function startPhoto(exp){
   const metals=[["سيزيوم","Caesium",2.1],["صوديوم","Sodium",2.3],["زنك","Zinc",4.3],["بلاتين","Platinum",5.1]];
   const m=metals[ri(0,3)],phi=m[2];
-  const f0=rnd(4,17);const E0=0.4136*f0,KE0=E0-phi,emits=KE0>0;
+  /* ONE frequency for the whole round, quantized to the exact step the
+     play-zone slider and the givens display use (0.1 ×10¹⁴ Hz): the scene's
+     live readout, the slider's start value and the explanation's photon
+     energy are then the SAME computation — E and KE_max can never drift
+     apart by a rounding step between scene and «ليه؟» again */
+  const f0=Math.round(rnd(4,17)*10)/10;const E0=0.4136*f0,KE0=E0-phi,emits=KE0>0;
   let guessKE=null,photoRunning=false; // NO preset mark for the energy guess either
   $("#expStage").innerHTML=`
    <p class="small">${LANG==="en"?`A surface of <b>${m[1]}</b> — its work function is φ = ${phi} electron-volts. We will shine light of a fixed frequency on it (its colour is in front of you in the strip). Predict the maximum kinetic energy of the emitted electrons — and if your judgement is that there will be no emission at all because the photon energy is below the work function, keep your prediction at exactly zero.`:`سطح من <b>${m[0]}</b> — دالة الشغل بتاعته φ = ${phi} إلكترون فولت. هنسلّط عليه ضوء تردده ثابت (لونه قدامك في الشريط). توقّع أقصى طاقة حركة للإلكترونات المنبعثة — ولو حكمك إن مفيش انبعاث أصلًا لأن طاقة الفوتون أقل من دالة الشغل، خلّي توقعك عند الصفر بالظبط.`}</p>
@@ -5112,6 +5126,7 @@ const _sttt=document.getElementById("stThemeToggle");
 if(_sttt)_sttt.onclick=toggleTheme;
 applyTheme(window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
 function applyLang(l){
+  try{if(window.__clearToasts)window.__clearToasts();}catch(e){} /* no toast survives a language switch in the old language */
   LANG=l;const en=l==="en";
   document.documentElement.lang=en?"en":"ar";
   document.documentElement.dir=en?"ltr":"rtl";
@@ -6860,7 +6875,7 @@ auth_pw_rule:["كلمة السر: ٨ أحرف على الأقل — وخليط �
 const ACCOUNTS={};
 let PENDING_REG=null;
 let SESSION={mode:"none",email:null,guestLeft:0,guestTimer:null,expired:false};
-function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},streak:{last:null,count:0},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,tierPaid:[],dailyHist:[],expXp:{}};}
+function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},streak:{last:null,count:0},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,tierPaid:[],dailyHist:[],expXp:{},lastExp:null};}
 /* S.theoryRead MUST stay a real Set at runtime: enterLab() and the progress-ring
    wrapper call .has()/.add() on it. Stored progress is JSON, where a Set serializes
    to {} — so every load rehydrates whatever shape was stored (Set / array of ids /
@@ -6870,7 +6885,12 @@ function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{}
    "S.theoryRead.has is not a function" before the lab screen could ever show.) */
 function theoryReadSet(v){const s=new Set();if(!v)return s;if(typeof v.has==="function"&&typeof v.forEach==="function"){v.forEach(x=>s.add(+x||x));return s;}if(Array.isArray(v)){v.forEach(x=>s.add(+x||x));return s;}if(typeof v==="object"){Object.keys(v).forEach(k=>{if(v[k])s.add(+k||k);});}return s;}
 function loadProgress(p){p=p||{};S.xp=p.xp||0;S.xpLog=Array.isArray(p.xpLog)?p.xpLog.filter(e=>e&&typeof e.amt==="number").map(e=>({t:+e.t||0,amt:e.amt,why:e.why||"lab"})):[];
-  if(S.xp>0&&!S.xpLog.length)S.xpLog=[{t:0,amt:S.xp,why:"balance"}]; /* pre-ledger balance: counts in the all-time total only */S.best=p.best||{};S.theoryRead=theoryReadSet(p.theoryRead);S.theoryXP=p.theoryXP||{};S.quiz=p.quiz||{};S.gems=p.gems||0;S.invitesUsed=p.invitesUsed||0;S.daily=p.daily||{date:null,done:false};S.streak=(p.streak&&typeof p.streak==="object")?{last:(typeof p.streak.last==="number"?p.streak.last:null),count:(+p.streak.count||0)}:{last:null,count:0};S.duelWins=p.duelWins||0;S.invites=Array.isArray(p.invites)?p.invites:[];S.invitedBy=p.invitedBy||null;S.pcode=p.pcode||null;S.invRewarded=!!p.invRewarded;S.hist=Array.isArray(p.hist)?p.hist.filter(h=>h&&typeof h.sc==="number"):[];S.done=new Set(Array.isArray(p.done)?p.done.map(n=>+n):[]);S.attempts=p.attempts||0;S.accSum=p.accSum||0;if(p.lastExp)S.lastExp=p.lastExp;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===localDayNum())?localDayNum():-1);S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;{const _tp=new Set(Array.isArray(p.tierPaid)?p.tierPaid:[]);if(S.tierPaid instanceof Set)S.tierPaid.forEach(k=>_tp.add(k));S.tierPaid=_tp;}S.dailyHist=Array.isArray(p.dailyHist)?p.dailyHist.filter(e=>e&&typeof e.d==="number"&&e.e):[];
+  if(S.xp>0&&!S.xpLog.length)S.xpLog=[{t:0,amt:S.xp,why:"balance"}]; /* pre-ledger balance: counts in the all-time total only */S.best=p.best||{};S.theoryRead=theoryReadSet(p.theoryRead);S.theoryXP=p.theoryXP||{};S.quiz=p.quiz||{};S.gems=p.gems||0;S.invitesUsed=p.invitesUsed||0;S.daily=p.daily||{date:null,done:false};S.streak=(p.streak&&typeof p.streak==="object")?{last:(typeof p.streak.last==="number"?p.streak.last:null),count:(+p.streak.count||0)}:{last:null,count:0};S.duelWins=p.duelWins||0;S.invites=Array.isArray(p.invites)?p.invites:[];S.invitedBy=p.invitedBy||null;S.pcode=p.pcode||null;S.invRewarded=!!p.invRewarded;S.hist=Array.isArray(p.hist)?p.hist.filter(h=>h&&typeof h.sc==="number"):[];S.done=new Set(Array.isArray(p.done)?p.done.map(n=>+n):[]);S.attempts=p.attempts||0;S.accSum=p.accSum||0;/* lastExp is part of the loaded state, never a leftover: a fresh progress
+   (every guest entry, every guest expiry, sign-out, progress reset) carries
+   lastExp:null, so the Home «كمّل من حيث وقفت» card can never resurrect an
+   earlier session's last-viewed experiment — while a registered account's
+   saved progress still restores its own lastExp exactly as before */
+S.lastExp=p.lastExp?p.lastExp:null;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===localDayNum())?localDayNum():-1);S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;{const _tp=new Set(Array.isArray(p.tierPaid)?p.tierPaid:[]);if(S.tierPaid instanceof Set)S.tierPaid.forEach(k=>_tp.add(k));S.tierPaid=_tp;}S.dailyHist=Array.isArray(p.dailyHist)?p.dailyHist.filter(e=>e&&typeof e.d==="number"&&e.e):[];
   /* tier catch-up at hydration: XP restored from any source may already
      cross tiers — pay each unpaid tier exactly once (deferred a tick so
      the rest of this load settles first) */
@@ -7153,6 +7173,7 @@ function typesetMath(root){
         try{katex.render(tex,el,{displayMode:true,throwOnError:false,strict:false});}
         catch(e){el.textContent=tex;}
         el.setAttribute("data-done","1");
+        fitFormula(el);
       }
       if(_texQueue.length){if(window.requestAnimationFrame)requestAnimationFrame(step);else setTimeout(step,16);}
       else _texBusy=false;
@@ -7174,10 +7195,41 @@ function mjTypeset(){
   if(!(window.MathJax&&MathJax.typesetPromise))return;
   const pend=Array.from(document.querySelectorAll(".mj-pending"));
   if(!pend.length)return;
-  MathJax.typesetPromise(pend).then(()=>{pend.forEach(el=>{el.setAttribute("data-done","1");el.classList.remove("mj-pending");});}).catch(()=>{});
+  MathJax.typesetPromise(pend).then(()=>{pend.forEach(el=>{el.setAttribute("data-done","1");el.classList.remove("mj-pending");fitFormula(el);});}).catch(()=>{});
 }
 let _tsT=null;
 function queueTypeset(){if(_tsT)clearTimeout(_tsT);_tsT=setTimeout(()=>typesetMath(document),60);}
+/* ================= FORMULA FIT — no display formula ever scrolls =================
+   A long law typeset at full size is wider than a phone-width card, and the
+   .formula box used to answer with horizontal scrolling (the long laws of
+   experiments 30, 33 and 52 were the visible cases). Instead, every rendered
+   formula is MEASURED against its box and its font size scaled down (never
+   below 8px) until the whole law fits inside the card — on all theory
+   screens, in both languages, whichever engine (KaTeX or MathJax) drew it.
+   A formula on a hidden screen measures 0 wide and is skipped; fitting
+   re-runs the moment any screen is shown and whenever the viewport changes,
+   so every formula is fitted at the width it is actually read at. The PDF
+   stage and the print sheet keep their fixed page width and are excluded. */
+function fitFormula(el){
+  if(!el||!el.isConnected||el.closest("#pdfStage,#printSheet"))return;
+  if(el.clientWidth<=0)return; /* hidden screen or closed details: fitted when it appears */
+  el.style.fontSize="";
+  for(let pass=0;pass<3;pass++){
+    const avail=el.clientWidth-22;if(avail<=40)return;
+    const w=el.scrollWidth-22;
+    if(w<=avail)return;
+    const cur=parseFloat(getComputedStyle(el).fontSize)||17;
+    const next=Math.max(8,cur*(avail/w)*0.99);
+    if(next>=cur-0.1){el.style.fontSize=next.toFixed(1)+"px";return;}
+    el.style.fontSize=next.toFixed(1)+"px";
+  }
+}
+function fitAllFormulas(){Array.from(document.querySelectorAll(".formula[data-done]")).forEach(fitFormula);}
+const _ssFit=showScreen;
+showScreen=function(id){_ssFit(id);if(window.requestAnimationFrame)requestAnimationFrame(()=>fitAllFormulas());};
+document.addEventListener("toggle",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("th")&&window.requestAnimationFrame)requestAnimationFrame(()=>fitAllFormulas());},true);
+let _fitRz=null;
+window.addEventListener("resize",()=>{if(_fitRz)clearTimeout(_fitRz);_fitRz=setTimeout(fitAllFormulas,180);});
 /* The observer only wakes the typesetter when a mutation actually ADDS a formula
    node — lab play mutates the DOM constantly (timers, feedback, stage rebuilds)
    and must not trigger a full-document formula scan every frame. */
@@ -7497,11 +7549,12 @@ function inviteStatus(iv){
   if(ACCOUNTS[iv.email])return T("سجّل — بانتظار إكمال أول تجربة","Registered — awaiting their first experiment");
   return T("بانتظار التسجيل","Awaiting registration");
 }
-/* Invite links are built from the app's REAL location at runtime — the old
-   hard-coded https://intuitionlab.app/join domain does not exist. On the live
-   site this yields https://physics-intuition-lab.github.io/?ref=CODE, and the
-   boot handler below already reads the ?ref= parameter into registration. */
-function inviteLink(code){return location.origin+location.pathname+"?ref="+code;}
+/* Invite links carry the app's canonical public address — the published
+   site itself, https://physics-intuition-lab.github.io/ — never the address
+   of whatever frame or preview the page happens to be viewed in (that
+   address is an internal gateway, not a link a friend can open). The boot
+   handler below reads the ?ref= parameter into registration. */
+function inviteLink(code){return "https://physics-intuition-lab.github.io/?ref="+code;}
 function renderInvites(){
   const list=document.getElementById("invList");if(!list)return;
   /* personal code card at the very top of the invite section */
@@ -9021,16 +9074,17 @@ async function sbPaintBoard(){
     const name=nm||(me?displayName():T("طالب","Student"));
     return {uid:r.user_id,name:name,xp:+(r.xp||0),me:me,prof:r};
   });
-  /* the signed-in player always appears, at their true rank by XP, even when
-     the RPC has no row for them in this period yet */
-  if(!rows.some(r=>r.me))rows.push({uid:SESSION.uid,name:displayName(),xp:mine,me:true,prof:null});
+  /* the signed-in player appears at their true rank by XP even when the RPC
+     has no row for them in this period yet — but only with real earnings:
+     a zero standing is not a board row, and an empty board stays honest */
+  if(mine>0&&!rows.some(r=>r.me))rows.push({uid:SESSION.uid,name:displayName(),xp:mine,me:true,prof:null});
   rows.sort((a,b)=>b.xp-a.xp);
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const av=r=>r.me?((typeof avatarHTML==="function")?avatarHTML(26):""):sbAvatarFor(r.prof,26);
   const tier=r=>escHTML(rankOf(r.xp).cur[0]);
   const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
   const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
-  board.innerHTML=`<div class="podium">${pod}</div>`+rest+
+  board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
 /* ---------- leaving to the login screen signs the server session out ---------- */
@@ -9209,8 +9263,24 @@ showScreen=function(id){
     if(!t){t=document.createElement("div");t.id="pdfToast";document.body.appendChild(t);}
     t.textContent=msg;t.classList.add("show");
     if(toastTimer)clearTimeout(toastTimer);
-    if(!sticky)toastTimer=setTimeout(()=>{t.classList.remove("show");},3600);
+    /* EVERY toast dismisses itself: a result toast after a few seconds, and
+       even a "sticky" progress toast — refreshed by each progress update
+       while generation runs — carries a hard cap, so no toast can outlive
+       its moment, follow the user across screens, or survive into another
+       session or language (all toast texts go through T() at creation) */
+    toastTimer=setTimeout(()=>{t.classList.remove("show");},sticky?30000:3600);
   }
+  /* All of the app's toasts (PDF, streak/tier, guest notice) clear together.
+     Hooked into showScreen below — so every screen change clears them, and
+     sign-out and guest expiry (both land on the login screen) clear them
+     too — and into applyLang, so a toast written in one language never
+     lingers on screen after the language flips. */
+  window.__clearToasts=function(){
+    ["pdfToast","streakToast","guestToast"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("show");});
+    if(toastTimer){clearTimeout(toastTimer);toastTimer=null;}
+  };
+  const _ssToast=showScreen;
+  showScreen=function(id){try{window.__clearToasts();}catch(e){}_ssToast(id);};
   function stageEl(){
     let st=document.getElementById("pdfStage");
     if(!st){st=document.createElement("div");st.id="pdfStage";document.body.appendChild(st);}
@@ -9220,7 +9290,7 @@ showScreen=function(id){
     return `<section class="pdf-exp"><h2>${T("تجربة ","Experiment ")}${e.n}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t} (${LVL[e.lvl]} — ${LANG==="en"?(LAB_EN[e.lab]||e.lab):e.lab})</h2><p><b>${T("الهدف:","Goal:")}</b> ${LANG==="en"?(EN_G[e.n]||e.goal):e.goal}</p>${theoryBlock(e,false)}<p><b>${T("مواضيع النظرية:","Theory topics:")}</b> ${e.theory.map(topicL).join(LANG==="en"?", ":"، ")}</p></section>`;
   }
   async function generate(list){
-    if(busy){toast(T("جارٍ تجهيز ملف PDF آخر — انتظر لحظات.","Another PDF is still being prepared — please wait a moment."),true);return;}
+    if(busy){toast(T("جارٍ تجهيز ملف PDF آخر — انتظر لحظات.","Another PDF is still being prepared — please wait a moment."));return;}
     /* everything generation needs was loaded at app startup (ensureLibs
        above); a failure here is a local preparation failure, never the
        student's connection — say so honestly and do not blame the network */
@@ -10728,7 +10798,7 @@ function duelUnitsRounds(){
         if(reveal){ctx.save();ctx.globalAlpha=anim;const ry=222;ctx.fillStyle="#ece5cf";ctx.fillRect(OX-4,ry,tv*SC+44,20);ctx.strokeStyle=C_INK;ctx.lineWidth=1;ctx.strokeRect(OX-4,ry,tv*SC+44,20);
           for(let cm=0;cm<=Math.ceil(tv)+2;cm++){const x=OX+cm*SC;const tall=cm%5===0?12:7;ctx.beginPath();ctx.moveTo(x,ry+20);ctx.lineTo(x,ry+20-tall);ctx.stroke();if(cm%5===0){ctx.fillStyle=C_INK;ctx.font="10px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(cm,x,ry+32);}}
           ctx.restore();ctx.fillStyle=C_GOOD;ctx.font="bold 15px 'IBM Plex Sans Arabic',sans-serif";ctx.fillText(T("الطول الحقيقي: ","True length: ")+tv+T(" سم"," cm"),OX+tv*SC/2,44);}}};},
-   ()=>{const tv=Math.round(rnd(1.2,6)*10)/10;
+   ()=>{const tv=Math.round(rnd(4,6)*10)/10; /* same stated range as the training lab: a market watermelon is 4–6 kg */
      return {name:T("الكتلة","Mass"),min:.5,max:8,unit:"كجم",trueVal:tv,
       q:T("بطيخة كاملة على طاولة المطبخ — مفيش ميزان. كبّر إطار توقعك أو صغّره لحد ما يطابق حجمها، وخمّن كتلتها بالكيلوجرام.","A whole watermelon on a kitchen table — no scale in sight. Size your guess frame to match it and guess its mass in kilograms."),
       draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,200);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,200,640,60);
@@ -10917,14 +10987,14 @@ function duelBuildGeiger(){
 function duelBuildPhoto(){
   const metals=[["سيزيوم","Caesium",2.1],["صوديوم","Sodium",2.3],["زنك","Zinc",4.3],["بلاتين","Platinum",5.1]];
   const m=metals[ri(0,3)],phi=m[2];
-  const f0=rnd(4,17),E0=0.4136*f0,KE0=Math.max(0,E0-phi),emits=KE0>0;
+  const f0=Math.round(rnd(4,17)*10)/10,E0=0.4136*f0,KE0=Math.max(0,E0-phi),emits=KE0>0; // frequency on the same 0.1 grid as the training lab — one computation everywhere
   const fColor=f=>f<5?"#e0483c":f<7.5?"#e08a00":f<10?"#3fae5a":f<14?"#1d6fd1":"#7a4fd0";
   return {mode:"slider",h:300,axis:true,min:0,max:5,unit:"eV",trueVal:Math.round(KE0*100)/100,truePct:KE0/5,
     q:(LANG==="en"?(EN_D[33]||""):"هل هيحصل انبعاث، وكام أقصى طاقة للإلكترونات؟"),
     ask:T("سطح من "+m[0]+" بيتسلّط عليه ضوء بلون الشعاع اللي شايفه — خمّن أقصى طاقة حركة للإلكترونات المنبعثة (وحط صفر لو حكمك إن مفيش انبعاث أصلًا).","A surface of "+m[1]+" with light of the beam colour you see shining on it — guess the maximum kinetic energy of the emitted electrons (put zero if your judgement is that there will be no emission at all).")
       +T(" دالة شغل المعدن مكتوبة على اللوح نفسه: φ = "," The metal's work function is written on the plate itself: φ = ")+phi+" eV"+T(" — طاقة الفوتون (من لونه) لازم تعدّيها الأول، والباقي هو أقصى طاقة حركة."," — the photon's energy (from its colour) must clear it first, and what remains is the maximum kinetic energy."),
-    ex:emits?T("طاقة الفوتون من لونه ≈ "+E0.toFixed(1)+" eV، ودالة شغل "+m[0]+" = "+phi+" eV — فأقصى طاقة حركة = "+E0.toFixed(1)+" − "+phi+" = "+KE0.toFixed(1)+" eV. اللون هو دليلك: البنفسجي أعلى طاقة والأحمر أقلها.","The photon's energy from its colour ≈ "+E0.toFixed(1)+" eV, and the work function of "+m[1]+" = "+phi+" eV — so the maximum kinetic energy = "+E0.toFixed(1)+" − "+phi+" = "+KE0.toFixed(1)+" eV. The colour is your guide: violet carries the most energy, red the least.")
-      :T("طاقة الفوتون من لونه ≈ "+E0.toFixed(1)+" eV، وهي أقل من دالة شغل "+m[0]+" ("+phi+" eV) — فلا انبعاث أصلًا مهما اشتد الضوء: العتبة أولًا.","The photon's energy from its colour ≈ "+E0.toFixed(1)+" eV, which is below the work function of "+m[1]+" ("+phi+" eV) — so there is no emission at all, however intense the light: the threshold comes first."),
+    ex:emits?T("طاقة الفوتون من لونه ≈ "+E0.toFixed(2)+" eV، ودالة شغل "+m[0]+" = "+phi+" eV — فأقصى طاقة حركة = "+E0.toFixed(2)+" − "+phi+" = "+KE0.toFixed(2)+" eV. اللون هو دليلك: البنفسجي أعلى طاقة والأحمر أقلها.","The photon's energy from its colour ≈ "+E0.toFixed(2)+" eV, and the work function of "+m[1]+" = "+phi+" eV — so the maximum kinetic energy = "+E0.toFixed(2)+" − "+phi+" = "+KE0.toFixed(2)+" eV. The colour is your guide: violet carries the most energy, red the least.")
+      :T("طاقة الفوتون من لونه ≈ "+E0.toFixed(2)+" eV، وهي أقل من دالة شغل "+m[0]+" ("+phi+" eV) — فلا انبعاث أصلًا مهما اشتد الضوء: العتبة أولًا.","The photon's energy from its colour ≈ "+E0.toFixed(2)+" eV, which is below the work function of "+m[1]+" ("+phi+" eV) — so there is no emission at all, however intense the light: the threshold comes first."),
     draw(ctx,W,H,anim,guessPct,reveal){
       ctx.clearRect(0,0,640,300);
       ctx.fillStyle="#5b6d77";ctx.fillRect(430,30,26,170);
