@@ -19,6 +19,115 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 <script>
+/* ================= STABILITY SAFETY NET — loads FIRST, on purpose =================
+   Registered before every other script on the page so no later failure can
+   slip past it. Three jobs, all deliberately quiet on the happy path:
+   1) window 'error' + 'unhandledrejection' handlers that only LOG — unless
+      the failure actually left the app blank (no visible screen, or the boot
+      splash wedged), in which case a recovery card is shown. A minor error
+      that does not break rendering never pops UI at the user.
+   2) safeMap(): the per-item list guard used by the long list builders —
+      one row whose render throws is skipped (and logged); the list lives.
+   3) A boot watchdog keyed on boot completion: if the boot-done flag is
+      not set ~6s after load, the boot is wedged and the recovery card
+      appears regardless of which static DOM is present; a 13s backstop
+      covers a splash that is STILL up past the app's own 12s splash
+      fallback. A completed boot always sets the flag, so the watchdog
+      never fires on a usable app. */
+(function(){
+  "use strict";
+  var T0=Date.now();
+  window.__ilBootDone=false;
+  window.safeMap=function(arr,fn){
+    var out=[];
+    if(!arr||typeof arr.length!=="number")return out;
+    for(var i=0;i<arr.length;i++){
+      try{out.push(fn(arr[i],i,arr));}
+      catch(e){try{console.error("[stability] list item skipped:",e);}catch(_){}}
+    }
+    return out;
+  };
+  function langEn(){try{return document.documentElement.lang==="en";}catch(e){return false;}}
+  function appBlank(){
+    var on=document.querySelector(".screen.on");
+    if(!on)return true;
+    if(!on.textContent||!String(on.textContent).trim())return true;
+    return false;
+  }
+  function splashUp(){
+    var sp=document.getElementById("bootSplash");
+    if(!sp)return false;
+    if(sp.style.display==="none")return false;
+    try{return getComputedStyle(sp).display!=="none";}catch(e){return true;}
+  }
+  window.__ilShowRecovery=function(){
+    try{
+      if(!document.body){setTimeout(function(){window.__ilShowRecovery();},600);return;}
+      if(document.getElementById("ilRecovery"))return;
+      var sp=document.getElementById("bootSplash");if(sp)sp.style.display="none";
+      var en=langEn();
+      var d=document.createElement("div");d.id="ilRecovery";d.setAttribute("role","alert");
+      d.style.cssText="position:fixed;inset:0;z-index:4000;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg,#f2f5f4)";
+      d.innerHTML='<div style="max-width:420px;width:100%;background:var(--surface,#ffffff);color:var(--ink,#15222b);border:1px solid var(--line,#d8e0dc);border-radius:14px;box-shadow:0 2px 10px rgba(16,42,50,.12);padding:22px;text-align:center">'
+        +'<h2 style="margin:0 0 8px;font-size:1.15rem">'+(en?"Something unexpected happened":"حصلت مشكلة غير متوقعة")+'</h2>'
+        +'<p style="margin:0 0 16px;color:var(--muted,#5b6d77);font-size:.95rem;line-height:1.7">'+(en?"The app hit an unexpected error. Reloading usually fixes it — your saved progress is not affected.":"الموقع واجه خطأ غير متوقع. إعادة التحميل بتحل المشكلة غالبًا — وتقدّمك المحفوظ مش هيتأثر.")+'</p>'
+        +'<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">'
+        +'<button id="ilRecReload" style="background:var(--teal,#0b766e);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;font-weight:700;cursor:pointer">'+(en?"Reload":"إعادة التحميل")+'</button>'
+        +'<button id="ilRecHome" style="background:transparent;color:var(--ink,#15222b);border:1px solid var(--line,#d8e0dc);border-radius:10px;padding:10px 18px;font:inherit;font-weight:600;cursor:pointer">'+(en?"Back to Home":"العودة للرئيسية")+'</button>'
+        +'</div></div>';
+      document.body.appendChild(d);
+      document.getElementById("ilRecReload").onclick=function(){location.reload();};
+      document.getElementById("ilRecHome").onclick=function(){
+        try{
+          d.remove();
+          var signed=(typeof SESSION!=="undefined"&&SESSION&&SESSION.mode&&SESSION.mode!=="none");
+          if(typeof showScreen==="function")showScreen(signed?"scr-home":"scr-login");
+          else location.reload();
+        }catch(e){location.reload();}
+      };
+    }catch(e){}
+  };
+  function checkAfterError(){
+    setTimeout(function(){
+      try{
+        if(appBlank())window.__ilShowRecovery();
+        else if(splashUp()&&!window.__ilBootDone&&Date.now()-T0>6000)window.__ilShowRecovery();
+      }catch(e){}
+    },350);
+  }
+  window.addEventListener("error",function(e){
+    if(!e||!e.message)return; /* resource-load errors (img/script) are not app crashes */
+    try{console.error("[stability] uncaught error:",e.message,e.error||"");}catch(_){}
+    checkAfterError();
+  });
+  window.addEventListener("unhandledrejection",function(e){
+    try{console.error("[stability] unhandled rejection:",e&&e.reason);}catch(_){}
+    checkAfterError();
+  });
+  /* boot watchdog: keyed on BOOT COMPLETION, not on what the DOM happens
+     to show. If the boot-done flag is not set ~6s after load, the boot is
+     wedged (e.g. session restore hung) — even when a static screen's DOM
+     is present and appBlank() would report "not blank" — so the recovery
+     card is shown regardless of which static DOM is present. A completed
+     boot always sets the flag (every splash lift goes through the wrapped
+     bootHideSplash), so this never fires on a usable app. */
+  setTimeout(function(){
+    try{
+      if(window.__ilBootDone)return;
+      window.__ilShowRecovery();
+    }catch(e){}
+  },6000);
+  /* backstop: the app's own splash fallback lifts the splash at 12s; if it
+     is STILL up at 13s, that fallback itself died — recover here instead */
+  setTimeout(function(){
+    try{
+      if(window.__ilBootDone)return;
+      if(splashUp())window.__ilShowRecovery();
+    }catch(e){}
+  },13000);
+})();
+</script>
+<script>
 /* Service-worker hygiene: the standalone deployment ships sw.js v2, which
    never intercepts cross-origin API traffic. Register it here so every
    visitor gets it, and purge any pre-v2 Cache Storage cache on load — the
@@ -276,6 +385,20 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
 .notice{background:var(--amber-bg);border:1px solid var(--amber);border-radius:12px;padding:10px 12px;font-size:.9rem;margin-bottom:12px}
 .avatar{border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;flex:0 0 auto}
 .avatar.letter{background:var(--teal);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:800;vertical-align:middle}
+/* owner-gifted profile frames: a ring wrapped around the avatar plus a small
+   badge floating at its top — the badge is absolutely positioned, so it never
+   shifts the row's layout; an avatar with no frame renders exactly as before */
+.avwrap{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;padding:2.5px;vertical-align:middle;flex:0 0 auto;line-height:0}
+.avwrap.crown{background:linear-gradient(140deg,#f7dc6f,#d9a521 40%,#a87408 65%,#f1c40f)}
+.avwrap.rose{background:conic-gradient(from 15deg,#e75480,#f6b8c8,#5da85f,#e75480,#8fce62,#f6b8c8,#e75480)}
+.avwrap .avbadge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);line-height:1;pointer-events:none;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+/* celebratory gift popup (recipient side of owner gifts) */
+.giftpop-ov{position:fixed;inset:0;background:rgba(10,14,20,.55);display:flex;align-items:center;justify-content:center;z-index:999;padding:18px}
+.giftpop{background:var(--surface);border:1px solid var(--amber);border-radius:16px;padding:22px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.giftpop-emoji{font-size:44px;line-height:1.1}
+.giftpop-msg{font-size:1.02rem;font-weight:700;line-height:1.8;margin:10px 0 14px}
+@media (prefers-reduced-motion:no-preference){.giftpop{animation:giftpop-in .28s ease-out}}
+@keyframes giftpop-in{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
 .mission{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
 .mission .mrow{display:flex;gap:8px;align-items:flex-start;margin-bottom:6px}
 .mission .mrow:last-child{margin-bottom:0}
@@ -1400,6 +1523,12 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <h3 style="margin-top:14px" data-i18n="ow_acc_h">حسابات هذه الجلسة</h3>
       <p class="small" data-i18n="ow_acc_d">من هنا تمنح أي حساب دور «معلم» أو ترجعه طالبًا — المعلم يحصل على «مساحة المعلم» لبناء كورسات مخصصة وطلب تجارب جديدة.</p>
       <div id="owAccList"></div>
+      <h3 style="margin-top:14px" data-i18n="ow_gift_h">هدايا من المالك 🎁</h3>
+      <p class="small" data-i18n="ow_gift_d">ابعت هدية لأي مستخدم مسجّل تختاره بنفسك: جواهر تُسجَّل في سجل الجواهر على السيرفر، أو إطار لصورته الشخصية — وكل هدية بتوصل لصاحبها مع أول دخول له.</p>
+      <div id="owGiftZone"></div>
+      <h3 style="margin-top:14px" data-i18n="ow_frame_h">منح إطار</h3>
+      <p class="small" data-i18n="ow_frame_d">امنح أي مستخدم إطارًا لصورته الشخصية — ورد أو تاج — يظهر حوالين صورته في كل مكان: بروفايله والترتيب والمواجهات. وتقدر تشيل إطار أي حد من هنا برضه.</p>
+      <div id="owFrameZone"></div>
       <h3 style="margin-top:14px" data-i18n="ow_req_h">طلبات التجارب</h3>
       <p class="small" data-i18n="ow_req_d">طلبات تجارب جديدة وصلتك من المعلمين من «مساحة المعلم».</p>
       <div id="owReqList"></div>
@@ -1836,7 +1965,7 @@ function renderHome(){
     +T("معدِّل اليوم: ","Today's modifier: ")+dailyModName(dc.mod)+" — "+dailyModDesc(dc.mod)
     +(dailyDone?T(" أنجزت تحدي اليوم ✓ — ارجع بكرة لتحدٍّ جديد."," You completed today's challenge ✓ — come back tomorrow for a new one."):T(" العبها النهاردة واكسب XP إضافي."," Play it today and earn bonus XP."));
   $("#dailyBtn").onclick=()=>openExp(daily.n);
-  $("#homeLevels").innerHTML=[0,1,2].map(l=>{
+  $("#homeLevels").innerHTML=safeMap([0,1,2],l=>{
     const tot=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)).length;
     const dn=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)&&S.done.has(e.n)).length;
     const names=LANG==="en"?["Basics: heat & properties of matter + electricity & magnetism","Deeper: electronics, thin films, atomic & nuclear","Rare & advanced: quantum, nano & accelerators"]:["الأساسيات: حرارة وخواص مادة + كهربية ومغناطيسية","تعمّق: إلكترونيات، أغشية رقيقة، ذرية ونووية","نادر ومتقدم: كمومية ونانو ومسرّعات"];
@@ -1880,7 +2009,7 @@ function renderExps(){
   const listEl=$("#expList");
   if(sig!==_expSig){
     _expSig=sig;
-    listEl.innerHTML=CATALOG.map(e=>`
+    listEl.innerHTML=safeMap(CATALOG,e=>`
     <div class="card expcard" data-n="${e.n}" data-lvl="${e.lvl}" data-q="${escAttr(normSearch(e.t+" "+e.lab+" "+(EN_T[e.n]||"")))}">
       <div class="expnum">${AR(e.n)}</div>
       <div class="grow">
@@ -1914,7 +2043,7 @@ renderExps();
 
 /* ================= THEORY ================= */
 function theoryHTML(list){
-  return list.map(e=>`<details class="th"><summary><span>${T("تجربة ","Experiment ")}${AR(e.n)}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t}</span><span class="chip l${e.lvl}">${LVL[e.lvl]}</span></summary>
+  return safeMap(list,e=>`<details class="th"><summary><span>${T("تجربة ","Experiment ")}${AR(e.n)}: ${LANG==="en"?(EN_T[e.n]||e.t):e.t}</span><span class="chip l${e.lvl}">${LVL[e.lvl]}</span></summary>
     <div class="body"><p class="small">${e.goal}</p><b>المواضيع:</b><ul>${e.theory.map(t=>`<li>${t}</li>`).join("")}</ul>
     <button class="btn sm" data-print="${e.n}">${T("تنزيل PDF","Download PDF")}</button></div></details>`).join("");
 }
@@ -1957,11 +2086,11 @@ function renderRank(){
   $("#rankName").textContent=rk.cur[0]+(isLegendaryXP(S.xp)?" ♛ — "+T("أسطورة الحدس","Legend of Intuition"):"");
   $("#playedNum2").textContent=AR(S.attempts);
   $("#doneNum2").textContent=AR(doneVisibleCount())+" / "+AR(visibleExps().length);
-  $("#lvlProgress").innerHTML=[0,1,2].map(l=>{
+  $("#lvlProgress").innerHTML=safeMap([0,1,2],l=>{
     const tot=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)).length,dn=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)&&S.done.has(e.n)).length;
     return `<div style="margin-bottom:10px"><div class="row between"><b>${LVL[l]}</b><span class="small">${AR(dn)} / ${AR(tot)}</span></div><div class="pbar"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>`;
   }).join("");
-  $("#ladder").innerHTML=RANKS.map((r,i)=>{
+  $("#ladder").innerHTML=safeMap(RANKS,(r,i)=>{
     const isCur=rk.cur[1]===r[1];
     const medals=["#b0793f","#9aa7ad","#d9a521","#7fd4c1","#6ec3e8","#e08a00"];
     const range=RANKS[i+1]?(LANG==="en"?`From ${AR(r[1])} to ${AR(RANKS[i+1][1]-1)} XP`:`من ${AR(r[1])} لـ${AR(RANKS[i+1][1]-1)} XP`):(LANG==="en"?`From ${AR(r[1])} XP and up`:`من ${AR(r[1])} XP وطالع`);
@@ -2000,8 +2129,8 @@ function renderBoard(){
   const rows=mine>0?[{name:myName,xp:mine,me:true}]:[];
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const myAv=(typeof avatarHTML==="function")?avatarHTML(26):"";
-  const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
-  const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
+  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
+  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
   board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
@@ -7086,7 +7215,7 @@ function startGuestCountdown(){
   stopGuest();
   SESSION.guestLeft=300;
   showGuestToast();
-  _guestTimer=setInterval(()=>{
+  _guestTimer=setInterval(()=>{try{
     if(SESSION.mode!=="guest"){stopGuest();return;}
     SESSION.guestLeft--;
     updateGuestBar();
@@ -7109,7 +7238,7 @@ function startGuestCountdown(){
       showScreen("scr-login");
       authMsg("siMsg",T("انتهت مدة الزائر (٥ دقائق). أنشئ حسابًا أو سجّل الدخول للمتابعة وحفظ تقدمك.","Your guest time (5 minutes) has ended. Create an account or sign in to continue and save your progress."),false);
     }
-  },1000);
+  }catch(e){} },1000);
 }
 let _guestTimer=null;
 function stopGuest(){if(_guestTimer){clearInterval(_guestTimer);_guestTimer=null;}if(typeof SESSION!=="undefined"&&SESSION&&SESSION.guestTimer){clearInterval(SESSION.guestTimer);SESSION.guestTimer=null;}}
@@ -7353,12 +7482,17 @@ function typesetMath(root){
       const batch=_texQueue.splice(0,6);
       for(const el of batch){
         if(el.getAttribute("data-done"))continue;
-        const tex=texOf(el);
+        /* per-formula containment: ANY failure in this one formula — reading
+           its TeX, the KaTeX render, or the fit pass — degrades THIS formula
+           to readable plain text and can never kill the batch, wedge the
+           queue (_texBusy), or propagate into the screen's render */
+        let tex=null;
+        try{tex=texOf(el);}catch(e){el.setAttribute("data-done","1");continue;}
         if(tex==null){el.setAttribute("data-done","1");continue;}
         try{katex.render(tex,el,{displayMode:true,throwOnError:false,strict:false});}
         catch(e){el.textContent=tex;}
         el.setAttribute("data-done","1");
-        fitFormula(el);
+        try{fitFormula(el);}catch(e){}
       }
       if(_texQueue.length){if(window.requestAnimationFrame)requestAnimationFrame(step);else setTimeout(step,16);}
       else _texBusy=false;
@@ -7366,7 +7500,7 @@ function typesetMath(root){
     step();
     return;
   }
-  els.forEach(el=>{const tex=texOf(el);
+  els.forEach(el=>{let tex=null;try{tex=texOf(el);}catch(e){el.setAttribute("data-done","1");return;}
     if(tex==null){el.setAttribute("data-done","1");return;}
     el.textContent="\\["+tex+"\\]";el.classList.add("mj-pending");});
   if(window.MathJax&&MathJax.typesetPromise){mjTypeset();}
@@ -7409,9 +7543,24 @@ function fitFormula(el){
     el.style.fontSize=next.toFixed(1)+"px";
   }
 }
-function fitAllFormulas(){Array.from(document.querySelectorAll(".formula[data-done]")).forEach(fitFormula);}
+function fitAllFormulas(){Array.from(document.querySelectorAll(".formula[data-done]")).forEach(el=>{try{fitFormula(el);}catch(e){}});}
 const _ssFit=showScreen;
-showScreen=function(id){_ssFit(id);if(window.requestAnimationFrame)requestAnimationFrame(()=>fitAllFormulas());};
+showScreen=function(id){
+  /* STABILITY: the underlying screen render — the _ssFit(id) call itself —
+     runs INSIDE this try. A throwing render is caught here: the failure is
+     logged, the #ilScreenErr card is rendered onto the target screen via
+     window.__ilScreenError (installed by the per-screen containment block
+     at the end of the page), and the error is then rethrown so the outer
+     containment wrapper remains the final authority and the chain unwinds
+     exactly as before. No bare call remains in the screen-show chain. */
+  try{_ssFit(id);}
+  catch(e){
+    try{console.error("[stability] screen render failed:",id,e);}catch(_){}
+    if(typeof window.__ilScreenError==="function"){try{window.__ilScreenError(id);}catch(_){}}
+    throw e;
+  }
+  if(window.requestAnimationFrame)requestAnimationFrame(()=>fitAllFormulas());
+};
 document.addEventListener("toggle",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("th")&&window.requestAnimationFrame)requestAnimationFrame(()=>fitAllFormulas());},true);
 let _fitRz=null;
 window.addEventListener("resize",()=>{if(_fitRz)clearTimeout(_fitRz);_fitRz=setTimeout(fitAllFormulas,180);});
@@ -7447,6 +7596,10 @@ ow_ann_d:["اكتب إعلانًا يظهر في أعلى الصفحة الرئ�
 ow_ann_ph:["مثال: تحدي الأسبوع بدأ — جرّب تجربة اليوم!","e.g. The weekly challenge has started — try today's experiment!"],
 ow_ann_save:["نشر الإعلان","Publish announcement"],
 ow_ann_clear:["مسح الإعلان","Clear announcement"],
+ow_gift_h:["هدايا من المالك 🎁","Gifts from the owner 🎁"],
+ow_gift_d:["ابعت هدية لأي مستخدم مسجّل تختاره بنفسك: جواهر تُسجَّل في سجل الجواهر على السيرفر، أو إطار لصورته الشخصية — وكل هدية بتوصل لصاحبها مع أول دخول له.","Send a gift to any registered user you choose: gems recorded in the server gems ledger, or a frame for their profile picture — every gift reaches its owner at their next sign-in."],
+ow_frame_h:["منح إطار","Gift a frame"],
+ow_frame_d:["امنح أي مستخدم إطارًا لصورته الشخصية — ورد أو تاج — يظهر حوالين صورته في كل مكان: بروفايله والترتيب والمواجهات. وتقدر تشيل إطار أي حد من هنا برضه.","Give any user a frame for their profile picture — rose or crown — shown around their picture everywhere: their profile, the standings and duels. You can also remove anyone's frame from here."],
 ow_acc_h:["حسابات هذه الجلسة","Accounts in this session"],
 ow_acc_d:["من هنا تمنح أي حساب دور «معلم» أو ترجعه طالبًا — المعلم يحصل على «مساحة المعلم» لبناء كورسات مخصصة وطلب تجارب جديدة.","From here you can give any account the Teacher role or return it to a student — a teacher gets the Teacher Space for building custom courses and requesting new experiments."],
 ow_req_h:["طلبات التجارب","Experiment requests"],
@@ -7525,19 +7678,21 @@ function fillOwnerPanel(){
      ONLY when their content signature actually changes — fillOwnerPanel runs
      on every home/experiments render, and re-creating 60+ DOM rows each time
      was the panel's main cost on mid-range phones. */
-  const accSig=accs.map(a=>[a.email,a.role,(a.progress&&a.progress.xp)||0,(a.profile&&a.profile.pic)||"",a.name||""].join(":")).join("|")+LANG;
-  if(al&&al.dataset.sig!==accSig){al.dataset.sig=accSig;al.innerHTML=accs.length?accs.map(a=>{const isT=a.role==="teacher";const roleLbl=a.role==="owner"?T("المالك","Owner"):isT?T("معلم","Teacher"):T("مستخدم","User");
-    const av=(typeof anyAvatarHTML==="function")?anyAvatarHTML((a.profile&&a.profile.nick)||a.name||"",a.profile&&a.profile.pic,30):"";
+  const accSig=accs.map(a=>[a.email,a.role,(a.progress&&a.progress.xp)||0,(a.profile&&a.profile.pic)||"",(a.profile&&a.profile.frame)||"",a.name||""].join(":")).join("|")+LANG;
+  if(al&&al.dataset.sig!==accSig){al.dataset.sig=accSig;al.innerHTML=accs.length?safeMap(accs,a=>{const isT=a.role==="teacher";const roleLbl=a.role==="owner"?T("المالك","Owner"):isT?T("معلم","Teacher"):T("مستخدم","User");
+    const av=(typeof anyAvatarHTML==="function")?anyAvatarHTML((a.profile&&a.profile.nick)||a.name||"",a.profile&&a.profile.pic,30,(typeof frameOfAccount==="function")?frameOfAccount(a):""):"";
     return `<div class="owrow">${av}<span class="grow"><b>${escHTML(a.name||"")}</b> <span class="small" dir="ltr">${escHTML(a.email||"")}</span></span><span class="chip ${a.role==="owner"?"l1":"l0"}">${roleLbl}</span><span class="small">${AR((a.progress&&a.progress.xp)||0)} XP</span>${a.role==="owner"?"":`<button class="btn sm" data-roletgl="${escHTML(a.email||"")}">${isT?T("إرجاعه طالبًا","Back to student"):T("اجعله معلمًا","Make teacher")}</button>`}</div>`;}).join(""):`<p class="small">${T("لا توجد حسابات مسجّلة بعد في هذه الجلسة.","No accounts registered yet in this session.")}</p>`;
     al.querySelectorAll("[data-roletgl]").forEach(b=>{b.onclick=()=>{const acc=ACCOUNTS[b.dataset.roletgl];if(!acc||acc.role==="owner")return;
       acc.role=(acc.role==="teacher")?"user":"teacher";
       fillOwnerPanel();};});}
   const rq=document.getElementById("owReqList");
   if(rq){const reqs=(typeof EXP_REQUESTS!=="undefined"&&Array.isArray(EXP_REQUESTS))?EXP_REQUESTS:[];
-    rq.innerHTML=reqs.length?reqs.map(r=>`<div class="owrow"><span class="grow"><b>${escHTML(r.topic||"")}</b> <span class="small">${T("المستوى المقترح:","Suggested level:")} ${escHTML(r.level||"")}</span>${r.notes?`<div class="small">${escHTML(r.notes)}</div>`:""}<div class="small">${T("من:","From:")} ${escHTML(r.byName||"")} <span dir="ltr">${escHTML(r.by||"")}</span></div></span></div>`).join(""):`<p class="small">${T("لا توجد طلبات تجارب بعد.","No experiment requests yet.")}</p>`;}
+    rq.innerHTML=reqs.length?safeMap(reqs,r=>`<div class="owrow"><span class="grow"><b>${escHTML(r.topic||"")}</b> <span class="small">${T("المستوى المقترح:","Suggested level:")} ${escHTML(r.level||"")}</span>${r.notes?`<div class="small">${escHTML(r.notes)}</div>`:""}<div class="small">${T("من:","From:")} ${escHTML(r.byName||"")} <span dir="ltr">${escHTML(r.by||"")}</span></div></span></div>`).join(""):`<p class="small">${T("لا توجد طلبات تجارب بعد.","No experiment requests yet.")}</p>`;}
   const xl=document.getElementById("owExpList");
   const xlSig=LANG+"|"+Array.from(ADMIN.hidden).sort((a,b)=>a-b).join(",");
-  if(xl&&xl.dataset.sig!==xlSig){xl.dataset.sig=xlSig;xl.innerHTML=CATALOG.map(e=>{const hid=ADMIN.hidden.has(e.n);return `<div class="owrow"><span class="grow"><b>${AR(e.n)}.</b> ${LANG==="en"?(EN_T[e.n]||e.t):e.t} ${hid?'<span class="chip l2">'+T("مخفية","Hidden")+"</span>":'<span class="chip l0">'+T("ظاهرة","Visible")+"</span>"}</span><button class="btn sm" data-hid="${e.n}">${hid?T("إظهار","Show"):T("إخفاء","Hide")}</button></div>`;}).join("");}
+  if(xl&&xl.dataset.sig!==xlSig){xl.dataset.sig=xlSig;xl.innerHTML=safeMap(CATALOG,e=>{const hid=ADMIN.hidden.has(e.n);return `<div class="owrow"><span class="grow"><b>${AR(e.n)}.</b> ${LANG==="en"?(EN_T[e.n]||e.t):e.t} ${hid?'<span class="chip l2">'+T("مخفية","Hidden")+"</span>":'<span class="chip l0">'+T("ظاهرة","Visible")+"</span>"}</span><button class="btn sm" data-hid="${e.n}">${hid?T("إظهار","Show"):T("إخفاء","Hide")}</button></div>`;}).join("");}
+  try{renderOwGift();}catch(e){}
+  try{renderOwFrame();}catch(e){}
 }
 let _resetArm=false,_resetTimer=null;
 function wireOwnerPanel(){
@@ -7585,6 +7740,223 @@ function wireOwnerPanel(){
   });
 }
 wireOwnerPanel();
+/* ================= OWNER: GIFT GEMS (server RPC owner_grant_gems) =================
+   Lives ONLY inside #ownerPanel, which renderOwnerBits displays solely for
+   an owner session — the exact same gate as every other dashboard tool, so
+   students/teachers/guests never see it. The grant itself is performed by
+   the server RPC owner_grant_gems(p_user, p_amount): with NO live server
+   session the section shows an explanatory note and grants NOTHING locally
+   — a local fake grant would be a lie, since balances are ledger sums read
+   back from the server. Recipients are the server profiles the dashboard
+   already loads into ACCOUNTS (sbLoadOwnerExtras) — only entries carrying a
+   server _uid can be granted to. */
+const OW_GIFT={uid:null,name:"",email:"",amt:"",q:"",confirm:false,busy:false,err:"",recent:null,recentAt:0,builtKey:"",usersSig:"",recentSig:"",loadingRecent:false};
+function owGiftServer(){return (typeof sbServerSession==="function")&&sbServerSession();}
+function owGiftUsers(){
+  return Object.values(ACCOUNTS).filter(a=>a&&a._uid&&a.email).map(a=>({uid:a._uid,name:(a.profile&&a.profile.nick)||a.name||a.email,email:a.email})).sort((x,y)=>String(x.name).localeCompare(String(y.name)));
+}
+function owGiftValidate(){
+  if(!OW_GIFT.uid)return T("اختار المستخدم اللي هتمنحه الجواهر الأول.","Choose the user to gift first.");
+  const raw=String(OW_GIFT.amt).trim();
+  if(raw===""||!/^\d+$/.test(raw))return T("اكتب عدد الجواهر رقمًا صحيحًا من غير كسور ولا حروف.","Enter the gem amount as a whole number — no fractions or letters.");
+  const n=parseInt(raw,10);
+  if(!(n>=1&&n<=10000))return T("عدد الجواهر لازم يكون من ١ لـ ١٠٠٠٠.","The gem amount must be between 1 and 10,000.");
+  return "";
+}
+function owGiftRenderUsers(){
+  const box=document.getElementById("owGiftUsers");if(!box)return;
+  const q=OW_GIFT.q.trim().toLowerCase();
+  const users=owGiftUsers().filter(u=>!q||u.name.toLowerCase().indexOf(q)>=0||u.email.toLowerCase().indexOf(q)>=0);
+  box.innerHTML=users.length?safeMap(users,u=>`<div class="owrow" data-guser="${escHTML(u.uid)}" style="cursor:pointer;${OW_GIFT.uid===u.uid?"background:var(--amber-bg);border-radius:8px;padding-inline:6px":""}"><span class="grow"><b>${escHTML(u.name)}</b> <span class="small" dir="ltr">${escHTML(u.email)}</span></span>${OW_GIFT.uid===u.uid?`<span class="chip l1">${T("مختار","Selected")}</span>`:""}</div>`).join(""):`<p class="small">${T("لا توجد حسابات مطابقة للبحث.","No accounts match your search.")}</p>`;
+  box.querySelectorAll("[data-guser]").forEach(r=>{r.onclick=()=>{const u=owGiftUsers().find(x=>x.uid===r.dataset.guser);if(!u)return;OW_GIFT.uid=u.uid;OW_GIFT.name=u.name;OW_GIFT.email=u.email;OW_GIFT.confirm=false;OW_GIFT.err="";owGiftRenderUsers();owGiftRenderConfirm();owGiftSyncMsg();};});
+}
+function owGiftRenderConfirm(){
+  const box=document.getElementById("owGiftConfirm");if(!box)return;
+  if(!OW_GIFT.confirm||!OW_GIFT.uid){box.innerHTML="";return;}
+  const amt=parseInt(String(OW_GIFT.amt).trim(),10);
+  box.innerHTML=`<div style="margin-top:10px;border:1px solid var(--amber);background:var(--amber-bg);border-radius:10px;padding:10px 12px"><b>${T("هتمنح "+AR(amt)+" جوهرة لـ "+escHTML(OW_GIFT.name)+"؟","Grant "+AR(amt)+" gems to "+escHTML(OW_GIFT.name)+"?")}</b><div class="row" style="margin-top:8px"><button class="btn primary sm" id="owGiftYes" ${OW_GIFT.busy?"disabled":""}>${OW_GIFT.busy?T("جارٍ المنح…","Granting…"):T("تأكيد","Confirm")}</button><button class="btn sm" id="owGiftNo" ${OW_GIFT.busy?"disabled":""}>${T("إلغاء","Cancel")}</button></div></div>`;
+  const yes=document.getElementById("owGiftYes"),no=document.getElementById("owGiftNo");
+  if(yes)yes.onclick=owGiftDoGrant;
+  if(no)no.onclick=()=>{OW_GIFT.confirm=false;owGiftRenderConfirm();};
+}
+function owGiftSyncMsg(){const m=document.getElementById("owGiftMsg");if(m)m.textContent=OW_GIFT.err||"";}
+function owGiftRenderRecent(){
+  const box=document.getElementById("owGiftRecent");if(!box)return;
+  const rows=OW_GIFT.recent;
+  if(!Array.isArray(rows))return;
+  const sig=rows.map(r=>r.name+":"+r.amt+":"+r.at).join("|")+LANG;
+  if(sig===OW_GIFT.recentSig)return;OW_GIFT.recentSig=sig;
+  box.innerHTML=rows.length?safeMap(rows,r=>`<div class="owrow"><span class="grow"><b>${escHTML(r.name)}</b></span><span class="chip l1">${AR(r.amt)} ${T("جوهرة","gems")}</span><span class="small">${r.at?new Date(r.at).toLocaleString(LANG==="en"?"en-GB":"ar-EG",{dateStyle:"medium",timeStyle:"short"}):""}</span></div>`).join(""):`<p class="small">${T("لسه ما منحتش جواهر لحد.","You have not gifted any gems yet.")}</p>`;
+}
+async function owGiftLoadRecent(){
+  if(!owGiftServer()||OW_GIFT.loadingRecent)return;
+  OW_GIFT.loadingRecent=true;
+  try{
+    const r=await sbCall(SB.from("gems_ledger").select("user_id,amount,created_at").eq("reason","owner_gift").order("created_at",{ascending:false}).limit(10));
+    if(r&&!r.error&&Array.isArray(r.data)){
+      OW_GIFT.recent=r.data.map(row=>{const a=Object.values(ACCOUNTS).find(x=>x&&x._uid===row.user_id);return{name:a?((a.profile&&a.profile.nick)||a.name||a.email):T("مستخدم مسجّل","A registered user"),amt:row.amount||0,at:row.created_at?new Date(row.created_at).getTime():0};});
+    }else if(!Array.isArray(OW_GIFT.recent))OW_GIFT.recent=[];
+  }catch(e){if(!Array.isArray(OW_GIFT.recent))OW_GIFT.recent=[];}
+  OW_GIFT.loadingRecent=false;OW_GIFT.recentAt=Date.now();
+  try{owGiftRenderRecent();}catch(e){}
+}
+async function owGiftDoGrant(){
+  if(OW_GIFT.busy)return;
+  const err=owGiftValidate();
+  if(err){OW_GIFT.err=err;OW_GIFT.confirm=false;owGiftRenderConfirm();owGiftSyncMsg();return;}
+  if(!owGiftServer()){OW_GIFT.err=T("المنح بيتم من السيرفر — سجّل الدخول بحساب المالك أونلاين الأول.","Granting runs through the server — sign in with the owner account online first.");OW_GIFT.confirm=false;owGiftRenderConfirm();owGiftSyncMsg();return;}
+  OW_GIFT.busy=true;OW_GIFT.err="";owGiftRenderConfirm();owGiftSyncMsg();
+  const uid=OW_GIFT.uid,amt=parseInt(String(OW_GIFT.amt).trim(),10),name=OW_GIFT.name;
+  try{
+    const r=await sbCall(SB.rpc("owner_grant_gems",{p_user:uid,p_amount:amt}));
+    if(r&&r.error)throw new Error(r.error.message||String(r.error));
+    OW_GIFT.confirm=false;OW_GIFT.amt="";
+    const inp=document.getElementById("owGiftAmt");if(inp)inp.value="";
+    if(typeof toast==="function")toast(T("تم منح "+AR(amt)+" جوهرة لـ "+name+" بنجاح","Granted "+AR(amt)+" gems to "+name+" successfully"));
+    OW_GIFT.recent=null;OW_GIFT.recentSig="";
+    await owGiftLoadRecent();
+  }catch(e){
+    OW_GIFT.err=(e&&e.message)?e.message:String(e);
+    OW_GIFT.confirm=false;
+  }
+  OW_GIFT.busy=false;
+  try{owGiftRenderConfirm();owGiftSyncMsg();}catch(e){}
+}
+function renderOwGift(){
+  const zone=document.getElementById("owGiftZone");if(!zone)return;
+  const server=owGiftServer();
+  const key=(server?"srv":"loc")+"|"+LANG;
+  if(OW_GIFT.builtKey!==key){
+    OW_GIFT.builtKey=key;OW_GIFT.usersSig="";OW_GIFT.recentSig="";
+    if(!server){
+      zone.innerHTML=`<p class="small" style="border:1px dashed var(--line);border-radius:10px;padding:10px 12px">${T("منح الجواهر بيتم من السيرفر مباشرة — سجّل الدخول بحساب المالك أونلاين عشان تقدر تمنح الجواهر لأي مستخدم.","Gifting gems runs directly through the server — sign in with the owner account online to gift gems to any user.")}</p>`;
+      return;
+    }
+    zone.innerHTML=
+      `<input class="fld" id="owGiftSearch" type="text" placeholder="${T("ابحث بالاسم أو الإيميل…","Search by name or email…")}">`+
+      `<div id="owGiftUsers" style="max-height:230px;overflow:auto;margin-top:6px"></div>`+
+      `<label class="fldlbl" style="margin-top:10px">${T("عدد الجواهر","Number of gems")}</label>`+
+      `<div class="row"><input class="fld" id="owGiftAmt" type="number" inputmode="numeric" min="1" max="10000" step="1" style="max-width:170px" placeholder="${T("من ١ لـ ١٠٠٠٠","1 to 10,000")}">`+
+      [50,100,250,500].map(v=>`<button class="btn sm" data-gamt="${v}">${AR(v)}</button>`).join("")+`</div>`+
+      `<button class="btn primary" id="owGiftBtn" style="margin-top:10px">${T("منح الجواهر","Gift gems")}</button>`+
+      `<p class="small" id="owGiftMsg" style="margin-top:6px;min-height:1em"></p>`+
+      `<div id="owGiftConfirm"></div>`+
+      `<h3 style="margin-top:14px">${T("آخر المنح","Recent gifts")}</h3><div id="owGiftRecent"></div>`;
+    const si=document.getElementById("owGiftSearch");
+    if(si)si.addEventListener("input",()=>{OW_GIFT.q=si.value;owGiftRenderUsers();});
+    const ai=document.getElementById("owGiftAmt");
+    if(ai)ai.addEventListener("input",()=>{OW_GIFT.amt=ai.value;if(OW_GIFT.confirm){OW_GIFT.confirm=false;owGiftRenderConfirm();}});
+    zone.querySelectorAll("[data-gamt]").forEach(b=>{b.onclick=()=>{OW_GIFT.amt=b.dataset.gamt;const i2=document.getElementById("owGiftAmt");if(i2)i2.value=b.dataset.gamt;OW_GIFT.err="";owGiftSyncMsg();if(OW_GIFT.confirm){OW_GIFT.confirm=false;owGiftRenderConfirm();}};});
+    const gb=document.getElementById("owGiftBtn");
+    if(gb)gb.onclick=()=>{
+      const e2=owGiftValidate();
+      if(e2){OW_GIFT.err=e2;OW_GIFT.confirm=false;owGiftRenderConfirm();owGiftSyncMsg();return;}
+      OW_GIFT.err="";OW_GIFT.confirm=true;owGiftRenderConfirm();owGiftSyncMsg();
+    };
+    OW_GIFT.usersSig="__force__";
+  }
+  if(!server)return;
+  const usig=owGiftUsers().map(u=>u.uid+":"+u.name+":"+u.email).join("|");
+  if(usig!==OW_GIFT.usersSig){OW_GIFT.usersSig=usig;owGiftRenderUsers();}
+  owGiftRenderConfirm();owGiftSyncMsg();
+  if(!Array.isArray(OW_GIFT.recent))owGiftLoadRecent();else owGiftRenderRecent();
+}
+/* ================= OWNER: GIFT FRAMES (server RPC owner_grant_frame) =================
+   The second sub-block of «هدايا من المالك», directly under the gems block:
+   same owner-only gate (it lives inside #ownerPanel), the SAME recipient
+   list (owGiftUsers — the registered accounts already loaded into
+   ACCOUNTS), and the same honesty rule: the grant is performed ONLY by the
+   server RPC owner_grant_frame(p_user, p_frame) with p_frame 'rose',
+   'crown' or '' (remove). With NO live server session the block shows the
+   same online-owner note style as the gems block and grants NOTHING
+   locally. On success the server-confirmed frame is mirrored into the
+   local ACCOUNTS shadow so every list re-renders with it at once. */
+const OW_FRAME={uid:null,name:"",email:"",frame:null,q:"",confirm:false,busy:false,err:"",builtKey:"",usersSig:""};
+function owFrameLabel(f){return f==="rose"?T("إطار ورد 🌹","Rose frame 🌹"):f==="crown"?T("إطار تاج 👑","Crown frame 👑"):T("إزالة الإطار","Remove the frame");}
+function owFrameRenderUsers(){
+  const box=document.getElementById("owFrameUsers");if(!box)return;
+  const q=OW_FRAME.q.trim().toLowerCase();
+  const users=owGiftUsers().filter(u=>!q||u.name.toLowerCase().indexOf(q)>=0||u.email.toLowerCase().indexOf(q)>=0);
+  box.innerHTML=users.length?users.map(u=>{const acc=Object.values(ACCOUNTS).find(a=>a&&a._uid===u.uid);const av=(typeof anyAvatarHTML==="function")?anyAvatarHTML(u.name,(acc&&acc.profile&&acc.profile.pic)||"",30,(typeof frameOfAccount==="function")?frameOfAccount(acc):""):"";return `<div class="owrow" data-fuser="${escHTML(u.uid)}" style="cursor:pointer;${OW_FRAME.uid===u.uid?"background:var(--amber-bg);border-radius:8px;padding-inline:6px":""}">${av}<span class="grow"><b>${escHTML(u.name)}</b> <span class="small" dir="ltr">${escHTML(u.email)}</span></span>${OW_FRAME.uid===u.uid?`<span class="chip l1">${T("مختار","Selected")}</span>`:""}</div>`;}).join(""):`<p class="small">${T("لا توجد حسابات مطابقة للبحث.","No accounts match your search.")}</p>`;
+  box.querySelectorAll("[data-fuser]").forEach(r=>{r.onclick=()=>{const u=owGiftUsers().find(x=>x.uid===r.dataset.fuser);if(!u)return;OW_FRAME.uid=u.uid;OW_FRAME.name=u.name;OW_FRAME.email=u.email;OW_FRAME.confirm=false;OW_FRAME.err="";owFrameRenderUsers();owFrameRenderConfirm();owFrameSyncMsg();};});
+}
+function owFrameSyncChoice(){
+  document.querySelectorAll("#owFrameChoices [data-fframe]").forEach(b=>{
+    const on=OW_FRAME.frame!==null&&b.dataset.fframe===OW_FRAME.frame;
+    b.style.background=on?"var(--amber-bg)":"";b.style.borderColor=on?"var(--amber)":"";
+  });
+}
+function owFrameRenderConfirm(){
+  const box=document.getElementById("owFrameConfirm");if(!box)return;
+  if(!OW_FRAME.confirm||!OW_FRAME.uid||OW_FRAME.frame===null){box.innerHTML="";return;}
+  const what=OW_FRAME.frame===""?T("هتشيل الإطار من صورة "+escHTML(OW_FRAME.name)+"؟","Remove the frame from "+escHTML(OW_FRAME.name)+"'s picture?"):T("هتمنح "+escHTML(OW_FRAME.name)+" "+owFrameLabel(OW_FRAME.frame)+"؟","Grant "+escHTML(OW_FRAME.name)+" the "+owFrameLabel(OW_FRAME.frame)+"?");
+  box.innerHTML=`<div style="margin-top:10px;border:1px solid var(--amber);background:var(--amber-bg);border-radius:10px;padding:10px 12px"><b>${what}</b><div class="row" style="margin-top:8px"><button class="btn primary sm" id="owFrameYes" ${OW_FRAME.busy?"disabled":""}>${OW_FRAME.busy?T("جارٍ التنفيذ…","Working…"):T("تأكيد","Confirm")}</button><button class="btn sm" id="owFrameNo" ${OW_FRAME.busy?"disabled":""}>${T("إلغاء","Cancel")}</button></div></div>`;
+  const yes=document.getElementById("owFrameYes"),no=document.getElementById("owFrameNo");
+  if(yes)yes.onclick=owFrameDoGrant;
+  if(no)no.onclick=()=>{OW_FRAME.confirm=false;owFrameRenderConfirm();};
+}
+function owFrameSyncMsg(){const m=document.getElementById("owFrameMsg");if(m)m.textContent=OW_FRAME.err||"";}
+async function owFrameDoGrant(){
+  if(OW_FRAME.busy)return;
+  if(!OW_FRAME.uid){OW_FRAME.err=T("اختار المستخدم اللي هتمنحه الإطار الأول.","Choose the user to gift first.");OW_FRAME.confirm=false;owFrameRenderConfirm();owFrameSyncMsg();return;}
+  if(OW_FRAME.frame===null){OW_FRAME.err=T("اختار الإطار (ورد أو تاج) أو «إزالة الإطار» الأول.","Choose the frame (rose or crown) or 'Remove the frame' first.");OW_FRAME.confirm=false;owFrameRenderConfirm();owFrameSyncMsg();return;}
+  if(!owGiftServer()){OW_FRAME.err=T("منح الإطارات بيتم من السيرفر — سجّل الدخول بحساب المالك أونلاين الأول.","Frame gifting runs through the server — sign in with the owner account online first.");OW_FRAME.confirm=false;owFrameRenderConfirm();owFrameSyncMsg();return;}
+  OW_FRAME.busy=true;OW_FRAME.err="";owFrameRenderConfirm();owFrameSyncMsg();
+  const uid=OW_FRAME.uid,frame=OW_FRAME.frame,name=OW_FRAME.name;
+  try{
+    const r=await sbCall(SB.rpc("owner_grant_frame",{p_user:uid,p_frame:frame}));
+    if(r&&r.error)throw new Error(r.error.message||String(r.error));
+    OW_FRAME.confirm=false;
+    const acc=Object.values(ACCOUNTS).find(a=>a&&a._uid===uid);
+    if(acc){if(!acc.profile)acc.profile={pic:"",nick:"",about:""};acc.profile.frame=frame;}
+    if(typeof toast==="function")toast(frame===""?T("تمت إزالة إطار "+name,"Removed the frame from "+name):T("تم منح "+owFrameLabel(frame)+" لـ "+name+" بنجاح","Granted the "+owFrameLabel(frame)+" to "+name+" successfully"));
+    OW_FRAME.usersSig="";
+    try{owFrameRenderUsers();}catch(e){}
+    try{if(acc&&typeof SESSION!=="undefined"&&SESSION&&acc.email===SESSION.email&&typeof syncProfileUI==="function")syncProfileUI();}catch(e){}
+  }catch(e){
+    OW_FRAME.err=(e&&e.message)?e.message:String(e);
+    OW_FRAME.confirm=false;
+  }
+  OW_FRAME.busy=false;
+  try{owFrameRenderConfirm();owFrameSyncMsg();}catch(e){}
+}
+function renderOwFrame(){
+  const zone=document.getElementById("owFrameZone");if(!zone)return;
+  const server=owGiftServer();
+  const key=(server?"srv":"loc")+"|"+LANG;
+  if(OW_FRAME.builtKey!==key){
+    OW_FRAME.builtKey=key;OW_FRAME.usersSig="";
+    if(!server){
+      zone.innerHTML=`<p class="small" style="border:1px dashed var(--line);border-radius:10px;padding:10px 12px">${T("منح الإطارات بيتم من السيرفر مباشرة — سجّل الدخول بحساب المالك أونلاين عشان تقدر تمنح إطارًا لأي مستخدم.","Gifting frames runs directly through the server — sign in with the owner account online to gift a frame to any user.")}</p>`;
+      return;
+    }
+    zone.innerHTML=
+      `<input class="fld" id="owFrameSearch" type="text" placeholder="${T("ابحث بالاسم أو الإيميل…","Search by name or email…")}">`+
+      `<div id="owFrameUsers" style="max-height:230px;overflow:auto;margin-top:6px"></div>`+
+      `<label class="fldlbl" style="margin-top:10px">${T("الإطار","The frame")}</label>`+
+      `<div class="row" id="owFrameChoices">`+
+      `<button class="btn sm" data-fframe="rose">🌹 ${T("إطار ورد","Rose frame")}</button>`+
+      `<button class="btn sm" data-fframe="crown">👑 ${T("إطار تاج","Crown frame")}</button>`+
+      `<button class="btn sm" data-fframe="">${T("إزالة الإطار","Remove frame")}</button></div>`+
+      `<button class="btn primary" id="owFrameBtn" style="margin-top:10px">${T("منح الإطار","Gift the frame")}</button>`+
+      `<p class="small" id="owFrameMsg" style="margin-top:6px;min-height:1em"></p>`+
+      `<div id="owFrameConfirm"></div>`;
+    const si=document.getElementById("owFrameSearch");
+    if(si)si.addEventListener("input",()=>{OW_FRAME.q=si.value;owFrameRenderUsers();});
+    zone.querySelectorAll("[data-fframe]").forEach(b=>{b.onclick=()=>{OW_FRAME.frame=b.dataset.fframe;OW_FRAME.err="";OW_FRAME.confirm=false;owFrameSyncChoice();owFrameRenderConfirm();owFrameSyncMsg();};});
+    const gb=document.getElementById("owFrameBtn");
+    if(gb)gb.onclick=()=>{
+      if(!OW_FRAME.uid){OW_FRAME.err=T("اختار المستخدم اللي هتمنحه الإطار الأول.","Choose the user to gift first.");owFrameSyncMsg();return;}
+      if(OW_FRAME.frame===null){OW_FRAME.err=T("اختار الإطار (ورد أو تاج) أو «إزالة الإطار» الأول.","Choose the frame (rose or crown) or 'Remove the frame' first.");owFrameSyncMsg();return;}
+      OW_FRAME.err="";OW_FRAME.confirm=true;owFrameRenderConfirm();owFrameSyncMsg();
+    };
+    OW_FRAME.usersSig="__force__";
+  }
+  if(!server)return;
+  const usig=owGiftUsers().map(u=>{const a=Object.values(ACCOUNTS).find(x=>x&&x._uid===u.uid);return u.uid+":"+u.name+":"+u.email+":"+((a&&a.profile&&a.profile.frame)||"");}).join("|");
+  if(usig!==OW_FRAME.usersSig){OW_FRAME.usersSig=usig;owFrameRenderUsers();}
+  owFrameSyncChoice();owFrameRenderConfirm();owFrameSyncMsg();
+}
 /* re-render hooks: lists + screens refresh owner visibility, dashboard and math */
 const _rhOwn=renderHome;renderHome=function(){_rhOwn();renderOwnerBits();};
 const _reOwn=renderExps;renderExps=function(){_reOwn();renderOwnerBits();};
@@ -8147,11 +8519,34 @@ function displayName(){
   if(p&&p.nick&&String(p.nick).trim())return String(p.nick).trim();
   return LANG==="en"?CURRENT_USER.nameEn:CURRENT_USER.name;
 }
+/* ================= OWNER-GIFTED PROFILE FRAMES =================
+   A profile may carry a frame: 'crown' or 'rose' (empty/absent = no frame).
+   The frame is granted by the owner (server RPC owner_grant_frame) and
+   hydrates from the server profile row into profile.frame — a missing
+   field simply means no frame, never an error. Special case: the OWNER's
+   own avatar always wears the crown whenever the account role is 'owner',
+   even if his frame field is empty. frameWrap returns the avatar HTML
+   untouched when there is no frame, so unframed rendering is byte-for-byte
+   what it has always been. */
+function frameResolve(frame,role){
+  if(frame==="crown"||frame==="rose")return frame;
+  return role==="owner"?"crown":"";
+}
+function frameOfAccount(a){
+  if(!a)return "";
+  return frameResolve(a.profile&&a.profile.frame,a.role);
+}
+function frameWrap(inner,frame,px){
+  if(frame!=="crown"&&frame!=="rose")return inner;
+  const bs=Math.max(10,Math.round((px||30)*0.45));
+  return `<span class="avwrap ${frame}">${inner}<span class="avbadge" style="font-size:${bs}px">${frame==="crown"?"👑":"🌹"}</span></span>`;
+}
 function avatarHTML(px){
   const p=profOf();
-  if(p&&p.pic)return `<img class="avatar" style="width:${px}px;height:${px}px" src="${p.pic}" alt="">`;
+  const frame=frameOfAccount(profAccount());
+  if(p&&p.pic)return frameWrap(`<img class="avatar" style="width:${px}px;height:${px}px" src="${p.pic}" alt="">`,frame,px);
   const nm=displayName()||"?";
-  return `<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px">${escHTML(String(nm).trim().charAt(0)||"?")}</span>`;
+  return frameWrap(`<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px">${escHTML(String(nm).trim().charAt(0)||"?")}</span>`,frame,px);
 }
 let pfPendingPic; // undefined = unchanged, "" = removed, dataURL = new picture
 function syncProfileUI(){
@@ -8200,14 +8595,14 @@ function pfFillForm(){
         const c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.width*s));c.height=Math.max(1,Math.round(img.height*s));
         c.getContext("2d").drawImage(img,0,0,c.width,c.height);
         pfPendingPic=c.toDataURL("image/jpeg",0.85);
-        document.getElementById("pfPreview").innerHTML=`<img class="avatar" style="width:56px;height:56px" src="${pfPendingPic}" alt="">`;
+        document.getElementById("pfPreview").innerHTML=frameWrap(`<img class="avatar" style="width:56px;height:56px" src="${pfPendingPic}" alt="">`,frameOfAccount(profAccount()),56);
       }catch(e){}
       URL.revokeObjectURL(img.src);
     };
     img.src=URL.createObjectURL(f);
   });
   const rm=document.getElementById("pfPicRemove");
-  if(rm)rm.onclick=()=>{pfPendingPic="";const a=profAccount();document.getElementById("pfPreview").innerHTML='<span class="avatar letter" style="width:56px;height:56px;font-size:22px">'+escHTML((((a&&a.name)||"؟").trim().charAt(0))||"؟")+'</span>';};
+  if(rm)rm.onclick=()=>{pfPendingPic="";const a=profAccount();document.getElementById("pfPreview").innerHTML=frameWrap('<span class="avatar letter" style="width:56px;height:56px;font-size:22px">'+escHTML((((a&&a.name)||"؟").trim().charAt(0))||"؟")+'</span>',frameOfAccount(a),56);};
   const sv=document.getElementById("pfSave");
   if(sv)sv.onclick=()=>{
     const a=profAccount(),p=profOf();if(!a||!p)return;
@@ -8321,7 +8716,7 @@ function renderTeacherSpace(openId){
 }
 function renderTcPick(){
   const p=document.getElementById("tcPick");if(!p)return;
-  p.innerHTML=CATALOG.filter(e=>expVisible(e.n)).map(e=>{const inD=tcDraft.indexOf(e.n)>=0;
+  p.innerHTML=safeMap(CATALOG.filter(e=>expVisible(e.n)),e=>{const inD=tcDraft.indexOf(e.n)>=0;
     return `<div class="owrow"><span class="grow"><b>${AR(e.n)}.</b> ${escHTML(expTitle(e.n))} <span class="chip l${e.lvl}">${LVL[e.lvl]}</span></span><button class="btn sm" data-tcpick="${e.n}">${inD?T("إزالة","Remove"):T("إضافة","Add")}</button></div>`;}).join("");
   p.querySelectorAll("[data-tcpick]").forEach(b=>{b.onclick=()=>{const n=+b.dataset.tcpick;const i=tcDraft.indexOf(n);
     if(i>=0)tcDraft.splice(i,1);else tcDraft.push(n);
@@ -8329,7 +8724,7 @@ function renderTcPick(){
 }
 function renderTcSel(){
   const s=document.getElementById("tcSel");if(!s)return;
-  s.innerHTML=tcDraft.length?("<b>"+T("ترتيب الكورس:","Course order:")+"</b>"+tcDraft.map((n,i)=>`<div class="owrow"><span class="grow"><b>${AR(i+1)}.</b> ${escHTML(expTitle(n))}</span><button class="btn sm" data-tcup="${i}" ${i===0?"disabled":""}>↑</button><button class="btn sm" data-tcdn="${i}" ${i===tcDraft.length-1?"disabled":""}>↓</button><button class="btn sm" data-tcrm="${i}">✕</button></div>`).join(""))
+  s.innerHTML=tcDraft.length?("<b>"+T("ترتيب الكورس:","Course order:")+"</b>"+safeMap(tcDraft,(n,i)=>`<div class="owrow"><span class="grow"><b>${AR(i+1)}.</b> ${escHTML(expTitle(n))}</span><button class="btn sm" data-tcup="${i}" ${i===0?"disabled":""}>↑</button><button class="btn sm" data-tcdn="${i}" ${i===tcDraft.length-1?"disabled":""}>↓</button><button class="btn sm" data-tcrm="${i}">✕</button></div>`).join(""))
     :("<span class=\"small\">"+T("لسه ما اخترتش تجارب — اختر من القائمة تحت.","No experiments chosen yet — pick from the list below.")+"</span>");
   s.querySelectorAll("[data-tcup]").forEach(b=>{b.onclick=()=>{const i=+b.dataset.tcup;const t=tcDraft[i-1];tcDraft[i-1]=tcDraft[i];tcDraft[i]=t;renderTcSel();};});
   s.querySelectorAll("[data-tcdn]").forEach(b=>{b.onclick=()=>{const i=+b.dataset.tcdn;const t=tcDraft[i+1];tcDraft[i+1]=tcDraft[i];tcDraft[i]=t;renderTcSel();};});
@@ -8338,7 +8733,7 @@ function renderTcSel(){
 function renderTcMine(){
   const m=document.getElementById("tcMine");if(!m)return;
   const cs=myCourses();
-  m.innerHTML=cs.length?cs.map(c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span></span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
+  m.innerHTML=cs.length?safeMap(cs,c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span></span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
     :("<p class=\"small\">"+T("لسه ما أنشأتش أي كورس.","You have not created any course yet.")+"</p>");
   m.querySelectorAll("[data-tcopen]").forEach(b=>{b.onclick=()=>openCourse(+b.dataset.tcopen);});
   m.querySelectorAll("[data-tcdel]").forEach(b=>{b.onclick=()=>{const cs2=myCourses();const i=cs2.findIndex(c=>c.id===+b.dataset.tcdel);if(i>=0)cs2.splice(i,1);const d=document.getElementById("tcDetail");if(d)d.innerHTML="";renderTcMine();renderTeacherHome();};});
@@ -8684,6 +9079,57 @@ async function sbRehydrateLedgers(uid){
     try{renderAll();}catch(e){}
   }catch(e){}
 }
+/* ---------- gift notifications: the recipient side ----------
+   Runs ONLY from sbEnterWithSession — i.e. for a registered user with a
+   live server session, right after sign-in hydration completes; guests
+   (local/guest entry paths) never reach it. It fetches the user's UNREAD
+   rows from the server `notifications` table, oldest first, and shows each
+   as a celebratory gift popup, one at a time; a row is marked read
+   (is_read = true) only AFTER its popup has been shown, so a gift is
+   never announced twice. ANY failure — table missing, RLS refusal,
+   network — is completely silent by design: no error UI, no crash, and
+   entry proceeds exactly as before. */
+let SB_GIFT_NOTIF_DONE=false;
+function sbGiftNotifText(n){
+  let pl=n&&n.payload;
+  if(typeof pl==="string"){try{pl=JSON.parse(pl);}catch(e){pl={};}}
+  if(!pl||typeof pl!=="object")pl={};
+  if(n.kind==="gift_gems"){
+    const amt=+pl.amount||0;if(!(amt>0))return "";
+    return T("🎁 وصّلتك هدية من مالك المختبر: "+AR(amt)+" جوهرة!","🎁 A gift from the lab owner just arrived for you: "+AR(amt)+" gems!");
+  }
+  if(n.kind==="gift_frame"){
+    if(pl.frame==="rose")return T("🎁 وصّلتك هدية من مالك المختبر: إطار ورد جديد لصورتك!","🎁 A gift from the lab owner just arrived for you: a new rose frame for your picture!");
+    if(pl.frame==="crown")return T("🎁 وصّلتك هدية من مالك المختبر: إطار تاج جديد لصورتك!","🎁 A gift from the lab owner just arrived for you: a new crown frame for your picture!");
+    return "";
+  }
+  return "";
+}
+function sbGiftPopup(text){
+  return new Promise(res=>{
+    try{
+      const ov=document.createElement("div");ov.className="giftpop-ov";
+      ov.innerHTML=`<div class="giftpop"><div class="giftpop-emoji" aria-hidden="true">🎁</div><p class="giftpop-msg"></p><button class="btn primary">${T("شكرًا!","Thank you!")}</button></div>`;
+      ov.querySelector(".giftpop-msg").textContent=text;
+      ov.querySelector("button").onclick=()=>{try{ov.remove();}catch(e){}res();};
+      document.body.appendChild(ov);
+    }catch(e){res();}
+  });
+}
+async function sbCheckGiftNotifications(){
+  if(SB_GIFT_NOTIF_DONE)return;SB_GIFT_NOTIF_DONE=true;
+  try{
+    if(!sbServerSession())return;
+    const r=await sbCall(SB.from("notifications").select("id,kind,payload,is_read,created_at").eq("is_read",false).order("created_at",{ascending:true}).limit(20));
+    if(!r||r.error||!Array.isArray(r.data))return;
+    for(const n of r.data){
+      if(!n||n.is_read)continue;
+      const text=sbGiftNotifText(n);
+      if(text)await sbGiftPopup(text);
+      try{await sbCall(SB.from("notifications").update({is_read:true}).eq("id",n.id));}catch(e){}
+    }
+  }catch(e){/* silent by design — a gift inbox must never break sign-in */}
+}
 async function sbEnterWithSession(session){
   if(!session||!session.user)return;
   /* Re-entrancy guard: the auth-state event and an explicit sign-in handler
@@ -8701,7 +9147,7 @@ async function sbEnterWithSession(session){
      panel, teacher space) reads ACCOUNTS — the shadow is filled FROM the server
      and every edit is written back TO the server by the hooks below. */
   ACCOUNTS[email]={name:dispName,nameEn:dispName,email:email,phone:meta.phone||"",dob:meta.dob||"",role:role,progress:freshProgress(),
-    profile:{pic:(prof&&prof.avatar_url)||"",nick:(prof&&prof.nickname)||"",about:(prof&&prof.about)||""},courses:[],_uid:uid,_server:true};
+    profile:{pic:(prof&&prof.avatar_url)||"",nick:(prof&&prof.nickname)||"",about:(prof&&prof.about)||"",frame:(prof&&prof.frame)||""},courses:[],_uid:uid,_server:true};
   SESSION={mode:role==="owner"?"owner":"user",email:email,guestLeft:0,guestTimer:null,expired:false,server:true,uid:uid};
   if(role==="owner"){CURRENT_USER.name=OWNER_ADMIN.name;CURRENT_USER.nameEn=OWNER_ADMIN.nameEn;}
   else{CURRENT_USER.name=firstName(dispName);CURRENT_USER.nameEn=firstName(dispName);}
@@ -8810,6 +9256,10 @@ async function sbEnterWithSession(session){
   ACCOUNTS[email].progress=JSON.parse(JSON.stringify(fp));
   loadProgress(JSON.parse(JSON.stringify(fp)));
   enterApp();
+  /* gift inbox: unread owner-gift notifications, shown once each — fully
+     silent on any failure, and never for guests (this path is registered
+     server sessions only) */
+  try{sbCheckGiftNotifications();}catch(e){}
   /* invite redemption retry at entry: hydration is complete and S now
      mirrors fp, so if this account registered with an invite code and the
      inviter was never credited (fp.invitedBy set, fp.invRewarded false),
@@ -8861,7 +9311,7 @@ async function sbLoadOwnerExtras(){
     pr.data.forEach(p=>{
       const em=(p.email||"").toLowerCase();if(!em||em===SESSION.email)return;
       const prev=ACCOUNTS[em];
-      ACCOUNTS[em]={name:p.display_name||em,nameEn:p.display_name||em,email:em,phone:"",dob:"",role:p.role||"student",progress:{xp:sums[p.id]||0},profile:{pic:p.avatar_url||"",nick:p.nickname||"",about:p.about||""},courses:(prev&&prev.courses)||[],_uid:p.id,_server:true};
+      ACCOUNTS[em]={name:p.display_name||em,nameEn:p.display_name||em,email:em,phone:"",dob:"",role:p.role||"student",progress:{xp:sums[p.id]||0},profile:{pic:p.avatar_url||"",nick:p.nickname||"",about:p.about||"",frame:p.frame||""},courses:(prev&&prev.courses)||[],_uid:p.id,_server:true};
     });
     const rq=await sbCall(SB.from("exp_requests").select("*").order("created_at",{ascending:false}).limit(100));
     if(!rq.error&&rq.data){
@@ -9250,21 +9700,24 @@ renderBoard=function(){
   if(sbServerSession())sbPaintBoard();
 };
 function sbAvatarFor(p,px){
-  if(p&&p.avatar_url)return `<img class="avatar" style="width:${px}px;height:${px}px" src="${escHTML(p.avatar_url)}" alt="">`;
+  const frame=(typeof frameResolve==="function")?frameResolve(p&&p.frame,p&&p.role):"";
+  const wrap=(h)=>(typeof frameWrap==="function")?frameWrap(h,frame,px):h;
+  if(p&&p.avatar_url)return wrap(`<img class="avatar" style="width:${px}px;height:${px}px" src="${escHTML(p.avatar_url)}" alt="">`);
   const nm=p?((p.nickname||p.display_name||"").trim()):"";
-  return `<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px">${escHTML(nm.charAt(0)||"؟")}</span>`;
+  return wrap(`<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px">${escHTML(nm.charAt(0)||"؟")}</span>`);
 }
 /* Any-user avatar from a plain (name, picture) pair — used wherever users see
    each other outside the leaderboard (owner dashboard rows, teacher course
    member lists, duel sides). A user with no photo gets an elegant initials
    disc: the first letter of the display name on a colour derived stably
    from the name itself, so the same person always wears the same colour. */
-function anyAvatarHTML(name,pic,px){
+function anyAvatarHTML(name,pic,px,frame){
   px=px||30;
-  if(pic)return `<img class="avatar" style="width:${px}px;height:${px}px" src="${escHTML(pic)}" alt="">`;
+  const wrap=(h)=>(typeof frameWrap==="function")?frameWrap(h,frame||"",px):h;
+  if(pic)return wrap(`<img class="avatar" style="width:${px}px;height:${px}px" src="${escHTML(pic)}" alt="">`);
   const nm=String(name||"").trim();
   let hue=174;for(let i=0;i<nm.length;i++)hue=(hue*31+nm.charCodeAt(i))%360;
-  return `<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px;background:hsl(${hue},52%,42%)">${escHTML(nm.charAt(0)||"؟")}</span>`;
+  return wrap(`<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px;background:hsl(${hue},52%,42%)">${escHTML(nm.charAt(0)||"؟")}</span>`);
 }
 async function sbPaintBoard(){
   const board=document.getElementById("weekBoard");if(!board)return;
@@ -9287,7 +9740,7 @@ async function sbPaintBoard(){
   if(!document.getElementById("weekBoard"))return;
   const since=rankPeriod==="all"?0:(rankPeriod==="week"?weekStartMs():monthStartMs());
   const mine=rankPeriod==="all"?S.xp:xpEarnedSince(since);
-  const rows=data.map(r=>{
+  const rows=safeMap(data,r=>{
     const me=r.user_id===SESSION.uid;
     const nm=((r.nickname||"").trim())||((r.display_name||"").trim());
     const name=nm||(me?displayName():T("طالب","Student"));
@@ -9301,8 +9754,8 @@ async function sbPaintBoard(){
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const av=r=>r.me?((typeof avatarHTML==="function")?avatarHTML(26):""):sbAvatarFor(r.prof,26);
   const tier=r=>escHTML(rankOf(r.xp).cur[0]);
-  const pod=rows.slice(0,3).map((r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
-  const rest=rows.slice(3).map((r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
+  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
+  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
   board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
@@ -9900,7 +10353,7 @@ function czStudentsOf(c){
     if(a.progress&&Array.isArray(a.progress.enrolledCourses))lists.push(a.progress.enrolledCourses);
     if(Array.isArray(a.enrolled))lists.push(a.enrolled);
     if(em===SESSION.email&&Array.isArray(S.enrolledCourses))lists.push(S.enrolledCourses);
-    if(lists.some(l=>l.some(e=>e&&(e.key===key||(c.code&&e.code===c.code)))))out.push({email:em,name:(LANG==="en"?(a.nameEn||a.name):a.name)||em,pic:(a.profile&&a.profile.pic)||"",nick:(a.profile&&a.profile.nick)||""});
+    if(lists.some(l=>l.some(e=>e&&(e.key===key||(c.code&&e.code===c.code)))))out.push({email:em,name:(LANG==="en"?(a.nameEn||a.name):a.name)||em,pic:(a.profile&&a.profile.pic)||"",nick:(a.profile&&a.profile.nick)||"",frame:(typeof frameOfAccount==="function")?frameOfAccount(a):""});
   });
   return out;
 }
@@ -9935,7 +10388,7 @@ function czZone(){
   if(list){
     if(teacher){
       const cs=visibleCourses();
-      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورساتي الخاصة","My private courses")+"</h2>"+cs.map(c=>czCourseCard(c,true)).join("")):"";
+      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورساتي الخاصة","My private courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,true)).join("")):"";
       list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
     }else{
       /* students see every teacher's course as a card in this same area —
@@ -9944,14 +10397,14 @@ function czZone(){
          Courses already joined are not repeated here: they live in the
          «Courses you joined» section below, with their progress. */
       const cs=czAll().filter(c=>!czEnrolled(czKey(c)));
-      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المعلمين","Teacher courses")+"</h2>"+cs.map(c=>czCourseCard(c,false)).join("")):"";
+      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المعلمين","Teacher courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,false)).join("")):"";
       list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
     }
   }
   const en=document.getElementById("homeEnrolled");
   if(en){
     const es=S.enrolledCourses||[];
-    en.innerHTML=es.length?("<h2 class=\"secttl\">"+T("كورسات انضممت إليها","Courses you joined")+"</h2>"+es.map(e=>{
+    en.innerHTML=es.length?("<h2 class=\"secttl\">"+T("كورسات انضممت إليها","Courses you joined")+"</h2>"+safeMap(es,e=>{
       const c=czByKey(e.key);
       if(!c)return `<div class="card"><b>${escHTML(e.title||"")}</b><p class="small" style="margin-top:4px">${T("الكورس ده لم يعد متاحًا.","This course is no longer available.")}</p><button class="btn sm" data-czleave="${escHTML(e.key)}" style="margin-top:6px">${T("إزالة من قائمتي","Remove from my list")}</button></div>`;
       const tot=(c.exps||[]).length,dn=czDoneCount(c);
@@ -10062,7 +10515,7 @@ function renderCourseScreen(){
     </div>
     <div class="card">
       <h2 style="margin-top:0">${T("مسار الكورس — بالترتيب","Course path — in order")}</h2>
-      ${exps.map((n,i)=>{
+      ${safeMap(exps,(n,i)=>{
         const e=CATALOG.find(x=>x.n===n)||{lvl:0};
         const done=S.done&&S.done.has(n),vis=expVisible(n),isNext=next===n;
         return `<div class="owrow"><span class="czbadge ${done?"done":isNext?"next":""}">${done?"✓":AR(i+1)}</span><span class="grow"><b>${escHTML(expTitle(n))}</b> <span class="chip l${e.lvl}">${LVL[e.lvl]}</span> ${done?`<span class="chip l0">${T("أنجزتها","Completed")}</span>`:isNext?`<span class="chip l1">${T("التالية","Next")}</span>`:vis?"":`<span class="chip l2">${T("مخفية مؤقتًا","Temporarily hidden")}</span>`}</span><button class="btn sm" data-czexp="${n}" ${vis?"":"disabled"}>${T("افتح التجربة","Open experiment")}</button></div>`;
@@ -10100,7 +10553,7 @@ renderTcMine=function(){
   const m=document.getElementById("tcMine");if(!m)return;
   czEnsureCodes();
   const cs=myCourses();
-  m.innerHTML=cs.length?cs.map(c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span> ${c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""} ${c.passH?`<span class="chip l1">${T("بكلمة سر","Password")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcman="${c.id}">${T("إدارة","Manage")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
+  m.innerHTML=cs.length?safeMap(cs,c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span> ${c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""} ${c.passH?`<span class="chip l1">${T("بكلمة سر","Password")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcman="${c.id}">${T("إدارة","Manage")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
     :("<p class=\"small\">"+T("لسه ما أنشأتش أي كورس.","You have not created any course yet.")+"</p>");
   m.querySelectorAll("[data-tcopen]").forEach(b=>{b.onclick=()=>openCourse(+b.dataset.tcopen);});
   m.querySelectorAll("[data-tcman]").forEach(b=>{b.onclick=()=>czOpenManage(+b.dataset.tcman);});
@@ -10119,7 +10572,7 @@ function czOpenManage(id){
     <div class="czcode">${escHTML(c.code)}</div>
     <p class="small" style="margin-top:8px">${c.passH?T("الكورس مقفول بكلمة سر دلوقتي — الطالب بيكتب الكود وكلمة السر معًا في الرئيسية.","The course is password-locked — students enter the code and the password together on Home."):T("الكورس مفتوح بكود الانضمام بس — أي طالب معاه الكود يقدر ينضم.","The course is open with the join code only — any student with the code can join.")}</p>
     <p class="small" style="margin-top:10px"><b>${T("الطلاب المنضمون:","Enrolled students:")} ${AR(czMemberCount(c))}</b>${(c._srvMembers||0)>students.length?` <span class="small">(${T("العدد الإجمالي من الخادم — يشمل طلابًا انضموا من أجهزة أخرى","total from the server — includes students who joined from other devices")})</span>`:""}</p>
-    ${(()=>{const srv=(Array.isArray(c._srvStudents)?c._srvStudents:[]).filter(sv=>!students.some(s=>s.name===sv.name));const all=students.concat(srv);return all.length?all.map(s=>`<div class="owrow">${(typeof anyAvatarHTML==="function")?anyAvatarHTML(s.nick||s.name||"",s.pic||"",30):""}<span class="grow"><b>${escHTML(s.name||"")}</b>${s.email?` <span class="small" dir="ltr">${escHTML(s.email)}</span>`:""}</span></div>`).join(""):`<p class="small">${T("لسه محدش انضم — ابعت الكود (وكلمة السر لو فيه) لطلابك.","No one has joined yet — send the code (and the password, if any) to your students.")}</p>`;})()}`;
+    ${(()=>{const srv=(Array.isArray(c._srvStudents)?c._srvStudents:[]).filter(sv=>!students.some(s=>s.name===sv.name));const all=students.concat(srv);return all.length?all.map(s=>`<div class="owrow">${(typeof anyAvatarHTML==="function")?anyAvatarHTML(s.nick||s.name||"",s.pic||"",30,s.frame||""):""}<span class="grow"><b>${escHTML(s.name||"")}</b>${s.email?` <span class="small" dir="ltr">${escHTML(s.email)}</span>`:""}</span></div>`).join(""):`<p class="small">${T("لسه محدش انضم — ابعت الكود (وكلمة السر لو فيه) لطلابك.","No one has joined yet — send the code (and the password, if any) to your students.")}</p>`;})()}`;
   const msg=document.getElementById("tcManMsg");if(msg)msg.textContent="";
   const np=document.getElementById("tcNewPass");if(np)np.value="";
   mg.scrollIntoView({behavior:"smooth",block:"center"});
@@ -10306,9 +10759,9 @@ async function czServerExtras(uid,role){
           try{
             const uids=[...new Set(rows.data.map(r=>r.user_id).filter(Boolean))];
             if(uids.length){
-              const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url").in("id",uids.slice(0,500)));
+              const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url,frame,role").in("id",uids.slice(0,500)));
               if(!pr.error&&pr.data){const pmap={};pr.data.forEach(p=>{pmap[p.id]=p;});
-                mine.forEach(c=>{c._srvStudents=rows.data.filter(r=>r.course_id===c.sid).map(r=>{const p=pmap[r.user_id];return p?{name:((p.nickname||"").trim())||((p.display_name||"").trim())||"",pic:p.avatar_url||"",nick:(p.nickname||"").trim()}:null;}).filter(Boolean);});}
+                mine.forEach(c=>{c._srvStudents=rows.data.filter(r=>r.course_id===c.sid).map(r=>{const p=pmap[r.user_id];return p?{name:((p.nickname||"").trim())||((p.display_name||"").trim())||"",pic:p.avatar_url||"",nick:(p.nickname||"").trim(),frame:(typeof frameResolve==="function")?frameResolve(p.frame,p.role):(p.frame||"")}:null;}).filter(Boolean);});}
             }
           }catch(e){}
         }
@@ -11910,7 +12363,7 @@ async function qzFetch(sid,force){
   try{
     const uids=[...new Set(d.results.map(r=>r.user_id).filter(u=>u&&u!==SESSION.uid))];
     if(uids.length){
-      const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url").in("id",uids.slice(0,500)));
+      const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url,frame,role").in("id",uids.slice(0,500)));
       if(!pr.error&&pr.data)pr.data.forEach(p=>{d.profiles[p.id]=p;});
     }
   }catch(e){}
@@ -12116,7 +12569,7 @@ function qzRenderTcResults(body,c){
     const avg=order.length?Math.round(order.reduce((s,u)=>{const l=byUser[u].latest;return s+(l.total?l.score/l.total:0);},0)/order.length*100):0;
     const rows=order.map(uid=>{
       const g=byUser[uid],r=g.latest;
-      const av=(typeof anyAvatarHTML==="function")?anyAvatarHTML(((d.profiles[uid]||{}).nickname||"")||qzName(d,uid),(d.profiles[uid]||{}).avatar_url||"",30):"";
+      const av=(typeof anyAvatarHTML==="function")?anyAvatarHTML(((d.profiles[uid]||{}).nickname||"")||qzName(d,uid),(d.profiles[uid]||{}).avatar_url||"",30,(typeof frameResolve==="function")?frameResolve((d.profiles[uid]||{}).frame,(d.profiles[uid]||{}).role):""):"";
       return `<div class="owrow">${av}<span class="grow"><b>${escHTML(qzName(d,uid))}</b>${g.count>1?` <span class="small">(${AR(g.count)} ${T("محاولات — المعروضة هي الأحدث","attempts — showing the latest")})</span>`:""}<br><span class="small">${qzDateStr(r.created_at)}</span></span><span class="chip l0"><b>${AR(r.score)} / ${AR(r.total)}</b></span></div>`;
     }).join("");
     body.innerHTML=`<button class="btn sm" id="qzBackList2">${T("→ كل الاختبارات","← All quizzes")}</button>
@@ -12252,7 +12705,7 @@ function qzRenderTakeResult(score,saved,saveErr){
     <div class="qzscore"><b>${AR(score)} / ${AR(q.questions.length)}</b><span class="small">${T("درجتك","Your score")}</span></div>
     ${saved?`<p class="small" style="text-align:center">${T("اتحفظت نتيجتك على السيرفر ووصلت لمعلمك.","Your result was saved on the server and sent to your teacher.")}</p>`:`<p class="small" style="text-align:center;color:var(--red);font-weight:700">${T("تعذّر حفظ النتيجة على السيرفر: ","Could not save the result on the server: ")}${escHTML(sbErrText(saveErr))}</p>`}
     <h3 style="margin-top:16px">${T("مراجعة إجاباتك","Review your answers")}</h3>
-    ${q.questions.map((qq,i)=>{
+    ${safeMap(q.questions,(qq,i)=>{
       const mine=tk.answers[i];
       return `<div class="qzrev"><p style="margin:0"><b>${AR(i+1)}. ${escHTML(qq.q||"")}</b></p>
         ${(qq.choices||[]).map((ch,j)=>{
@@ -12326,6 +12779,70 @@ applyLang=function(l){
 (function(){
   const cl=document.getElementById("qzTcClose");
   if(cl)cl.onclick=()=>{const card=document.getElementById("tcQuizCard");if(card)card.style.display="none";QZ_TC_KEY=null;};
+})();
+</script>
+
+<script>
+/* ================= STABILITY: PER-SCREEN CONTAINMENT (wraps the router LAST) =================
+   The final showScreen wrapper: every screen navigation runs the whole
+   existing chain inside a try/catch. If a screen's render throws, the user
+   gets an in-app error card ON that screen («تعذّر عرض هذه الشاشة» + Retry +
+   Back to Home) instead of a blank or half-broken page — and because
+   showScreen itself survives, navigation to every other screen keeps
+   working afterwards. On the happy path this wrapper changes nothing: it
+   calls the previous chain exactly as before and returns. It also flags
+   boot completion for the head safety net's watchdog: whichever path lifts
+   the boot splash, the boot is done. */
+(function(){
+  "use strict";
+  if(typeof bootHideSplash==="function"){
+    var _bhsIl=bootHideSplash;
+    bootHideSplash=function(){window.__ilBootDone=true;return _bhsIl.apply(this,arguments);};
+  }
+  /* a fast boot can lift the splash BEFORE this last block runs — i.e.
+     before the wrapper above existed (the no-server-library path calls
+     bootHideSplash synchronously during parse, and a fast session restore
+     can settle between script blocks). If the splash is already gone,
+     that boot DID complete: flag it now, so the head watchdog — keyed on
+     this flag alone — can never mistake a finished boot for a wedged one.
+     Every later splash lift goes through the wrapper above. */
+  try{if(typeof BOOT_SPLASH_GONE!=="undefined"&&BOOT_SPLASH_GONE)window.__ilBootDone=true;}catch(e){}
+  function ilT(ar,en){return (typeof LANG!=="undefined"&&LANG==="en")?en:ar;}
+  function ilScreenError(id){
+    try{
+      var sec=document.getElementById(id);
+      if(!sec){if(window.__ilShowRecovery)window.__ilShowRecovery();return;}
+      document.querySelectorAll(".screen").forEach(function(s){s.classList.toggle("on",s.id===id);});
+      var sp=document.getElementById("bootSplash");if(sp)sp.style.display="none";
+      var old=document.getElementById("ilScreenErr");if(old)old.remove();
+      var card=document.createElement("div");
+      card.id="ilScreenErr";card.className="card";
+      card.style.marginTop="14px";card.style.textAlign="center";
+      card.innerHTML='<h2 style="margin-top:0">'+ilT("تعذّر عرض هذه الشاشة","This screen could not be displayed")+'</h2>'
+        +'<p class="small">'+ilT("حصلت مشكلة أثناء تجهيز الشاشة دي. جرّب تاني، أو ارجع للرئيسية وكمّل من هناك — بقية الموقع شغّال عادي.","Something went wrong while preparing this screen. Try again, or go back to Home and continue from there — the rest of the app is fine.")+'</p>'
+        +'<div class="ctlrow" style="justify-content:center;margin-top:10px">'
+        +'<button class="btn primary" id="ilScrRetry">'+ilT("إعادة المحاولة","Retry")+'</button>'
+        +'<button class="btn" id="ilScrHome">'+ilT("العودة للرئيسية","Back to Home")+'</button></div>';
+      sec.insertBefore(card,sec.firstChild);
+      document.getElementById("ilScrRetry").onclick=function(){var c=document.getElementById("ilScreenErr");if(c)c.remove();showScreen(id);};
+      document.getElementById("ilScrHome").onclick=function(){
+        var signed=(typeof SESSION!=="undefined"&&SESSION&&SESSION.mode&&SESSION.mode!=="none");
+        showScreen(signed?"scr-home":"scr-login");
+      };
+      window.scrollTo(0,0);
+    }catch(e){if(window.__ilShowRecovery)window.__ilShowRecovery();}
+  }
+  /* exposed so the formula-fit showScreen wrapper earlier in the chain can
+     render this same card from its own catch around the _ssFit(id) call */
+  window.__ilScreenError=ilScreenError;
+  var _prevShowIl=showScreen;
+  showScreen=function(id){
+    try{_prevShowIl(id);}
+    catch(e){
+      try{console.error("[stability] screen render failed:",id,e);}catch(_){}
+      ilScreenError(id);
+    }
+  };
 })();
 </script>
 </body>
