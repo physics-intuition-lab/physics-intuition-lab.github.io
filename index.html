@@ -72,6 +72,7 @@ html[data-theme="dark"] .feedback.bad{background:#2c1512}
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
+html,body{overflow-x:clip}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.65;padding-bottom:86px}
 button,[role="button"],select,input{font-family:inherit;min-height:44px}
 button{cursor:pointer}
@@ -100,7 +101,9 @@ p{margin:0 0 8px}
 .tag{display:inline-block;font-size:.78rem;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:1px 8px;margin:2px 0 2px 6px}
 .row{display:flex;gap:10px;align-items:center}
 .row.between{justify-content:space-between}
-.grow{flex:1}
+.grow{flex:1;min-width:0}
+.boardrow .grow,.owrow .grow{overflow-wrap:anywhere}
+#duelYouName{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* home hero stats */
 .hero{display:flex;gap:14px;align-items:center}
 .ringbox{position:relative;width:104px;height:104px;flex:0 0 auto}
@@ -447,7 +450,7 @@ html[data-theme="dark"] .authfab .ic-moon{display:block}
 .vsside.me{border-color:var(--blue)}
 .vsside.bot{border-color:var(--red)}
 .vsside b{display:block;font-size:1.15rem}
-.vsside .vstag{font-size:.82rem;font-weight:700}
+.vsside .vstag{font-size:.82rem;font-weight:700;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vsside.me .vstag{color:var(--blue)}
 .vsside.bot .vstag{color:var(--red)}
 .vsdot{display:block;width:14px;height:14px;border-radius:50%;margin:0 auto 6px}
@@ -869,7 +872,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="continueCard">
       <div class="row between">
         <div><h2 data-i18n="home_cont">كمّل من حيث وقفت</h2><p class="small" id="continueText" style="margin:0">ابدأ بأول تجربة: الوحدات والأبعاد.</p></div>
       </div>
@@ -1756,6 +1759,7 @@ $$("[data-nav]").forEach(b=>b.addEventListener("click",()=>showScreen(b.dataset.
 /* ================= HOME ================= */
 function setRing(el,num,acc){
   const c=276.5;
+  if(acc!=null)acc=Math.max(0,Math.min(100,acc));
   el.style.strokeDashoffset=acc==null?c:c*(1-acc/100);
   num.textContent=acc==null?"—":AR(acc)+(LANG==="en"?"%":"٪");
 }
@@ -1820,6 +1824,7 @@ function renderHome(){
   $("#playedNum").textContent=AR(S.attempts);
   $("#doneNum").textContent=AR(doneVisibleCount())+" / "+AR(visibleExps().length);
   const last=CATALOG.find(e=>e.n===S.lastExp)||CATALOG[0];
+  const ccEl=document.getElementById("continueCard");if(ccEl)ccEl.style.display=S.lastExp?"":"none";
   $("#continueText").textContent=T("التجربة ","Experiment ")+AR(last.n)+": "+(LANG==="en"?(EN_T[last.n]||last.t):last.t);
   $("#continueBtn").onclick=()=>openExp(last.n);
   const dc=dailyChallenge(),daily=dc.exp;
@@ -1943,7 +1948,7 @@ function renderRank(){
   $("#doneNum2").textContent=AR(doneVisibleCount())+" / "+AR(visibleExps().length);
   $("#lvlProgress").innerHTML=[0,1,2].map(l=>{
     const tot=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)).length,dn=CATALOG.filter(e=>e.lvl===l&&expVisible(e.n)&&S.done.has(e.n)).length;
-    return `<div style="margin-bottom:10px"><div class="row between"><b>${LVL[l]}</b><span class="small">${AR(dn)} / ${AR(tot)}</span></div><div class="pbar"><i style="width:${dn/tot*100}%"></i></div></div>`;
+    return `<div style="margin-bottom:10px"><div class="row between"><b>${LVL[l]}</b><span class="small">${AR(dn)} / ${AR(tot)}</span></div><div class="pbar"><i style="width:${tot?dn/tot*100:0}%"></i></div></div>`;
   }).join("");
   $("#ladder").innerHTML=RANKS.map((r,i)=>{
     const isCur=rk.cur[1]===r[1];
@@ -6919,6 +6924,10 @@ function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n
 function saveCurrentAccount(){if((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&ACCOUNTS[SESSION.email])ACCOUNTS[SESSION.email].progress=snapProgress();}
 function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
 function emailOk(e){return typeof e==="string"&&e.length<=254&&!/^\.|\.\.|\.@|@\.|\.$/.test(e)&&/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);}
+/* name fields (signup name, profile name, nickname): a real name is LETTERS —
+   empty/whitespace-only, digits-only or symbols-only strings are rejected, and
+   the length cap is enforced here in code, not only by the input attribute. */
+function nameOk(n,min){if(typeof n!=="string")return false;const s=n.trim();if(s.length<(min||2)||s.length>60)return false;return /[\p{L}]/u.test(s);}
 /* ===== signup validation hardening =====
    Phone: an Egyptian MOBILE only — the international form +20 followed by 10
    digits starting 1(0|1|2|5), or the local 11-digit form 01(0|1|2|5)xxxxxxxx,
@@ -7046,7 +7055,7 @@ function wireAuth(){
     const phone=document.getElementById("rgPhone").value.trim();
     const dob=document.getElementById("rgDob").value;
     const p1=document.getElementById("rgPass").value,p2=document.getElementById("rgPass2").value;
-    if(name.length<3)return authMsg("rgMsg",T("اكتب اسمك الكامل.","Please enter your full name."));
+    if(!nameOk(name,3))return authMsg("rgMsg",T("اكتب اسمك الكامل بالحروف (٣ أحرف على الأقل) — الأرقام أو الرموز لوحدها ما تنفعش اسمًا.","Please enter your full name in letters (at least 3 characters) — digits or symbols alone are not a name."));
     if(!emailOk(email))return authMsg("rgMsg",T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));
     if(isOwnerEmail(email))return authMsg("rgMsg",T("هذا البريد مخصص لحساب المالك — سجّل الدخول به من تبويب تسجيل الدخول.","This email belongs to the owner account — sign in with it from the Sign in tab."));
     if(ACCOUNTS[email])return authMsg("rgMsg",T("هذا البريد مسجّل بالفعل — سجّل الدخول بدلًا من ذلك.","This email is already registered — sign in instead."));
@@ -7750,11 +7759,19 @@ function creditInviteReward(){
     }
     say("");renderInvites();
   };
+  const copyTextNow=(t,el)=>{
+    const legacy=()=>{try{
+      if(el&&"value" in el){el.focus();el.select();return document.execCommand("copy");}
+      const ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy");}catch(e){}ta.remove();return ok;
+    }catch(e){return false;}};
+    if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(t).then(()=>true,()=>legacy());
+    return Promise.resolve(legacy());
+  };
   const wireCopy=(id,srcId)=>{
     const b=document.getElementById(id);if(!b)return;
     b.onclick=()=>{const el=document.getElementById(srcId);const t=el?("value" in el?el.value:el.textContent):"";
-      const done=()=>{b.textContent=T("اتنسخ ✓","Copied ✓");setTimeout(()=>{b.textContent=T("نسخ","Copy");},1600);};
-      if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,done);else done();};
+      const done=ok=>{b.textContent=ok?T("اتنسخ ✓","Copied ✓"):T("حدّد النص وانسخه يدويًا","Select the text and copy it manually");setTimeout(()=>{b.textContent=T("نسخ","Copy");},1900);};
+      copyTextNow(t,el).then(done);};
   };
   wireCopy("invCopyLink","invLinkOut");
   wireCopy("invCopyCode","invCodeOut");
@@ -7763,8 +7780,8 @@ function creditInviteReward(){
   const mcBtn=document.getElementById("myCopyCode");
   if(mcBtn)mcBtn.onclick=()=>{
     const c=ensurePersonalCode();if(!c)return;
-    const done=()=>{mcBtn.textContent=T("اتنسخ ✓","Copied ✓");setTimeout(()=>{mcBtn.textContent=T("نسخ الكود","Copy code");},1600);};
-    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(c).then(done,done);else done();
+    const done=ok=>{mcBtn.textContent=ok?T("اتنسخ ✓","Copied ✓"):T("انسخ الكود يدويًا من فوق","Copy the code manually above");setTimeout(()=>{mcBtn.textContent=T("نسخ الكود","Copy code");},1900);};
+    copyTextNow(c,null).then(done);
   };
   const shBtn=document.getElementById("myShare");
   if(shBtn)shBtn.onclick=()=>{
@@ -7772,8 +7789,8 @@ function creditInviteReward(){
     const link=inviteLink(c);
     const text=T("انضم ليّ في مختبر الحدس الفيزيائي — سجّل بكود الدعوة الخاص بي: ","Join me in the Physics Intuition Lab — register with my personal invite code: ")+c;
     if(navigator.share){navigator.share({title:T("مختبر الحدس الفيزيائي","Physics Intuition Lab"),text:text,url:link}).catch(()=>{});}
-    else if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(link).then(()=>{shBtn.textContent=T("اتنسخ الرابط ✓","Link copied ✓");setTimeout(()=>{shBtn.textContent=T("مشاركة الدعوة","Share invite");},1600);},()=>{});
+    else{
+      copyTextNow(link,null).then(ok=>{if(ok){shBtn.textContent=T("اتنسخ الرابط ✓","Link copied ✓");setTimeout(()=>{shBtn.textContent=T("مشاركة الدعوة","Share invite");},1600);}});
     }
   };
   // an invite link (?ref=CODE) pre-fills the registration form's invite field
@@ -7828,14 +7845,14 @@ function renderProgress(){
     if(hist.length<5){
       idxBox.innerHTML=`<p class="small" style="margin:0">${T("بيانات غير كافية بعد: مؤشر الحدس بيتحسب بعد ٥ محاولات على الأقل — عندك ","Not enough data yet: the Intuition Index is computed after at least 5 attempts — you have ")}<b>${AR(hist.length)}</b>${T(" لحد دلوقتي. كمّل اللعب وارجع."," so far. Keep playing and come back.")}</p>`;
     }else{
-      const accC=Math.round(ewMastery(hist));
+      const accC=Math.min(100,Math.max(0,Math.round(ewMastery(hist))));
       const vis=(typeof visibleExps==="function")?visibleExps():CATALOG;
       const doneInVis=vis.filter(e=>S.done&&S.done.has(e.n)).length;
       const covC=vis.length?Math.round(doneInVis/vis.length*100):0;
       const now=localDayNum();let actDays=0;
       if(S.days&&S.days.forEach)S.days.forEach(d=>{if(typeof d==="number"&&d>now-28&&d<=now)actDays++;});
       const regC=Math.min(100,Math.round(actDays/8*100));
-      const index=Math.round(.5*accC+.3*covC+.2*regC);
+      const index=Math.min(100,Math.max(0,Math.round(.5*accC+.3*covC+.2*regC)));
       const comp=(lbl,val,w)=>`<div class="skillrow"><div class="row between"><span>${lbl} <span class="small">(${T("وزنه ","weight ")}${AR(w)}٪)</span></span><b>${AR(val)}٪</b></div><div class="pbar"><i style="width:${val}%"></i></div></div>`;
       idxBox.innerHTML=`<div class="row" style="align-items:center;gap:14px"><div class="ringbox"><svg width="86" height="86" viewBox="0 0 104 104"><circle cx="52" cy="52" r="44" fill="none" stroke="var(--surface2)" stroke-width="10"/><circle cx="52" cy="52" r="44" fill="none" stroke="var(--teal)" stroke-width="10" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="${(276.5*(1-index/100)).toFixed(1)}"/></svg><div class="ringnum"><b>${AR(index)}</b><span>${T("من ١٠٠","of 100")}</span></div></div>
       <div class="grow">${comp(T("الدقة المرجّحة زمنيًا (أحدث محاولاتك تزن أكتر)","Time-weighted accuracy (your latest attempts weigh more)"),accC,50)}
@@ -8077,10 +8094,12 @@ function pfFillForm(){
     const a=profAccount(),p=profOf();if(!a||!p)return;
     const nm=document.getElementById("pfName").value.trim();
     const msg=document.getElementById("pfMsg");
-    if(!nm){msg.textContent=T("الاسم ما ينفعش يبقى فاضي.","The name cannot be empty.");return;}
+    if(!nameOk(nm,2)){msg.textContent=T("الاسم لازم يكون حرفين على الأقل وبالحروف — الأرقام أو الرموز لوحدها ما تنفعش اسمًا.","The name must be at least 2 characters in letters — digits or symbols alone are not a name.");return;}
+    const nk=document.getElementById("pfNick").value.trim();
+    if(nk&&!nameOk(nk,2)){msg.textContent=T("الاسم المستعار لازم يكون بالحروف — الأرقام أو الرموز لوحدها ما تنفعش.","The nickname must contain letters — digits or symbols alone are not a nickname.");return;}
     a.name=nm;
     if(/^[\x00-\x7F\s.'-]+$/.test(nm))a.nameEn=nm;
-    p.nick=document.getElementById("pfNick").value.trim().slice(0,30);
+    p.nick=nk.slice(0,30);
     p.about=document.getElementById("pfAbout").value.trim().slice(0,140);
     if(pfPendingPic!==undefined)p.pic=pfPendingPic;
     CURRENT_USER.name=firstName(a.name);
@@ -8172,6 +8191,10 @@ function renderTeacherSpace(openId){
   set("trLevelLbl",T("المستوى المقترح","Suggested level"));
   set("trNotesLbl",T("ملاحظات","Notes"));
   set("trSend",T("إرسال الطلب للمالك","Send the request to the owner"));
+  const sph=(id,txt)=>{const el=document.getElementById(id);if(el)el.placeholder=txt;};
+  sph("tcTitle",T("مثال: مراجعة الكهرباء قبل الامتحان","Example: Electricity revision before the exam"));
+  sph("trTopic",T("مثال: قياس سرعة الصوت بالرنين","Example: Measuring the speed of sound by resonance"));
+  sph("trNotes",T("أي تفاصيل تساعد المالك: الهدف التعليمي، الجهاز المتاح، ملاحظات للطلاب…","Any details that help the owner: the learning goal, the available apparatus, notes for students…"));
   const lv=document.getElementById("trLevel");
   if(lv){const vals=[T("سهل","Easy"),T("متوسط","Medium"),T("متقدم","Advanced")];for(let i=0;i<3;i++)lv.options[i].textContent=vals[i];}
   renderTcPick();renderTcSel();renderTcMine();renderTrMine();
@@ -8234,9 +8257,12 @@ function renderTrMine(){
     const msg=document.getElementById("trMsg");
     const topic=(document.getElementById("trTopic").value||"").trim();
     if(!topic){if(msg)msg.textContent=T("اكتب موضوع التجربة المطلوبة أولًا.","Write the requested experiment's topic first.");return;}
+    const notes=(document.getElementById("trNotes").value||"").trim();
+    if(!notes){if(msg)msg.textContent=T("اكتب تفاصيل الطلب في الملاحظات — الهدف التعليمي أو الجهاز المتاح — عشان المالك يقدر ينفّذه صح.","Write the request details in the notes — the learning goal or the available apparatus — so the owner can build it properly.");return;}
+    if(sd.dataset.busy)return;sd.dataset.busy="1";setTimeout(()=>{delete sd.dataset.busy;},1500);
     const lvSel=document.getElementById("trLevel");
     const a=curAccount();
-    EXP_REQUESTS.push({topic:topic,level:lvSel?lvSel.options[lvSel.selectedIndex].textContent:"",notes:(document.getElementById("trNotes").value||"").trim(),by:SESSION.email,byName:a?((LANG==="en"?(a.nameEn||a.name):a.name)||a.email):"",at:Date.now()});
+    EXP_REQUESTS.push({topic:topic,level:lvSel?lvSel.options[lvSel.selectedIndex].textContent:"",notes:notes,by:SESSION.email,byName:a?((LANG==="en"?(a.nameEn||a.name):a.name)||a.email):"",at:Date.now()});
     document.getElementById("trTopic").value="";document.getElementById("trNotes").value="";
     if(msg)msg.textContent=T("تم إرسال الطلب — وصل لقائمة «طلبات التجارب» في لوحة المالك.","Request sent — it is now in the owner's Experiment requests list.");
     renderTrMine();
@@ -9773,7 +9799,10 @@ renderTeacherHome=function(){try{czZone();}catch(e){}};
 /* ---------- join by code (+ password) ---------- */
 (function(){
   const b=document.getElementById("jcJoin");if(!b)return;
-  b.onclick=async()=>{
+  b.onclick=()=>{
+    if(b.disabled)return;
+    b.disabled=true;
+    (async()=>{
     const msg=document.getElementById("jcMsg");
     const say=t=>{if(msg)msg.textContent=t;};
     if(!((SESSION.mode==="user"||SESSION.mode==="owner"))){say(T("الانضمام للكورسات محتاج حساب مسجل — الزائر ما بيتحفظلوش تقدم.","Joining a course needs a registered account — guest progress is not saved."));return;}
@@ -9781,7 +9810,7 @@ renderTeacherHome=function(){try{czZone();}catch(e){}};
     const code=((codeEl&&codeEl.value)||"").trim().toUpperCase();
     if(!code){say(T("اكتب كود الكورس الأول.","Enter the course code first."));return;}
     const c=czByCode(code);
-    if(!c){say(T("الكود ده مش موجود — راجعه مع معلمك وحاول تاني. (الكود بيبقى شكله IL-XXXXXX)","That code was not found — check it with your teacher and try again. (Codes look like IL-XXXXXX)"));return;}
+    if(!c){if(!/^IL-[A-Z0-9]{6}$/.test(code))say(T("صيغة الكود غلط — كود الانضمام بيبقى شكله IL-XXXXXX (يبدأ بـ IL- وبعده ٦ حروف وأرقام).","The code format is wrong — a join code looks like IL-XXXXXX (starting with IL- followed by 6 letters and digits)."));else say(T("الكود ده مش موجود — راجعه مع معلمك وحاول تاني.","That code was not found — check it with your teacher and try again."));return;}
     const key=czKey(c);
     if(czMine(c)){say(T("ده كورسك أنت — فتحته لك.","This is your own course — opening it for you."));openCourse(key);return;}
     if(czEnrolled(key)){say(T("أنت منضم للكورس ده أصلًا — فتحته لك.","You already joined this course — opening it."));openCourse(key);return;}
@@ -9821,6 +9850,7 @@ renderTeacherHome=function(){try{czZone();}catch(e){}};
     say(T("انضممت للكورس بنجاح — فتحته لك دلوقتي.","You joined the course — opening it now."));
     czZone();
     openCourse(key);
+    })().catch(()=>{}).finally(()=>{b.disabled=false;});
   };
 })();
 /* ---------- the course screen: an ordered path with the student's own progress ---------- */
@@ -9889,6 +9919,7 @@ function czTeacherLabels(){
   ].map(t=>`<li>${t}</li>`).join("");
   set("tcPassLbl",T("كلمة سر الكورس (اختياري)","Course password (optional)"));
   const ph=document.getElementById("tcPass");if(ph)ph.placeholder=T("اتركها فاضية لو الكورس بالكود بس","Leave empty for a code-only course");
+  const np2=document.getElementById("tcNewPass");if(np2)np2.placeholder=T("كلمة سر جديدة","New password");
   set("tcPassHint",T("الكورس بيظهر في منطقة «كورسات المعلمين» في الرئيسية. الطالب يكتب كود الانضمام — ولو حطيت كلمة سر هنا، مش هيدخل غير بيها. تقدر تغيّرها أو تشيلها في أي وقت من «إدارة» الكورس تحت.","The course appears in the Teacher courses area on Home. The student enters the join code — and if you set a password here, nobody joins without it. You can change or remove it any time from the course's Manage panel below."));
   set("tcManH",T("إدارة الكورس","Manage course"));
   set("tcNewPassLbl",T("تعيين / تغيير كلمة السر","Set / change the password"));
@@ -9932,7 +9963,7 @@ function czOpenManage(id){
   const say=t=>{const m=document.getElementById("tcManMsg");if(m)m.textContent=t;};
   const refresh=()=>{if(CZ_MANAGE_ID!=null)czOpenManage(CZ_MANAGE_ID);renderTcMine();czZone();};
   const sp=document.getElementById("tcManSavePass");
-  if(sp)sp.onclick=()=>{const c=cur();if(!c)return;const v=((document.getElementById("tcNewPass")||{}).value||"").trim();if(!v){say(T("اكتب كلمة السر الجديدة الأول.","Type the new password first."));return;}c.passSalt=c.code||"";c.passH=czHash(v+"|"+c.passSalt);czSyncServerFields(c);refresh();say(T("اتحفظت كلمة السر — الطلاب الجدد هيدخلوا بيها من دلوقتي.","Password saved — new students will join with it from now on."));};
+  if(sp)sp.onclick=()=>{const c=cur();if(!c)return;const v=((document.getElementById("tcNewPass")||{}).value||"").trim();if(!v){say(T("اكتب كلمة السر الجديدة الأول.","Type the new password first."));return;}if(v.length<4){say(T("كلمة سر الكورس لازم تكون ٤ أحرف على الأقل.","The course password must be at least 4 characters."));return;}c.passSalt=c.code||"";c.passH=czHash(v+"|"+c.passSalt);czSyncServerFields(c);refresh();say(T("اتحفظت كلمة السر — الطلاب الجدد هيدخلوا بيها من دلوقتي.","Password saved — new students will join with it from now on."));};
   const cp=document.getElementById("tcManClearPass");
   if(cp)cp.onclick=()=>{const c=cur();if(!c)return;c.passH="";czSyncServerFields(c);refresh();say(T("اتشالت كلمة السر — الكورس بقى بكود الانضمام بس.","Password removed — the course is code-only now."));};
   const rg=document.getElementById("tcManRegen");
@@ -9950,6 +9981,8 @@ function czOpenManage(id){
     if(!tcDraft.length){if(msg)msg.textContent=T("اختر تجربة واحدة على الأقل للكورس.","Choose at least one experiment for the course.");return;}
     const a=curAccount();if(!a)return;
     const pw=(((document.getElementById("tcPass")||{}).value)||"").trim();
+    if(pw&&pw.length<4){if(msg)msg.textContent=T("كلمة سر الكورس لازم تكون ٤ أحرف على الأقل — أو سيبها فاضية لكورس بالكود بس.","The course password must be at least 4 characters — or leave it empty for a code-only course.");return;}
+    if(cr.dataset.busy)return;cr.dataset.busy="1";setTimeout(()=>{delete cr.dataset.busy;},1500);
     const c={id:Date.now(),title:title,exps:tcDraft.slice(),by:a.email,byName:(LANG==="en"?(a.nameEn||a.name):a.name)||a.email,code:czGenCode(),passH:"",passSalt:""};
     if(pw){c.passSalt=c.code;c.passH=czHash(pw+"|"+c.passSalt);}
     myCourses().push(c);
@@ -11864,10 +11897,11 @@ async function qzSaveBuilder(body,c){
     const rows=[...qb.querySelectorAll(".qzcrow")].map(r=>({t:((r.querySelector("[data-ctext]")||{}).value||"").trim(),ok:!!(r.querySelector("input[type=radio]")||{}).checked}));
     const nonEmpty=rows.filter(x=>x.t);
     const marked=rows.findIndex(x=>x.ok);
-    if(!qtext||nonEmpty.length<2||marked<0||!rows[marked].t){bad=qi+1;qb.classList.add("qzbad");return;}
+    const seenC=new Set();let dupC=false;nonEmpty.forEach(x=>{const k=x.t.toLowerCase();if(seenC.has(k))dupC=true;seenC.add(k);});
+    if(!qtext||nonEmpty.length<2||marked<0||!rows[marked].t||dupC){bad=qi+1;qb.classList.add("qzbad");return;}
     questions.push({q:qtext,choices:nonEmpty.map(x=>x.t),correct:nonEmpty.findIndex(x=>x.ok)});
   });
-  if(bad){say(T("السؤال رقم ","Question ")+AR(bad)+T(" ناقص: لازم نص للسؤال، واختيارين مكتوبين على الأقل، وإجابة صحيحة واحدة معلّمة."," is incomplete: it needs question text, at least two written choices, and exactly one marked correct answer."));return;}
+  if(bad){say(T("السؤال رقم ","Question ")+AR(bad)+T(" ناقص: لازم نص للسؤال، واختيارين مكتوبين على الأقل ومن غير تكرار، وإجابة صحيحة واحدة معلّمة."," is incomplete: it needs question text, at least two written choices with no duplicates, and exactly one marked correct answer."));return;}
   const durRaw=(((document.getElementById("qzBDur")||{}).value)||"").trim();
   let dur=null;
   if(durRaw!==""){dur=parseInt(durRaw,10);if(!(dur>=1&&dur<=600)){say(T("مدة الاختبار لازم تكون رقمًا من ١ إلى ٦٠٠ دقيقة — أو امسحها لو مش عايز مدة.","The duration must be a number from 1 to 600 minutes — or clear it for no time limit."));return;}}
