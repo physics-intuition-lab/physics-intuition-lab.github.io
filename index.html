@@ -184,6 +184,16 @@ input[type=checkbox],input[type=radio]{min-height:auto}
 .pwmeter i{display:block;height:100%;width:0;border-radius:99px;transition:width .2s ease}
 .pwlab{font-size:.78rem;font-weight:700;margin-top:2px;display:none}
 .pwlab.show{display:block}
+/* live password-policy checklist: each requirement ticks as the user types */
+.pwreqs{list-style:none;margin:6px 0 0;padding:0;display:none;font-size:.8rem}
+.pwreqs.show{display:block}
+.pwreqs li{color:var(--muted);padding:1px 0;display:flex;gap:6px;align-items:baseline}
+.pwreqs li::before{content:"○";font-size:.68rem;flex:none}
+.pwreqs li.ok{color:var(--good)}
+.pwreqs li.ok::before{content:"✓";font-weight:700}
+/* inline per-field validation error (phone / date of birth on the register form) */
+.flderr{display:none;color:var(--bad);font-size:.82rem;font-weight:600;margin-top:4px}
+.flderr.show{display:block}
 @media (prefers-color-scheme: dark){.feedback.good{background:#12291a}.feedback.bad{background:#2c1512}}
 .scorebig{font-size:1.5rem;font-weight:700}
 label.lbl{display:block;font-weight:600;margin:10px 0 2px}
@@ -741,6 +751,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
         <input class="fld" id="owPass" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
         <div class="pwhint" data-i18n="auth_pw_rule">كلمة السر: ٨ أحرف على الأقل — وخليط من الحروف والأرقام والرموز أقوى.</div>
         <div class="pwmeter" id="owPwMeter"><i></i></div><div class="pwlab" id="owPwLab"></div>
+        <ul class="pwreqs" id="owPwReqs"><li data-req="len" data-i18n="auth_pw_req_len">٨ أحرف على الأقل</li><li data-req="up" data-i18n="auth_pw_req_up">حرف كبير واحد على الأقل (A–Z)</li><li data-req="lo" data-i18n="auth_pw_req_lo">حرف صغير واحد على الأقل (a–z)</li><li data-req="dg" data-i18n="auth_pw_req_dg">رقم واحد على الأقل (0–9)</li><li data-req="sy" data-i18n="auth_pw_req_sy">رمز واحد على الأقل (! @ # …)</li></ul>
         <label class="fldlbl" data-i18n="auth_pass2">تأكيد كلمة السر</label>
         <input class="fld" id="owPass2" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
         <div class="autherr" id="owMsg"></div>
@@ -758,6 +769,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
         <input class="fld" id="rcPass" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
         <div class="pwhint" data-i18n="auth_pw_rule">كلمة السر: ٨ أحرف على الأقل — وخليط من الحروف والأرقام والرموز أقوى.</div>
         <div class="pwmeter" id="rcPwMeter"><i></i></div><div class="pwlab" id="rcPwLab"></div>
+        <ul class="pwreqs" id="rcPwReqs"><li data-req="len" data-i18n="auth_pw_req_len">٨ أحرف على الأقل</li><li data-req="up" data-i18n="auth_pw_req_up">حرف كبير واحد على الأقل (A–Z)</li><li data-req="lo" data-i18n="auth_pw_req_lo">حرف صغير واحد على الأقل (a–z)</li><li data-req="dg" data-i18n="auth_pw_req_dg">رقم واحد على الأقل (0–9)</li><li data-req="sy" data-i18n="auth_pw_req_sy">رمز واحد على الأقل (! @ # …)</li></ul>
         <div class="autherr" id="rcMsg"></div>
         <button class="btn primary block" id="btnRecover" style="margin-top:16px" data-i18n="auth_rec_btn">تعيين كلمة سر جديدة</button>
         <div style="text-align:center;margin-top:6px"><button class="authlink" id="linkBackSignin" data-i18n="auth_back_in">رجوع لتسجيل الدخول</button></div>
@@ -770,13 +782,16 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
         <label class="fldlbl" data-i18n="auth_email">البريد الإلكتروني</label>
         <input class="fld" id="rgEmail" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com">
         <label class="fldlbl" data-i18n="auth_phone">رقم التليفون</label>
-        <input class="fld" id="rgPhone" type="tel" autocomplete="tel" dir="ltr" placeholder="01xxxxxxxxx">
+        <input class="fld" id="rgPhone" type="tel" autocomplete="tel" dir="ltr" placeholder="+201012345678">
+        <div class="flderr" id="rgPhoneErr"></div>
         <label class="fldlbl" data-i18n="auth_dob">تاريخ الميلاد</label>
         <input class="fld" id="rgDob" type="date" dir="ltr">
+        <div class="flderr" id="rgDobErr"></div>
         <label class="fldlbl" data-i18n="auth_pass">كلمة السر</label>
         <input class="fld" id="rgPass" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
         <div class="pwhint" data-i18n="auth_pw_rule">كلمة السر: ٨ أحرف على الأقل — وخليط من الحروف والأرقام والرموز أقوى.</div>
         <div class="pwmeter" id="rgPwMeter"><i></i></div><div class="pwlab" id="rgPwLab"></div>
+        <ul class="pwreqs" id="rgPwReqs"><li data-req="len" data-i18n="auth_pw_req_len">٨ أحرف على الأقل</li><li data-req="up" data-i18n="auth_pw_req_up">حرف كبير واحد على الأقل (A–Z)</li><li data-req="lo" data-i18n="auth_pw_req_lo">حرف صغير واحد على الأقل (a–z)</li><li data-req="dg" data-i18n="auth_pw_req_dg">رقم واحد على الأقل (0–9)</li><li data-req="sy" data-i18n="auth_pw_req_sy">رمز واحد على الأقل (! @ # …)</li></ul>
         <label class="fldlbl" data-i18n="auth_pass2">تأكيد كلمة السر</label>
         <input class="fld" id="rgPass2" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
         <div class="pwhint" id="rgPwMatch"></div>
@@ -6870,7 +6885,12 @@ auth_vf_lbl:["كود التحقق","Verification code"],
 auth_vf_btn:["تأكيد وإنشاء الحساب","Verify and create account"],
 auth_vf_resend:["إعادة إرسال الكود","Resend code"],
 auth_vf_back:["تعديل بيانات التسجيل","Edit registration details"],
-auth_pw_rule:["كلمة السر: ٨ أحرف على الأقل — وخليط من الحروف والأرقام والرموز أقوى.","Password: at least 8 characters — a mix of letters, numbers and symbols is stronger."]
+auth_pw_rule:["كلمة السر: ٨ أحرف على الأقل، وفيها حرف كبير وحرف صغير ورقم ورمز.","Password: at least 8 characters, including an uppercase letter, a lowercase letter, a digit and a symbol."],
+auth_pw_req_len:["٨ أحرف على الأقل","At least 8 characters"],
+auth_pw_req_up:["حرف كبير واحد على الأقل (A–Z)","At least one uppercase letter (A–Z)"],
+auth_pw_req_lo:["حرف صغير واحد على الأقل (a–z)","At least one lowercase letter (a–z)"],
+auth_pw_req_dg:["رقم واحد على الأقل (0–9)","At least one digit (0–9)"],
+auth_pw_req_sy:["رمز واحد على الأقل (! @ # …)","At least one symbol (! @ # …)"]
 });
 const ACCOUNTS={};
 let PENDING_REG=null;
@@ -6899,6 +6919,49 @@ function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n
 function saveCurrentAccount(){if((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&ACCOUNTS[SESSION.email])ACCOUNTS[SESSION.email].progress=snapProgress();}
 function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
 function emailOk(e){return typeof e==="string"&&e.length<=254&&!/^\.|\.\.|\.@|@\.|\.$/.test(e)&&/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);}
+/* ===== signup validation hardening =====
+   Phone: an Egyptian MOBILE only — the international form +20 followed by 10
+   digits starting 1(0|1|2|5), or the local 11-digit form 01(0|1|2|5)xxxxxxxx,
+   which is normalized to the +20 form before saving. Anything else (wrong
+   length/prefix, landline, foreign number, letters) returns null = rejected.
+   Password policy: applied ONLY where a password is SET (create account,
+   owner first-time setup, password recovery) — NEVER on the sign-in form, so
+   no existing account can ever be locked out by the new rules.
+   Date of birth: a real past date whose age (against today) is 10–100 years. */
+function egPhoneNorm(raw){
+  if(typeof raw!=="string")return null;
+  const s=raw.replace(/[\s()-]/g,"");
+  if(/^\+201[0125]\d{8}$/.test(s))return s;
+  if(/^01[0125]\d{8}$/.test(s))return "+20"+s.slice(1);
+  return null;
+}
+function pwPolicy(pw){
+  const s=typeof pw==="string"?pw:"";
+  const r={len:s.length>=8,up:/[A-Z]/.test(s),lo:/[a-z]/.test(s),dg:/\d/.test(s),sy:/[^A-Za-z0-9]/.test(s)};
+  r.ok=r.len&&r.up&&r.lo&&r.dg&&r.sy;return r;
+}
+function pwMissingMsg(pw){
+  const r=pwPolicy(pw),m=[];
+  if(!r.len)m.push(T("٨ أحرف على الأقل","at least 8 characters"));
+  if(!r.up)m.push(T("حرف كبير (A-Z)","an uppercase letter (A-Z)"));
+  if(!r.lo)m.push(T("حرف صغير (a-z)","a lowercase letter (a-z)"));
+  if(!r.dg)m.push(T("رقم","a digit"));
+  if(!r.sy)m.push(T("رمز مثل ! أو @ أو #","a symbol such as !, @ or #"));
+  return T("كلمة السر غير مكتملة الشروط — ناقصها: ","The password does not meet the requirements yet — still missing: ")+m.join(T("، "," · "));
+}
+function dobOk(dob){
+  if(typeof dob!=="string")return false;
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(dob);if(!m)return false;
+  const y=+m[1],mo=+m[2],d=+m[3];
+  const dt=new Date(y,mo-1,d);
+  if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d)return false; /* not a real calendar date */
+  const now=new Date(),today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(dt>=today)return false; /* today or the future is not a birth date */
+  let age=now.getFullYear()-y;
+  if(now.getMonth()<mo-1||(now.getMonth()===mo-1&&now.getDate()<d))age--;
+  return age>=10&&age<=100;
+}
+function fieldErr(id,txt){const el=document.getElementById(id);if(!el)return;if(txt){el.textContent=txt;el.classList.add("show");}else{el.textContent="";el.classList.remove("show");}}
 function firstName(full){return (full||"").trim().split(/\s+/)[0]||full;}
 function isOwnerSession(){return SESSION.mode==="owner"||(SESSION.email&&isOwnerEmail(SESSION.email));}
 function refreshAccountUI(){
@@ -6987,9 +7050,12 @@ function wireAuth(){
     if(!emailOk(email))return authMsg("rgMsg",T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));
     if(isOwnerEmail(email))return authMsg("rgMsg",T("هذا البريد مخصص لحساب المالك — سجّل الدخول به من تبويب تسجيل الدخول.","This email belongs to the owner account — sign in with it from the Sign in tab."));
     if(ACCOUNTS[email])return authMsg("rgMsg",T("هذا البريد مسجّل بالفعل — سجّل الدخول بدلًا من ذلك.","This email is already registered — sign in instead."));
-    if(phone.replace(/\D/g,"").length<7)return authMsg("rgMsg",T("رقم التليفون غير صحيح.","The phone number is not valid."));
+    fieldErr("rgPhoneErr",null);fieldErr("rgDobErr",null);
+    const phoneN=egPhoneNorm(phone);
+    if(!phoneN){fieldErr("rgPhoneErr",T("اكتب رقم موبايل مصري صحيح يبدأ بـ +20 (مثال: +201012345678) — أو اكتبه بصيغته المحلية 01xxxxxxxxx.","Enter a valid Egyptian mobile number starting with +20 (e.g. +201012345678) — or write it in its local form 01xxxxxxxxx."));const pi=document.getElementById("rgPhone");if(pi)pi.focus();return;}
     if(!dob)return authMsg("rgMsg",T("اختر تاريخ ميلادك.","Please choose your date of birth."));
-    if(p1.length<8)return authMsg("rgMsg",T("كلمة السر ٨ أحرف على الأقل.","The password must be at least 8 characters."));
+    if(!dobOk(dob)){fieldErr("rgDobErr",T("تاريخ الميلاد غير صحيح — لازم يكون عمرك بين ١٠ و١٠٠ سنة.","Invalid date of birth — your age must be between 10 and 100 years."));const di=document.getElementById("rgDob");if(di)di.focus();return;}
+    if(!pwPolicy(p1).ok)return authMsg("rgMsg",pwMissingMsg(p1));
     if(p1!==p2)return authMsg("rgMsg",T("كلمتا السر غير متطابقتين.","The two passwords do not match."));
     const inviteEl=document.getElementById("rgInvite");
     const inviteCode=inviteEl?inviteEl.value.trim().toUpperCase():"";
@@ -6998,13 +7064,13 @@ function wireAuth(){
          after sign-up (the inviter's rows are not readable before an account
          exists) — here only its shape is checked. */
       if(inviteCode&&!/^IL-[A-Z0-9]{6}$/.test(inviteCode))return authMsg("rgMsg",T("صيغة كود الدعوة غير صحيحة — تأكد من الكود أو اتركه فارغًا.","The invite code format is not valid — check the code or leave it empty."));
-      PENDING_REG={name,email,phone,dob,pass:p1,invite:inviteCode||null,server:true};
+      PENDING_REG={name,email,phone:phoneN,dob,pass:p1,invite:inviteCode||null,server:true};
       sbDoSignUp();
       return;
     }
     if(inviteCode&&!(typeof findInviteByCode==="function"&&findInviteByCode(inviteCode)))return authMsg("rgMsg",T("كود الدعوة غير معروف — تأكد من الكود أو اتركه فارغًا.","The invite code is not recognised — check the code or leave it empty."));
     if(inviteCode&&findInviteByCode(inviteCode).byEmail===email)return authMsg("rgMsg",T("هذا الكود صادر لدعوتك أنت — سجّل الدخول بحسابك الحالي.","This code was issued from your own account — sign in with your existing account."));
-    PENDING_REG={name,email,phone,dob,pass:p1,code:newVerifyCode(),invite:inviteCode||null};
+    PENDING_REG={name,email,phone:phoneN,dob,pass:p1,code:newVerifyCode(),invite:inviteCode||null};
     const shown=document.getElementById("vfCodeShown");if(shown)shown.textContent=PENDING_REG.code;
     const inp=document.getElementById("vfCode");if(inp)inp.value="";
     authTab("verify");
@@ -7059,7 +7125,7 @@ function wireAuth(){
   const btnOw=document.getElementById("btnOwnerSetup");
   if(btnOw)btnOw.addEventListener("click",()=>{
     const p1=document.getElementById("owPass").value,p2=document.getElementById("owPass2").value;
-    if(p1.length<8)return authMsg("owMsg",T("كلمة سر المالك ٨ أحرف على الأقل.","The owner password must be at least 8 characters."));
+    if(!pwPolicy(p1).ok)return authMsg("owMsg",pwMissingMsg(p1));
     if(p1!==p2)return authMsg("owMsg",T("كلمتا السر غير متطابقتين.","The two passwords do not match."));
     if(window.__sbOn&&__sbOn()){
       /* The owner is a normal server account: signUp creates it and the server
@@ -7082,7 +7148,7 @@ function wireAuth(){
     if(!emailOk(email))return authMsg("rcMsg",T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));
     if(isOwnerEmail(email))email=OWNER_ADMIN.email;
     if(window.__sbOn&&__sbOn()){
-      if(np.length<8)return authMsg("rcMsg",T("كلمة السر الجديدة ٨ أحرف على الأقل.","The new password must be at least 8 characters."));
+      if(!pwPolicy(np).ok)return authMsg("rcMsg",pwMissingMsg(np));
       if(window.__sbRecoverySession){sbDoSetRecoveredPassword(np);return;}
       PENDING_REG={server:true,recovery:true,email:email,newPass:np};
       sbDoRecoverSend();
@@ -7090,7 +7156,7 @@ function wireAuth(){
     }
     const acc=ACCOUNTS[email];
     if(!acc)return authMsg("rcMsg",T("لا يوجد حساب مسجّل بهذا البريد.","No registered account with this email."));
-    if(np.length<8)return authMsg("rcMsg",T("كلمة السر الجديدة ٨ أحرف على الأقل.","The new password must be at least 8 characters."));
+    if(!pwPolicy(np).ok)return authMsg("rcMsg",pwMissingMsg(np));
     acc.pass=np;
     authMsg("rcMsg",T("تم تعيين كلمة السر الجديدة — سجّل الدخول الآن.","New password set — sign in now."),true);
     setTimeout(()=>authTab("in"),900);
@@ -7100,18 +7166,26 @@ function wireAuth(){
   const pwScore=pw=>{if(!pw)return -1;let s=0;if(pw.length>=8)s++;if(pw.length>=12)s++;if(/\d/.test(pw))s++;if(/[a-z]/.test(pw)&&/[A-Z]/.test(pw))s++;if(/[^A-Za-z0-9]/.test(pw))s++;return Math.min(4,s);};
   const pwLabels=[["ضعيفة","Weak"],["مقبولة","Fair"],["جيدة","Good"],["قوية","Strong"],["ممتازة","Excellent"]];
   const pwColors=["#d3382c","#e08a00","#b7a600","#1d9e57","#0b766e"];
-  const wireMeter=(inpId,meterId,labId)=>{
-    const inp=document.getElementById(inpId),mt=document.getElementById(meterId),lb=document.getElementById(labId);
+  const wireMeter=(inpId,meterId,labId,reqsId)=>{
+    const inp=document.getElementById(inpId),mt=document.getElementById(meterId),lb=document.getElementById(labId),rq=document.getElementById(reqsId);
     if(!inp||!mt||inp.dataset.meterWired)return;inp.dataset.meterWired="1";
     const bar=mt.querySelector("i");
     inp.addEventListener("input",()=>{
+      /* live policy checklist: every requirement ticks the moment it is met */
+      if(rq){if(!inp.value)rq.classList.remove("show");else{rq.classList.add("show");const r=pwPolicy(inp.value);rq.querySelectorAll("li").forEach(li=>{li.classList.toggle("ok",!!r[li.dataset.req]);});}}
       const sc=pwScore(inp.value);
       if(sc<0){mt.classList.remove("show");if(lb)lb.classList.remove("show");return;}
       mt.classList.add("show");bar.style.width=(20+sc*20)+"%";bar.style.background=pwColors[sc];
-      if(lb){lb.classList.add("show");lb.textContent=T("قوة كلمة السر: ","Password strength: ")+pwLabels[sc][LANG==="en"?1:0]+(inp.value.length<8?T(" — لسه أقل من ٨ أحرف"," — still under 8 characters"):"");lb.style.color=pwColors[sc];}
+      if(lb){lb.classList.add("show");lb.textContent=T("قوة كلمة السر: ","Password strength: ")+pwLabels[sc][LANG==="en"?1:0]+(pwPolicy(inp.value).ok?"":T(" — لسه ناقصها شروط من القائمة تحتها"," — some requirements in the list below are still missing"));lb.style.color=pwColors[sc];}
     });
   };
-  wireMeter("rgPass","rgPwMeter","rgPwLab");wireMeter("owPass","owPwMeter","owPwLab");wireMeter("rcPass","rcPwMeter","rcPwLab");
+  wireMeter("rgPass","rgPwMeter","rgPwLab","rgPwReqs");wireMeter("owPass","owPwMeter","owPwLab","owPwReqs");wireMeter("rcPass","rcPwMeter","rcPwLab","rcPwReqs");
+  /* DOB picker can never offer a future date, and the inline phone/DOB errors
+     clear themselves as soon as the user starts fixing the field */
+  const rgDobInp=document.getElementById("rgDob");
+  if(rgDobInp){const td=new Date();rgDobInp.max=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0");rgDobInp.addEventListener("input",()=>fieldErr("rgDobErr",null));}
+  const rgPhoneInp=document.getElementById("rgPhone");
+  if(rgPhoneInp)rgPhoneInp.addEventListener("input",()=>fieldErr("rgPhoneErr",null));
   const rgP2=document.getElementById("rgPass2"),rgMatch=document.getElementById("rgPwMatch");
   if(rgP2&&rgMatch&&!rgP2.dataset.matchWired){rgP2.dataset.matchWired="1";
     const chkMatch=()=>{const a=document.getElementById("rgPass").value,b=rgP2.value;
