@@ -782,8 +782,10 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <div id="paneRegister" style="display:none">
         <label class="fldlbl" data-i18n="auth_fullname">الاسم الكامل</label>
         <input class="fld" id="rgName" type="text" autocomplete="name" data-i18n-ph="auth_fullname_ph" placeholder="اكتب اسمك الكامل">
+        <div class="flderr" id="rgNameErr"></div>
         <label class="fldlbl" data-i18n="auth_email">البريد الإلكتروني</label>
         <input class="fld" id="rgEmail" type="email" autocomplete="email" dir="ltr" placeholder="name@example.com">
+        <div class="flderr" id="rgEmailErr"></div>
         <label class="fldlbl" data-i18n="auth_phone">رقم التليفون</label>
         <input class="fld" id="rgPhone" type="tel" autocomplete="tel" dir="ltr" placeholder="+201012345678">
         <div class="flderr" id="rgPhoneErr"></div>
@@ -792,6 +794,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
         <div class="flderr" id="rgDobErr"></div>
         <label class="fldlbl" data-i18n="auth_pass">كلمة السر</label>
         <input class="fld" id="rgPass" type="password" autocomplete="new-password" dir="ltr" placeholder="••••••••">
+        <div class="flderr" id="rgPassErr"></div>
         <div class="pwhint" data-i18n="auth_pw_rule">كلمة السر: ٨ أحرف على الأقل — وخليط من الحروف والأرقام والرموز أقوى.</div>
         <div class="pwmeter" id="rgPwMeter"><i></i></div><div class="pwlab" id="rgPwLab"></div>
         <ul class="pwreqs" id="rgPwReqs"><li data-req="len" data-i18n="auth_pw_req_len">٨ أحرف على الأقل</li><li data-req="up" data-i18n="auth_pw_req_up">حرف كبير واحد على الأقل (A–Z)</li><li data-req="lo" data-i18n="auth_pw_req_lo">حرف صغير واحد على الأقل (a–z)</li><li data-req="dg" data-i18n="auth_pw_req_dg">رقم واحد على الأقل (0–9)</li><li data-req="sy" data-i18n="auth_pw_req_sy">رمز واحد على الأقل (! @ # …)</li></ul>
@@ -2952,7 +2955,10 @@ function startUnits(exp){
         ctx.fillStyle="#3d5a6b";rr(ctx,phX+8,phY+6,phW-24,phH-12,4);ctx.fill();
         ctx.fillStyle="#7fd4ff";ctx.beginPath();ctx.arc(phX+phW-8,phY+phH/2,2.2,0,7);ctx.fill();
         ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-        ctx.fillText(T("موبايل حقيقي ممدّد تحت القلم — طوله ١٥ سم، من نفس خط بداية القلم وبنفس مقياسه: قارن الطولين مباشرة","A real phone lying flat under the pencil — its length is 15 cm, from the same start line and at the same scale: compare the two lengths directly"),330,138);
+        /* the hint is longer than the scene is wide: it goes through the shared
+           measured wrap (fillCap) — rows stack upward so the last row keeps the
+           old baseline at y=138, clear of the phone drawn below it */
+        fillCap(ctx,T("موبايل حقيقي ممدّد تحت القلم — طوله ١٥ سم، من نفس خط بداية القلم وبنفس مقياسه: قارن الطولين مباشرة","A real phone lying flat under the pencil — its length is 15 cm, from the same start line and at the same scale: compare the two lengths directly"),330,123,"center",15,640);
         // pencil — MEASUREMENT RULE: the pencil's TOTAL drawn length (eraser edge to
         // tip point) is exactly tv cm at SC px/cm, so the ruler revealed below measures
         // precisely what the eye saw: wood = total − eraser assembly (13px) − tip (22px)
@@ -7055,16 +7061,16 @@ function wireAuth(){
     const phone=document.getElementById("rgPhone").value.trim();
     const dob=document.getElementById("rgDob").value;
     const p1=document.getElementById("rgPass").value,p2=document.getElementById("rgPass2").value;
-    if(!nameOk(name,3))return authMsg("rgMsg",T("اكتب اسمك الكامل بالحروف (٣ أحرف على الأقل) — الأرقام أو الرموز لوحدها ما تنفعش اسمًا.","Please enter your full name in letters (at least 3 characters) — digits or symbols alone are not a name."));
-    if(!emailOk(email))return authMsg("rgMsg",T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));
+    fieldErr("rgNameErr",null);fieldErr("rgEmailErr",null);fieldErr("rgPhoneErr",null);fieldErr("rgDobErr",null);fieldErr("rgPassErr",null);
+    if(!nameOk(name,3)){fieldErr("rgNameErr",T("اكتب اسمك الكامل بالحروف (٣ أحرف على الأقل) — الأرقام أو الرموز لوحدها ما تنفعش اسمًا.","Please enter your full name in letters (at least 3 characters) — digits or symbols alone are not a name."));const ni=document.getElementById("rgName");if(ni)ni.focus();return;}
+    if(!emailOk(email)){fieldErr("rgEmailErr",T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));const ei=document.getElementById("rgEmail");if(ei)ei.focus();return;}
     if(isOwnerEmail(email))return authMsg("rgMsg",T("هذا البريد مخصص لحساب المالك — سجّل الدخول به من تبويب تسجيل الدخول.","This email belongs to the owner account — sign in with it from the Sign in tab."));
     if(ACCOUNTS[email])return authMsg("rgMsg",T("هذا البريد مسجّل بالفعل — سجّل الدخول بدلًا من ذلك.","This email is already registered — sign in instead."));
-    fieldErr("rgPhoneErr",null);fieldErr("rgDobErr",null);
     const phoneN=egPhoneNorm(phone);
     if(!phoneN){fieldErr("rgPhoneErr",T("اكتب رقم موبايل مصري صحيح يبدأ بـ +20 (مثال: +201012345678) — أو اكتبه بصيغته المحلية 01xxxxxxxxx.","Enter a valid Egyptian mobile number starting with +20 (e.g. +201012345678) — or write it in its local form 01xxxxxxxxx."));const pi=document.getElementById("rgPhone");if(pi)pi.focus();return;}
-    if(!dob)return authMsg("rgMsg",T("اختر تاريخ ميلادك.","Please choose your date of birth."));
+    if(!dob){fieldErr("rgDobErr",T("اختر تاريخ ميلادك.","Please choose your date of birth."));const di=document.getElementById("rgDob");if(di)di.focus();return;}
     if(!dobOk(dob)){fieldErr("rgDobErr",T("تاريخ الميلاد غير صحيح — لازم يكون عمرك بين ١٠ و١٠٠ سنة.","Invalid date of birth — your age must be between 10 and 100 years."));const di=document.getElementById("rgDob");if(di)di.focus();return;}
-    if(!pwPolicy(p1).ok)return authMsg("rgMsg",pwMissingMsg(p1));
+    if(!pwPolicy(p1).ok){fieldErr("rgPassErr",pwMissingMsg(p1));const pwi=document.getElementById("rgPass");if(pwi)pwi.focus();return;}
     if(p1!==p2)return authMsg("rgMsg",T("كلمتا السر غير متطابقتين.","The two passwords do not match."));
     const inviteEl=document.getElementById("rgInvite");
     const inviteCode=inviteEl?inviteEl.value.trim().toUpperCase():"";
@@ -7189,12 +7195,25 @@ function wireAuth(){
     });
   };
   wireMeter("rgPass","rgPwMeter","rgPwLab","rgPwReqs");wireMeter("owPass","owPwMeter","owPwLab","owPwReqs");wireMeter("rcPass","rcPwMeter","rcPwLab","rcPwReqs");
-  /* DOB picker can never offer a future date, and the inline phone/DOB errors
-     clear themselves as soon as the user starts fixing the field */
+  /* DOB picker can never offer a future date */
   const rgDobInp=document.getElementById("rgDob");
-  if(rgDobInp){const td=new Date();rgDobInp.max=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0");rgDobInp.addEventListener("input",()=>fieldErr("rgDobErr",null));}
-  const rgPhoneInp=document.getElementById("rgPhone");
-  if(rgPhoneInp)rgPhoneInp.addEventListener("input",()=>fieldErr("rgPhoneErr",null));
+  if(rgDobInp){const td=new Date();rgDobInp.max=td.getFullYear()+"-"+String(td.getMonth()+1).padStart(2,"0")+"-"+String(td.getDate()).padStart(2,"0");}
+  /* Inline field errors re-validate LIVE: once a field's error is showing,
+     every edit re-checks THAT field with the same rule the submit uses — the
+     error disappears the moment the value becomes valid, and its message
+     updates when the value is now wrong in a different way. A field whose
+     error is not showing is left alone while typing (no premature nagging). */
+  const liveReval=(inpId,errId,check)=>{
+    const inp=document.getElementById(inpId),err=document.getElementById(errId);
+    if(!inp||!err||inp.dataset.liveWired)return;inp.dataset.liveWired="1";
+    const run=()=>{if(!err.classList.contains("show"))return;fieldErr(errId,check(inp.value)||null);};
+    inp.addEventListener("input",run);inp.addEventListener("change",run);
+  };
+  liveReval("rgName","rgNameErr",v=>nameOk(v,3)?null:T("اكتب اسمك الكامل بالحروف (٣ أحرف على الأقل) — الأرقام أو الرموز لوحدها ما تنفعش اسمًا.","Please enter your full name in letters (at least 3 characters) — digits or symbols alone are not a name."));
+  liveReval("rgEmail","rgEmailErr",v=>emailOk(v.trim().toLowerCase())?null:T("صيغة البريد الإلكتروني غير صحيحة — تأكد من كتابته كاملًا (مثال: name@example.com).","The email format is not valid — check that it is written in full (e.g. name@example.com)."));
+  liveReval("rgPhone","rgPhoneErr",v=>egPhoneNorm(v.trim())?null:T("اكتب رقم موبايل مصري صحيح يبدأ بـ +20 (مثال: +201012345678) — أو اكتبه بصيغته المحلية 01xxxxxxxxx.","Enter a valid Egyptian mobile number starting with +20 (e.g. +201012345678) — or write it in its local form 01xxxxxxxxx."));
+  liveReval("rgDob","rgDobErr",v=>!v?T("اختر تاريخ ميلادك.","Please choose your date of birth."):(dobOk(v)?null:T("تاريخ الميلاد غير صحيح — لازم يكون عمرك بين ١٠ و١٠٠ سنة.","Invalid date of birth — your age must be between 10 and 100 years.")));
+  liveReval("rgPass","rgPassErr",v=>pwPolicy(v).ok?null:pwMissingMsg(v));
   const rgP2=document.getElementById("rgPass2"),rgMatch=document.getElementById("rgPwMatch");
   if(rgP2&&rgMatch&&!rgP2.dataset.matchWired){rgP2.dataset.matchWired="1";
     const chkMatch=()=>{const a=document.getElementById("rgPass").value,b=rgP2.value;
@@ -7956,18 +7975,35 @@ showScreen=function(id){_ssLate(id);if(id==="scr-settings")renderInvites();if(id
     inp.parentNode.insertBefore(wrap,inp);wrap.appendChild(inp);
     var b=document.createElement("button");
     b.type="button";b.className="pwtoggle";b.setAttribute("aria-pressed","false");
-    b.setAttribute("aria-label",T("إظهار كلمة السر","Show password"));
     b.innerHTML=EYE+EYEOFF;
+    /* ONE label setter for every toggle: aria-label AND title, always in the
+       ACTIVE language (through T), always matching the field's current state
+       (shown -> "Hide password", hidden -> "Show password"). */
+    var setLbl=function(){
+      var s=inp.type==="text"?T("إخفاء كلمة السر","Hide password"):T("إظهار كلمة السر","Show password");
+      b.setAttribute("aria-label",s);b.setAttribute("title",s);
+    };
+    b._pwSetLbl=setLbl;setLbl();
     b.addEventListener("click",function(){
       var show=inp.type==="password";
       inp.type=show?"text":"password";
       wrap.classList.toggle("on",show);
       b.setAttribute("aria-pressed",show?"true":"false");
-      b.setAttribute("aria-label",show?T("إخفاء كلمة السر","Hide password"):T("إظهار كلمة السر","Show password"));
+      setLbl();
       try{inp.focus({preventScroll:true});}catch(e){inp.focus();}
     });
     wrap.appendChild(b);
   });
+  /* A language switch re-renders the page's static strings through applyLang;
+     hook the toggles into that same pass so their labels follow the language
+     too — in both directions, on every form that has an eye button. */
+  window.refreshPwToggleLabels=function(){
+    document.querySelectorAll(".pwtoggle").forEach(function(b){if(b._pwSetLbl)b._pwSetLbl();});
+  };
+  if(typeof applyLang==="function"){
+    var _alPwT=applyLang;
+    applyLang=function(l){_alPwT(l);window.refreshPwToggleLabels();};
+  }
 })();
 
 /* ================= THEORY UPGRADE — worked examples for the thinnest theories =================
@@ -11847,6 +11883,10 @@ function qzRenderBuilder(body,c){
   if(addQ)addQ.onclick=()=>qzAddQuestion(body);
   const sv=document.getElementById("qzBSave");
   if(sv)sv.onclick=()=>qzSaveBuilder(body,c);
+  /* the builder's error line re-validates live once it is showing: fixing the
+     named problem clears it (or updates it to the next problem) with no Save */
+  const qzLiveReval=()=>{const e2=document.getElementById("qzBErr");if(e2&&e2.textContent)e2.textContent=qzBuilderValidate(body).err||"";};
+  if(!body.dataset.qzLiveWired){body.dataset.qzLiveWired="1";body.addEventListener("input",qzLiveReval);body.addEventListener("change",qzLiveReval);}
   qzAddQuestion(body);
 }
 function qzDurSuggest(body){
@@ -11884,12 +11924,14 @@ function qzAddQuestion(body){
   const del=qb.querySelector("[data-qdel]");if(del)del.onclick=()=>{qb.remove();qzRenumber(body);};
   qzRenumber(body);
 }
-async function qzSaveBuilder(body,c){
-  const err=document.getElementById("qzBErr");const say=t=>{if(err)err.textContent=t;};
+/* The quiz builder's ONE validation, shared by Save and by the live
+   re-validation listener: returns {err} with the first problem found, or the
+   collected {title,questions,dur,isFinal} when everything is valid. */
+function qzBuilderValidate(body){
   const title=((document.getElementById("qzBTitle")||{}).value||"").trim();
-  if(!title){say(T("اكتب عنوان الاختبار أولًا.","Write the quiz title first."));return;}
+  if(!title)return{err:T("اكتب عنوان الاختبار أولًا.","Write the quiz title first.")};
   const qblocks=[...body.querySelectorAll(".qzqb")];
-  if(!qblocks.length){say(T("أضف سؤالًا واحدًا على الأقل.","Add at least one question."));return;}
+  if(!qblocks.length)return{err:T("أضف سؤالًا واحدًا على الأقل.","Add at least one question.")};
   const questions=[];let bad=0;
   qblocks.forEach((qb,qi)=>{
     qb.classList.remove("qzbad");
@@ -11901,12 +11943,18 @@ async function qzSaveBuilder(body,c){
     if(!qtext||nonEmpty.length<2||marked<0||!rows[marked].t||dupC){bad=qi+1;qb.classList.add("qzbad");return;}
     questions.push({q:qtext,choices:nonEmpty.map(x=>x.t),correct:nonEmpty.findIndex(x=>x.ok)});
   });
-  if(bad){say(T("السؤال رقم ","Question ")+AR(bad)+T(" ناقص: لازم نص للسؤال، واختيارين مكتوبين على الأقل ومن غير تكرار، وإجابة صحيحة واحدة معلّمة."," is incomplete: it needs question text, at least two written choices with no duplicates, and exactly one marked correct answer."));return;}
+  if(bad)return{err:T("السؤال رقم ","Question ")+AR(bad)+T(" ناقص: لازم نص للسؤال، واختيارين مكتوبين على الأقل ومن غير تكرار، وإجابة صحيحة واحدة معلّمة."," is incomplete: it needs question text, at least two written choices with no duplicates, and exactly one marked correct answer.")};
   const durRaw=(((document.getElementById("qzBDur")||{}).value)||"").trim();
   let dur=null;
-  if(durRaw!==""){dur=parseInt(durRaw,10);if(!(dur>=1&&dur<=600)){say(T("مدة الاختبار لازم تكون رقمًا من ١ إلى ٦٠٠ دقيقة — أو امسحها لو مش عايز مدة.","The duration must be a number from 1 to 600 minutes — or clear it for no time limit."));return;}}
+  if(durRaw!==""){dur=parseInt(durRaw,10);if(!(dur>=1&&dur<=600))return{err:T("مدة الاختبار لازم تكون رقمًا من ١ إلى ٦٠٠ دقيقة — أو امسحها لو مش عايز مدة.","The duration must be a number from 1 to 600 minutes — or clear it for no time limit.")};}
   const isFinal=!!(document.getElementById("qzBFinal")||{}).checked;
-  const row={course_id:c.sid,teacher_id:SESSION.uid,title:title,is_final:isFinal,questions:questions,duration_min:dur};
+  return{title,questions,dur,isFinal};
+}
+async function qzSaveBuilder(body,c){
+  const err=document.getElementById("qzBErr");const say=t=>{if(err)err.textContent=t;};
+  const v=qzBuilderValidate(body);
+  if(v.err){say(v.err);return;}
+  const row={course_id:c.sid,teacher_id:SESSION.uid,title:v.title,is_final:v.isFinal,questions:v.questions,duration_min:v.dur};
   sbBusy("qzBSave",true);
   try{
     let r=await sbCall(SB.from("course_quizzes").insert(row));
