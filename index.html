@@ -1866,6 +1866,14 @@ $("#expSearch").addEventListener("input",e=>{expQuery=e.target.value.trim();rend
    the whole block, and leave later declarations (activeTimers, rankPeriod)
    uninitialized, breaking every navigation. escAttr is the local equivalent. */
 function escAttr(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+/* SEARCH NORMALIZATION (Arabic-aware): every search box matches on the
+   NORMALIZED form of BOTH the query and the indexed text — Arabic
+   diacritics/tashkeel (harakat, shadda, tanwin, superscript alef) and the
+   tatweel are stripped, and letter forms are folded (إ/أ/آ/ٱ→ا, ى→ي,
+   ة→ه, ؤ→و, ئ→ي), and a word-initial definite article «ال» is folded
+   away on both sides, so «المسرع» finds «مسرّعات الجسيمات» and «طفو»
+   keeps finding buoyancy — in Arabic and English (case-folded) alike. */
+function normSearch(s){return String(s==null?"":s).toLowerCase().replace(/[ً-ٰٟـ]/g,"").replace(/[إأآٱ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/(^|\s)ال(?=\S\S)/g,"$1");}
 let _expSig="";
 function renderExps(){
   const sig=LANG+"|"+CATALOG.filter(e=>expHidden(e.n)).map(e=>e.n).join(",");
@@ -1873,7 +1881,7 @@ function renderExps(){
   if(sig!==_expSig){
     _expSig=sig;
     listEl.innerHTML=CATALOG.map(e=>`
-    <div class="card expcard" data-n="${e.n}" data-lvl="${e.lvl}" data-q="${escAttr((e.t+" "+e.lab+" "+(EN_T[e.n]||"")).toLowerCase())}">
+    <div class="card expcard" data-n="${e.n}" data-lvl="${e.lvl}" data-q="${escAttr(normSearch(e.t+" "+e.lab+" "+(EN_T[e.n]||"")))}">
       <div class="expnum">${AR(e.n)}</div>
       <div class="grow">
         <div class="row between"><h3>${LANG==="en"?(EN_T[e.n]||e.t):e.t}</h3><span class="doneSlot"></span></div>
@@ -1884,7 +1892,7 @@ function renderExps(){
     </div>`).join("")+`<div class="card" id="expEmpty" style="display:none">${T("مفيش تجارب مطابقة لبحثك.","No experiments match your search.")}</div>`;
     $$("#expList [data-open]").forEach(b=>b.onclick=()=>openExp(+b.dataset.open));
   }
-  const q=expQuery.toLowerCase();let shown=0;
+  const q=normSearch(expQuery);let shown=0;
   $$("#expList .expcard").forEach(card=>{
     const ok=(expFilter==="all"||+card.dataset.lvl===+expFilter)&&(!q||card.dataset.q.includes(q));
     card.style.display=ok?"":"none";if(ok)shown++;
@@ -1920,11 +1928,11 @@ function renderTheory(q){
     _thSig=sig;
     listEl.innerHTML=theoryHTML(CATALOG)+`<div class="card" id="thEmpty" style="display:none">${T("مفيش مواضيع مطابقة.","No matching topics.")}</div>`;
     $$("#theoryList [data-print]").forEach(b=>b.onclick=()=>openPrint(CATALOG.filter(e=>e.n===+b.dataset.print)));
-    $$("#theoryList details.th").forEach((d,i)=>{d.dataset.q=(CATALOG[i].t+" "+CATALOG[i].theory.join(" ")).toLowerCase();});
+    $$("#theoryList details.th").forEach((d,i)=>{d.dataset.q=normSearch(CATALOG[i].t+" "+CATALOG[i].theory.join(" "));});
   }
   let shown=0;
   $$("#theoryList details.th").forEach(d=>{
-    const ok=!q||(d.dataset.q||"").includes(q.toLowerCase());
+    const ok=!q||(d.dataset.q||"").includes(normSearch(q));
     d.style.display=ok?"":"none";if(ok)shown++;
   });
   const em=document.getElementById("thEmpty");if(em)em.style.display=shown?"none":"";
@@ -2617,7 +2625,7 @@ const MARKER_MODELS={
 };
 /* ---- MARKER engine: 3 rounds, fresh randomized parameters each round ---- */
 function startMarker(exp){
-  const MODEL=(typeof MARKER_MODELS!=="undefined")?MARKER_MODELS[exp.n]:null;
+  const MODEL=((typeof MARKER_MODELS!=="undefined")?MARKER_MODELS[exp.n]:null)||((typeof CONV_LAB_MODELS!=="undefined")?CONV_LAB_MODELS[exp.n]:null)||null;
   const bias={16:rnd(.55,.72),36:rnd(.06,.3),50:rnd(.5,.7),6:rnd(.25,.9),24:rnd(.45,.7),57:rnd(.2,.6),18:rnd(.55,.78),49:rnd(.42,.54),55:rnd(.44,.53),59:rnd(.8,.9)};
   /* The anchor is re-drawn on EVERY start (bias band ± fresh jitter), so even
      round 1 of a retry has genuinely new data — not just rounds 2–3. */
@@ -2671,7 +2679,7 @@ function startMarker(exp){
             else comboStreak=0;
           }
           scores.push(sc);
-          const whyTxt=M?M.why(guessVal):"";
+          const whyTxt=M?M.why(guessVal):((typeof CONV_WHY!=="undefined"&&CONV_WHY[exp.n])?CONV_WHY[exp.n](guessVal,trueVal):"");
           const whyP=whyTxt?`<p style="margin-top:6px"><b>${LANG==="en"?"Why?":"ليه؟"}</b> ${whyTxt}</p>`:"";
           log.push("• "+(LANG==="en"?("Round "+AR(round)+": your prediction "+fmtVal(guessVal,exp.unit)+" — the truth "+fmtVal(trueVal,exp.unit)+" ("+AR(sc)+"/100)"):("الجولة "+AR(round)+": توقعك "+fmtVal(guessVal,exp.unit)+" — الحقيقة "+fmtVal(trueVal,exp.unit)+" ("+AR(sc)+"/100)"))+(whyTxt?("<br>↳ "+(LANG==="en"?"Why? ":"ليه؟ ")+whyTxt):""));
           if(round<ROUNDS){
@@ -3546,7 +3554,8 @@ function startGeiger(exp){
           log.push("• "+(LANG==="en"?("Measurement "+AR(idx+1)+" ("+(cond.k==="base"?"original setup":"new condition")+"): the true count was <b>"+AR(trueCount)+" counts</b> — your prediction "+AR(guess)+" ("+AR(sc)+"/100)"):("القياس "+AR(idx+1)+" ("+(cond.k==="base"?"الوضع الأصلي":"الظرف الجديد")+"): العدّ الحقيقي <b>"+AR(trueCount)+" عدّة</b> — توقعك "+AR(guess)+" ("+AR(sc)+"/100)")));
           if(idx<1){
             const fb=$("#roundFb");fb.className="feedback show "+(sc>=60?"good":"bad");
-            fb.innerHTML=LANG==="en"?`<b>Measurement result: ${AR(sc)} / 100</b> — the counter recorded <b>${AR(trueCount)} counts</b>. The next measurement: ${second.labelEn||second.label} — think what it will do to the rate before you guess.<button class="btn primary block" id="nxBtn" style="margin-top:10px">Second measurement</button>`:`<b>نتيجة القياس: ${AR(sc)} / 100</b> — العدّاد سجّل <b>${AR(trueCount)} عدّة</b>. القياس الجاي: ${second.label} — فكّر هيغيّر المعدل لإيه قبل ما تخمّن.<button class="btn primary block" id="nxBtn" style="margin-top:10px">القياس التاني</button>`;
+            const why1=LANG==="en"?`<p style="margin-top:6px"><b>Why?</b> Natural background alone would have made only about 3 counts in these 10 seconds, so almost all of the <b>${AR(trueCount)} counts</b> came from the sample itself — its activity, not the room, sets the number. And decay is random by nature: repeating this exact count would give a close but not identical number, with a natural fluctuation of about √${AR(trueCount)} ≈ ${AR(Math.round(Math.sqrt(trueCount)))} counts (a Poisson distribution). Your prediction was ${AR(guess)} counts.</p>`:`<p style="margin-top:6px"><b>ليه؟</b> إشعاع الخلفية الطبيعي لوحده كان هيعمل حوالي ٣ عدّات بس في الـ١٠ ثوانٍ دول، فتقريبًا كل العدّات اللي اتسجّلت (<b>${AR(trueCount)} عدّة</b>) جت من العينة نفسها — نشاطها هي اللي بيحدد الرقم، مش الغرفة. والاضمحلال عشوائي بطبيعته: لو عيدنا العدّ ده بالظبط هنلاقي رقمًا قريبًا لكن مش مطابقًا، بتذبذب طبيعي حوالين √${AR(trueCount)} ≈ ${AR(Math.round(Math.sqrt(trueCount)))} عدّة (توزيع بواسون). توقعك كان ${AR(guess)} عدّة.</p>`;
+            fb.innerHTML=LANG==="en"?`<b>Measurement result: ${AR(sc)} / 100</b> — the counter recorded <b>${AR(trueCount)} counts</b>.${why1} The next measurement: ${second.labelEn||second.label} — think what it will do to the rate before you guess.<button class="btn primary block" id="nxBtn" style="margin-top:10px">Second measurement</button>`:`<b>نتيجة القياس: ${AR(sc)} / 100</b> — العدّاد سجّل <b>${AR(trueCount)} عدّة</b>.${why1} القياس الجاي: ${second.label} — فكّر هيغيّر المعدل لإيه قبل ما تخمّن.<button class="btn primary block" id="nxBtn" style="margin-top:10px">القياس التاني</button>`;
             $("#nxBtn").onclick=()=>{idx++;renderRound();};
             fb.scrollIntoView({behavior:"smooth",block:"center"});
           }else{
@@ -5025,7 +5034,8 @@ theoryHTML=function(list){
     <button class="btn sm" data-print="${e.n}">${T("تنزيل PDF","Download PDF")}</button></div></details>`).join("");
 };
 renderTheory=function(q){
-  const list=CATALOG.filter(e=>!q||e.t.includes(q)||e.theory.some(t=>t.includes(q))||(THEORY[e.n]&&(THEORY[e.n].s.includes(q)||THEORY[e.n].fp.includes(q)))||(EN_T[e.n]||"").toLowerCase().includes((q||"").toLowerCase()));
+  const nq=normSearch(q);
+  const list=CATALOG.filter(e=>!q||normSearch(e.t).includes(nq)||e.theory.some(t=>normSearch(t).includes(nq))||(THEORY[e.n]&&(normSearch(THEORY[e.n].s).includes(nq)||normSearch(THEORY[e.n].fp).includes(nq)))||normSearch(EN_T[e.n]||"").includes(nq));
   $("#theoryList").innerHTML=list.length?theoryHTML(list):'<div class="card">'+T("مفيش مواضيع مطابقة.","No matching topics.")+'</div>';
   $$("#theoryList [data-print]").forEach(b=>b.onclick=()=>openPrint(CATALOG.filter(e=>e.n===+b.dataset.print)));
 };
@@ -5863,6 +5873,69 @@ CATALOG.forEach(e=>{
 });
 if(typeof TYPE_NAME!=="undefined"){TYPE_NAME.marker="توقّع بسحب علامة — ٣ جولات";}
 if(typeof TYPE_EN!=="undefined"){TYPE_EN.marker="Drag-the-marker prediction — 3 rounds";}
+
+/* ================= CONVERTED LABS: REAL MODELS + «ليه؟» FOR EVERY ROUND =====
+   The 24 converted labs used to reveal a truth and a score with NO physical
+   explanation, and #56's anchor (b = .06) made its "truth" a 6% residual
+   field inside a superconductor in the Meissner state — flatly contradicting
+   its own theory (B_inside = 0). Two root fixes:
+   • CONV_LAB_MODELS gives #56 a real per-round model (below): every round
+     sits in the Meissner state with the regime NAMED in the task and the
+     givens (material, Tc, the actual temperature below Tc), and the
+     estimation target varies across rounds in physically consistent ways —
+     the field inside as % of the field outside, or the resistance as % of
+     its normal value — whose truths are the sharp limits the theory teaches
+     (0 and 0). Never a nonzero residual field in the Meissner state.
+   • CONV_WHY gives every other converted lab a why(guess, truth) computed
+     from its round's own numbers — the governing law worked on the cue's
+     givens, the round's truth, and where the guess went wrong — exactly
+     like the native models' whys, in Arabic and English. */
+const CONV_LAB_MODELS={
+56(){const M=pk([["نيوبيوم","Niobium",9.2,4.2,"هيليوم سائل","liquid helium"],["رصاص","Lead",7.2,4.2,"هيليوم سائل","liquid helium"],["YBCO (خزف فائق التوصيل)","YBCO (a ceramic superconductor)",92,77,"نيتروجين سائل","liquid nitrogen"]]);
+  const B=pk([0.2,0.5,0.8,1]),Rn=pk([2,4,5,10]);
+  if(Math.random()<.5){
+    return {task:T(`قطعة من ${M[0]} اتبرّدت في ${M[4]} لحد ${M[3]} كلفن — يعني تحت حرارتها الحرجة Tc — وهي جوه مجال مغناطيسي خارجي شدته ${NV(B,1)} تسلا. خمّن: المجال المغناطيسي جوه القطعة هيبقى كام في المية من المجال اللي بره؟`,`A piece of ${M[1]} was cooled in ${M[5]} down to ${M[3]} K — that is, below its critical temperature Tc — while inside an external magnetic field of ${NV(B,1)} tesla. Predict: the magnetic field inside the piece will be what percentage of the field outside?`),
+     givens:[["المادة","Material",[M[0],M[1]]],["درجة الحرارة الحرجة Tc","Critical temperature Tc",M[2]+" K"],["حرارة القطعة دلوقتي","The piece's temperature now",[M[3]+" K — أقل من Tc",M[3]+" K — below Tc"]],["المجال المغناطيسي الخارجي","The external magnetic field",NV(B,1)+" T"]],
+     trueVal:0,
+     why(g){return T(`الحرارة ${M[3]} K أقل من Tc = ${M[2]} K، فالقطعة في حالة الموصلية الفائقة، وتأثير مايسنر بيطرد المجال من داخلها طردًا كاملًا: تيارات سطحية بتولّد مجالًا معاكسًا يلغي المجال الداخلي بالظبط، فالمجال جوه = <b>٠٪</b> من المجال اللي بره — مهما كانت شدته (${NV(B,1)} تسلا هنا). مش «أقل شوية»: صفر تمامًا، وهو ده اللي بيشيل المغناطيس الطافي. توقعك كان ${NV(g)}٪.`,`The temperature ${M[3]} K is below Tc = ${M[2]} K, so the piece is in the superconducting state, and the Meissner effect expels the field from its interior completely: surface currents generate an opposing field that cancels the internal field exactly, so the field inside = <b>0%</b> of the field outside — whatever its strength (${NV(B,1)} T here). Not "a bit less": exactly zero, and that is what carries the floating magnet. Your prediction was ${NV(g)}%.`);}};
+  }
+  return {task:T(`سلك من ${M[0]} اتبرّد في ${M[4]} لحد ${M[3]} كلفن — تحت حرارته الحرجة Tc — وبيمرّ فيه تيار مستمر. خمّن: مقاومته الكهربائية دلوقتي كام في المية من مقاومته العادية (قيمتها فوق Tc على طول)؟`,`A wire of ${M[1]} was cooled in ${M[5]} down to ${M[3]} K — below its critical temperature Tc — and carries a steady current. Predict: its electrical resistance now is what percentage of its normal resistance (its value just above Tc)?`),
+   givens:[["المادة","Material",[M[0],M[1]]],["درجة الحرارة الحرجة Tc","Critical temperature Tc",M[2]+" K"],["حرارة السلك دلوقتي","The wire's temperature now",[M[3]+" K — أقل من Tc",M[3]+" K — below Tc"]],["مقاومته العادية فوق Tc","Its normal resistance above Tc",Rn+" Ω"]],
+   trueVal:0,
+   why(g){return T(`الحرارة ${M[3]} K أقل من Tc = ${M[2]} K: تحت الحرارة الحرجة بتنهار المقاومة فجأة إلى <b>الصفر تمامًا</b> — أزواج كوبر بتتحرك من غير أي تشتّت، فالمقاومة = ٠٪ من قيمتها العادية (${Rn} Ω)، والتيار بيتلف في السلك لسنوات من غير مصدر. توقعك كان ${NV(g)}٪.`,`The temperature ${M[3]} K is below Tc = ${M[2]} K: below the critical temperature the resistance collapses suddenly to <b>exactly zero</b> — Cooper pairs move with no scattering at all, so the resistance = 0% of its normal value (${Rn} Ω), and the current circulates in the wire for years with no source. Your prediction was ${NV(g)}%.`);}};
+}
+};
+function convDir(g,tv){
+  const d=Math.abs(g-tv),tol=Math.max(Math.abs(tv)*.15,.02);
+  if(d<=tol)return T("توقعك قريب جدًا من الحقيقة — حدسك مع القانون ده مظبوط.","Your prediction was very close to the truth — your intuition with this law is sound.");
+  return g>tv?T("توقعك أكبر من حقيقة الجولة دي — راجع مقدار القانون نفسه قبل الحماس.","Your prediction was higher than this round's truth — check the law's own size before enthusiasm."):T("توقعك أصغر من حقيقة الجولة دي — القانون هنا بيدي أكتر مما الحدس الحذر بيقول.","Your prediction was lower than this round's truth — the law here gives more than cautious intuition suggests.");
+}
+const CONV_WHY={
+3(g,tv){return T(`من Q = mcΔT: نفس الطاقة Q ونفس الكتلة m للمادتين، فالارتفاع في الحرارة ΔT بيتناسب عكسيًا مع الحرارة النوعية c. المية ارتفعت ١٠° بس لأن c بتاعتها ضخمة، والحديد c بتاعته ≈ ١/٩ من المية، فبيرتفع ≈ ٩ أضعاف الارتفاع ده — حوالين ٩٠°. الحقيقة في الجولة دي ${NV(tv,1)}° وتوقعك ${NV(g,1)}°.`,`From Q = mcΔT: the same energy Q and the same mass m for both materials, so the temperature rise ΔT is inversely proportional to the specific heat c. The water rose by only 10° because its c is huge, and iron's c is ≈ 1/9 of water's, so it rises ≈ 9 times as much — around 90°. This round's truth is ${NV(tv,1)}° and your prediction was ${NV(g,1)}°.`)+" "+convDir(g,tv);},
+7(g,tv){return T(`التوتر السطحي بيشدّ سطح المية زي غشاء مرن، فالقطرات بتتكوّم في قبّة فوق العملة بدل ما تفيض على طول — وعملة كبيرة بتستحمل حوالين ٣٥ قطرة قبل الفيضان. الحقيقة في الجولة دي ${NV(tv,1)} قطرة وتوقعك ${NV(g,1)}.`,`Surface tension pulls the water's surface like an elastic membrane, so the drops mound into a dome above the coin instead of overflowing at once — a large coin holds around 35 drops before the overflow. This round's truth is ${NV(tv,1)} drops and your prediction was ${NV(g,1)}.`)+" "+convDir(g,tv);},
+10(g,tv){return T(`قانون بويل: عند ثبات الحرارة حاصل الضرب PV ثابت. الحجم بقى النص بالظبط، فالضغط لازم يتضاعف بالظبط: من ١ جو إلى ٢ جو. الحقيقة في الجولة دي ${NV(tv)} جو وتوقعك ${NV(g,1)} جو.`,`Boyle's law: at constant temperature the product PV is constant. The volume became exactly half, so the pressure must exactly double: from 1 atm to 2 atm. This round's truth is ${NV(tv)} atm and your prediction was ${NV(g,1)} atm.`)+" "+convDir(g,tv);},
+13(g,tv){return T(`التيار بيولّد مجالًا مغناطيسيًا دائريًا حوالين السلك (تجربة أورستد)، والإبرة بتلفّ لحد ما تتوازى مع محصّلة مجال الأرض ومجال السلك معًا. مع تيار قوي وسلك قريب، مجال السلك بيبقى قريب من مجال الأرض في القوة، فالانحراف بيبقى كبير — حوالين ٤٥°. الحقيقة في الجولة دي ${NV(tv,1)}° وتوقعك ${NV(g,1)}°.`,`The current generates a circular magnetic field around the wire (Oersted's experiment), and the needle turns until it aligns with the resultant of the Earth's field and the wire's field together. With a strong current and a close wire, the wire's field rivals the Earth's in strength, so the deflection is large — around 45°. This round's truth is ${NV(tv,1)}° and your prediction was ${NV(g,1)}°.`)+" "+convDir(g,tv);},
+14(g,tv){return T(`قوة المغناطيس الكهربائي بتتناسب مع حاصل ضرب عدد اللفات في التيار. التيار ثابت واللفات اتضاعفت من ١٠٠ إلى ٢٠٠، فالقوة تتضاعف: اللي كان بيشيل ٦ مشابك بقى يشيل ≈ ١٢ مشبكًا. الحقيقة في الجولة دي ${NV(tv,1)} مشبك وتوقعك ${NV(g,1)}.`,`An electromagnet's strength is proportional to the product of its turns and its current. The current is fixed and the turns doubled from 100 to 200, so the force doubles: what lifted 6 clips now lifts ≈ 12 clips. This round's truth is ${NV(tv,1)} clips and your prediction was ${NV(g,1)}.`)+" "+convDir(g,tv);},
+15(g,tv){return T(`بقانون فاراداي: التيار المستحثّ بيتناسب مع سرعة تغيّر الفيض المغناطيسي في الملف. مغناطيس بيتحرك بسرعة رايح جاي يعني فيضًا بيتغيّر بأقصى سرعة، فالانحراف بيقرب من أقصى التدريج — حوالين ٨٠٪. الحقيقة في الجولة دي ${NV(tv,1)}٪ وتوقعك ${NV(g,1)}٪.`,`By Faraday's law: the induced current is proportional to the rate of change of the magnetic flux through the coil. A magnet moving quickly back and forth means flux changing at its fastest, so the deflection nears the top of the scale — around 80%. This round's truth is ${NV(tv,1)}% and your prediction was ${NV(g,1)}%.`)+" "+convDir(g,tv);},
+17(g,tv){return T(`قانون كيرشوف للعقدة: التيار الداخل للعقدة = التيار الخارج منها بالظبط (حفظ الشحنة). الداخل ٥ أمبير، والفرع الأول خد ٢، فالفرع التاني = ٥ − ٢ = ٣ أمبير. الحقيقة في الجولة دي ${NV(tv,1)} أمبير وتوقعك ${NV(g,1)} أمبير.`,`Kirchhoff's junction rule: the current entering a junction equals exactly the current leaving it (conservation of charge). In came 5 A, the first branch took 2, so the second branch = 5 − 2 = 3 A. This round's truth is ${NV(tv,1)} A and your prediction was ${NV(g,1)} A.`)+" "+convDir(g,tv);},
+19(g,tv){return T(`الطاقة المستهلكة = القدرة × الزمن: السخّان ٢٠٠٠ واط اشتغل ساعة كاملة، فالطاقة = ٢٠٠٠ × ١ = ٢٠٠٠ واط·ساعة (٢ وحدة كهربا). الحقيقة في الجولة دي ${NV(tv)} واط·ساعة وتوقعك ${NV(g)}.`,`Energy used = power × time: the 2000-watt heater ran for one full hour, so the energy = 2000 × 1 = 2000 watt-hours (2 electricity units). This round's truth is ${NV(tv)} Wh and your prediction was ${NV(g)}.`)+" "+convDir(g,tv);},
+20(g,tv){const dir=g>=0?T("توقعك فضل على الجهة الموجبة — والعكس التام معناه إن العلامة كان لازم تعبر الصفر للجهة التانية.","Your prediction stayed on the positive side — a complete reversal means the mark had to cross zero to the other side."):Math.abs(g-tv)<=30?T("توقعك قريب — حطّيت العلامة على جهة العكس وبقوة قريبة من الأصلية.","Your prediction was close — you placed the mark on the reversed side at close to the original strength."):T("الاتجاه صح (العكس) لكن القوة اللي قدّرتها بعيدة عن قوة الدوران الأصلية.","The direction is right (reversed) but the strength you judged is far from the original rotation's strength.");
+  return T(`اتجاه القوة على جانبي الملف بيتبع اتجاه التيار (قاعدة فليمنج لليد اليسرى). عكس أقطاب البطارية بيعكس التيار، فبتتعكس القوة على كل جانب، وبيلفّ الملف في الاتجاه المعاكس بنفس القوة تقريبًا — عشان كده الحقيقة على الجهة السالبة من المحور. الحقيقة في الجولة دي ${NV(tv,1)}٪ وتوقعك ${NV(g,1)}٪.`,`The direction of the force on the coil's sides follows the current's direction (Fleming's left-hand rule). Reversing the battery terminals reverses the current, so the force on each side reverses, and the coil spins the opposite way at nearly the same strength — which is why the truth sits on the negative side of the axis. This round's truth is ${NV(tv,1)}% and your prediction was ${NV(g,1)}%.`)+" "+dir;},
+23(g,tv){return T(`الاحتكاك بيحوّل طاقة حركة الصندوق لحرارة، ومسافة التوقف = v² ÷ (2μg). على السجادة الخشنة معامل الاحتكاك μ كبير، فالمقام كبير والمسافة قصيرة — عشرات السنتيمترات بس بنفس الدفعة اللي كانت هتمشّيه أمتارًا على التلج. الحقيقة في الجولة دي ${NV(tv,1)} سم وتوقعك ${NV(g,1)} سم.`,`Friction converts the box's kinetic energy into heat, and the stopping distance = v² ÷ (2μg). On the rough carpet the friction coefficient μ is large, so the denominator is large and the distance short — only tens of centimetres with the same push that would send it metres on ice. This round's truth is ${NV(tv,1)} cm and your prediction was ${NV(g,1)} cm.`)+" "+convDir(g,tv);},
+26(g,tv){return T(`الممانعة الحثية XL = 2πfL بتتناسب طرديًا مع التردد. التردد اتضاعف للضعف، فالممانعة تتضاعف بنفس النسبة: من ٥٠ أوم إلى ١٠٠ أوم. الحقيقة في الجولة دي ${NV(tv,1)} أوم وتوقعك ${NV(g,1)} أوم.`,`The inductive reactance XL = 2πfL is directly proportional to the frequency. The frequency doubled, so the reactance doubles in the same ratio: from 50 Ω to 100 Ω. This round's truth is ${NV(tv,1)} Ω and your prediction was ${NV(g,1)} Ω.`)+" "+convDir(g,tv);},
+28(g,tv){return T(`في المحوّل نسبة جهد الخرج لجهد الدخل = نسبة لفات الثانوي للابتدائي: الخرج = ٢٢٠ × (٥٠٠ ÷ ١٠٠) = ٢٢٠ × ٥ = ١١٠٠ فولت. الحقيقة في الجولة دي ${NV(tv)} فولت وتوقعك ${NV(g)} فولت.`,`In a transformer, the ratio of output to input voltage equals the ratio of secondary to primary turns: the output = 220 × (500 ÷ 100) = 220 × 5 = 1100 volts. This round's truth is ${NV(tv)} V and your prediction was ${NV(g)} V.`)+" "+convDir(g,tv);},
+29(g,tv){return T(`الدايود السيليكوني مش بيوصّل توصيلًا ملحوظًا إلا بعد ما الجهد الأمامي يعدّي حاجز الوصلة p-n — جهد العتبة ≈ ٠٫٧ فولت للسيليكون (والجرمانيوم ≈ ٠٫٣). تحت العتبة التيار ضئيل جدًا، وفوقها بيطير. الحقيقة في الجولة دي ${NV(tv)} فولت وتوقعك ${NV(g)} فولت.`,`A silicon diode does not conduct appreciably until the forward voltage crosses the p-n junction barrier — the threshold voltage ≈ 0.7 V for silicon (germanium ≈ 0.3). Below the threshold the current is negligible; above it, it soars. This round's truth is ${NV(tv)} V and your prediction was ${NV(g)} V.`)+" "+convDir(g,tv);},
+35(g,tv){return T(`أول هبوط في التيار بيحصل لما طاقة الإلكترونات توصل لأول مستوى إثارة في ذرة الزئبق: ٤٫٩ إلكترون فولت — يعني عند جهد ٤٫٩ فولت. قبلها التصادمات مرنة والتيار بيزيد عادي، وعندها الإلكترون بيسلّم طاقته كلها لذرة وبيبدأ من الصفر تقريبًا. الحقيقة في الجولة دي ${NV(tv)} فولت وتوقعك ${NV(g)} فولت.`,`The first drop in current happens when the electrons' energy reaches the mercury atom's first excitation level: 4.9 electron-volts — that is, at a voltage of 4.9 V. Before it, collisions are elastic and the current rises normally; at it, an electron hands all its energy to an atom and starts again from nearly zero. This round's truth is ${NV(tv)} V and your prediction was ${NV(g)} V.`)+" "+convDir(g,tv);},
+37(g,tv){return T(`خط H-alpha هو انتقال الإلكترون في الهيدروجين من المستوى التالت للتاني (سلسلة بالمر). فرق الطاقة بين المستويين = ١٣٫٦ × (١/٤ − ١/٩) ≈ ١٫٨٩ إلكترون فولت، والفوتون اللي طاقته كده طوله الموجي ٦٥٦ نانومتر — في قلب الأحمر المرئي. الحقيقة في الجولة دي ${NV(tv)} نانومتر وتوقعك ${NV(g)} نانومتر.`,`The H-alpha line is the electron transition in hydrogen from the third level to the second (the Balmer series). The energy difference between the levels = 13.6 × (1/4 − 1/9) ≈ 1.89 electron-volts, and a photon of that energy has a wavelength of 656 nm — in the heart of visible red. This round's truth is ${NV(tv)} nm and your prediction was ${NV(g)} nm.`)+" "+convDir(g,tv);},
+38(g,tv){return T(`في المنطقة النشطة للترانزستور: تيار المجمّع = β × تيار القاعدة = ١٠٠ × ٠٫٢ مللي أمبير = ٢٠ مللي أمبير — تيار صغير في القاعدة بيتحكم في تيار أكبر منه مية مرة. الحقيقة في الجولة دي ${NV(tv,1)} مللي أمبير وتوقعك ${NV(g,1)} مللي أمبير.`,`In the transistor's active region: collector current = β × base current = 100 × 0.2 mA = 20 mA — a small base current controls a current a hundred times larger. This round's truth is ${NV(tv,1)} mA and your prediction was ${NV(g,1)} mA.`)+" "+convDir(g,tv);},
+40(g,tv){return T(`قانون مالوس: الشدة النافذة = I₀ × cos²θ. عند θ = ٤٥°: cos²٤٥° = ٠٫٥ بالظبط، فبينفذ نص الشدة: ٥٠٪ من الأصلية. الحقيقة في الجولة دي ${NV(tv,1)}٪ وتوقعك ${NV(g,1)}٪.`,`Malus's law: the transmitted intensity = I₀ × cos²θ. At θ = 45°: cos²45° = 0.5 exactly, so half the intensity gets through: 50% of the original. This round's truth is ${NV(tv,1)}% and your prediction was ${NV(g,1)}%.`)+" "+convDir(g,tv);},
+43(g,tv){return T(`منحنى طاقة الربط لكل نيوكليون بيطلع مع الكتلة لحد ما يوصل لقمته عند الحديد-56: ≈ ٨٫٨ MeV لكل نيوكليون — أعلى قيمة في الجدول كله، فهي أكتر نواة مستقرة في الكون، والاندماج بيقف عندها والانشطار بيقف عندها. الحقيقة في الجولة دي ${NV(tv)} MeV وتوقعك ${NV(g)} MeV.`,`The binding-energy-per-nucleon curve climbs with mass until it peaks at iron-56: ≈ 8.8 MeV per nucleon — the highest value in the whole table, making it the most stable nucleus in the universe; fusion stops there and fission stops there. This round's truth is ${NV(tv)} MeV and your prediction was ${NV(g)} MeV.`)+" "+convDir(g,tv);},
+44(g,tv){return T(`أشعة جاما شديدة الاختراق: لوح الرصاص الرفيع بيوهنها جزئيًا بس — سمك النص (اللي بيقطع شدتها للنص) في الرصاص أكبر من سُمك اللوح ده بكتير — فأغلب الإشعاع بيعدّي، حوالين ٧٠٪. الحقيقة في الجولة دي ${NV(tv,1)}٪ وتوقعك ${NV(g,1)}٪.`,`Gamma rays are highly penetrating: a thin lead plate only partly attenuates them — the half-value layer in lead (which cuts their intensity in half) is much thicker than this plate — so most of the radiation passes, around 70%. This round's truth is ${NV(tv,1)}% and your prediction was ${NV(g,1)}%.`)+" "+convDir(g,tv);},
+47(g,tv){return T(`قطر بقعة الليزر بعد مسافة L ≈ الانحراف الزاوي × المسافة. انحراف الليزر النموذجي ≈ ١ مللي راديان (٠٫٠٠١)، فبعد ١٠٠ متر: ٠٫٠٠١ × ١٠٠ م = ٠٫١ م = ١٠ سم — الشعاع شبه متوازٍ (تماسك مكاني عالٍ) فبينتشر ببطء شديد جدًا مقارنة بأي مصباح. الحقيقة في الجولة دي ${NV(tv,1)} سم وتوقعك ${NV(g,1)} سم.`,`A laser spot's diameter after a distance L ≈ the angular divergence × the distance. A typical laser's divergence ≈ 1 milliradian (0.001), so after 100 m: 0.001 × 100 m = 0.1 m = 10 cm — the beam is almost parallel (high spatial coherence), so it spreads extremely slowly compared with any lamp. This round's truth is ${NV(tv,1)} cm and your prediction was ${NV(g,1)} cm.`)+" "+convDir(g,tv);},
+48(g,tv){return T(`الزاوية الحرجة عند سطح القلب والغلاف: sin θc = n₂ ÷ n₁ = ١٫٤٦ ÷ ١٫٤٨ ≈ ٠٫٩٨٦، فـθc ≈ ٨٠° — قريبة جدًا من ٨٠ لأن معاملَي الانكسار قريبين من بعض، وأي شعاع يضرب السطح بزاوية أكبر منها بينعكس انعكاسًا كليًا وبيفضل محبوسًا في الليف. الحقيقة في الجولة دي ${NV(tv,1)}° وتوقعك ${NV(g,1)}°.`,`The critical angle at the core–cladding boundary: sin θc = n₂ ÷ n₁ = 1.46 ÷ 1.48 ≈ 0.986, so θc ≈ 80° — very close to 80 because the two refractive indices are close to each other, and any ray striking the boundary at a larger angle reflects totally and stays trapped in the fibre. This round's truth is ${NV(tv,1)}° and your prediction was ${NV(g,1)}°.`)+" "+convDir(g,tv);},
+58(g,tv){return T(`جسيمات الذهب النانوية (٢٠ نانومتر) عندها رنين بلازمون سطحي بيمتصّ الأخضر بقوة حوالين ٥٢٠ نانومتر. ولأن الأخضر هو اللي بيتمتصّ من الضوء الأبيض، المحلول بيبان بلونه المكمّل: الأحمر الياقوتي. الحقيقة في الجولة دي ${NV(tv)} نانومتر وتوقعك ${NV(g)} نانومتر.`,`Gold nanoparticles (20 nm) have a surface plasmon resonance that absorbs green strongly around 520 nm. And because green is what is absorbed from white light, the solution appears in its complementary colour: ruby red. This round's truth is ${NV(tv)} nm and your prediction was ${NV(g)} nm.`)+" "+convDir(g,tv);},
+60(g,tv){return T(`لزوج متشابك تشابكًا أقصى، الترابط بين نتيجتَي القياس = cos² للزاوية بين اتجاهَي القياس. هنا الاتجاهان متطابقان (الزاوية صفر): cos²0° = ١ — النتيجتان بتتفقان في كل مرة تقريبًا (عمليًا أقل من ١٠٠٪ بحاجة بسيطة بسبب عيوب الأجهزة). الحقيقة في الجولة دي ${NV(tv,1)}٪ وتوقعك ${NV(g,1)}٪.`,`For a maximally entangled pair, the correlation between the two measurement results = cos² of the angle between the two measurement directions. Here the directions are identical (the angle is zero): cos²0° = 1 — the results agree essentially every time (in practice a little under 100% because of apparatus imperfections). This round's truth is ${NV(tv,1)}% and your prediction was ${NV(g,1)}%.`)+" "+convDir(g,tv);}
+};
 
 /* ---- fringe & decay: the follow-up question leaves the lab (it lives in the Test now).
         The lab score is the position prediction alone. ---- */
@@ -6928,7 +7001,7 @@ S.lastExp=p.lastExp?p.lastExp:null;S.dailyDay=(typeof p.dailyDay==="number")?p.d
   setTimeout(()=>{try{checkTierUps();}catch(e){}},0);if(typeof expXpMap==="object"&&expXpMap){for(const k in expXpMap)delete expXpMap[k];if(p.expXp)for(const k in p.expXp)expXpMap[k]=Math.min(100,p.expXp[k]||0);}}
 function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n]=true;});return JSON.parse(JSON.stringify({xp:S.xp,xpLog:Array.isArray(S.xpLog)?S.xpLog:[],best:S.best,done:Array.from(S.done||[]),attempts:S.attempts||0,accSum:S.accSum||0,lastExp:S.lastExp,theoryRead:tr,theoryXP:S.theoryXP,quiz:S.quiz,gems:S.gems,invitesUsed:(Array.isArray(S.invites)?S.invites.length:(S.invitesUsed||0)),invites:Array.isArray(S.invites)?S.invites:[],invitedBy:S.invitedBy||null,pcode:S.pcode||null,invRewarded:!!S.invRewarded,hist:Array.isArray(S.hist)?S.hist:[],daily:(S.dailyDay===localDayNum()?{day:localDayNum(),done:true}:(S.daily||{date:null,done:false})),streak:S.streak,duelWins:S.duelWins,dailyDay:(typeof S.dailyDay==="number"?S.dailyDay:-1),days:Array.from(S.days||[]),streakAwardedFor:S.streakAwardedFor||0,tierPaid:(S.tierPaid instanceof Set)?Array.from(S.tierPaid):(Array.isArray(S.tierPaid)?S.tierPaid:[]),dailyHist:Array.isArray(S.dailyHist)?S.dailyHist:[],expXp:(typeof expXpMap==="object"&&expXpMap)?Object.assign({},expXpMap):{}}));}
 function saveCurrentAccount(){if((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&ACCOUNTS[SESSION.email])ACCOUNTS[SESSION.email].progress=snapProgress();}
-function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
+function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;if(!txt){el.textContent="";el.classList.remove("show");return;}el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
 function emailOk(e){return typeof e==="string"&&e.length<=254&&!/^\.|\.\.|\.@|@\.|\.$/.test(e)&&/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);}
 /* name fields (signup name, profile name, nickname): a real name is LETTERS —
    empty/whitespace-only, digits-only or symbols-only strings are rejected, and
@@ -7020,6 +7093,16 @@ function startGuestCountdown(){
     if(SESSION.guestLeft<=0){
       stopGuest();
       SESSION.mode="none";SESSION.email=null;SESSION.expired=true;
+      /* guest expiry wipes ALL transient match state with the progress: an
+         in-progress duel (D, its timer and the duel screen's game pane) must
+         never survive into the next guest session — a new guest starts
+         completely clean. Registered sessions are untouched: their
+         refresh-resume behaviour is a different path entirely. */
+      try{
+        if(typeof D!=="undefined"&&D){if(D.timer)clearInterval(D.timer);D=null;}
+        if(typeof duelBackToSetup==="function")duelBackToSetup();
+        if(typeof stopTimers==="function")stopTimers();
+      }catch(e){}
       loadProgress(freshProgress());
       CURRENT_USER.name="محمد";CURRENT_USER.nameEn="Mohamed";setGreeting();
       document.body.classList.add("auth");
@@ -7956,7 +8039,7 @@ showScreen=function(id){_ssLate(id);if(id==="scr-settings")renderInvites();if(id
   // registration, with its old code still typed) must never greet the user.
   if(id==="scr-login"&&typeof authTab==="function"){authTab("in");
     const vc=document.getElementById("vfCode");if(vc)vc.value="";
-    ["siMsg","rgMsg","vfMsg","rcMsg","owMsg"].forEach(m=>{const e=document.getElementById(m);if(e)e.textContent="";});}};
+    ["siMsg","rgMsg","vfMsg","rcMsg","owMsg"].forEach(m=>{const e=document.getElementById(m);if(e){e.textContent="";e.classList.remove("show");}});}};
 </script>
 <script>
 "use strict";
@@ -8098,7 +8181,7 @@ function pfFillForm(){
   document.getElementById("pfNick").value=p.nick||"";
   const ab=document.getElementById("pfAbout");ab.value=p.about||"";
   document.getElementById("pfAboutCount").textContent=ab.value.length+" / 140";
-  document.getElementById("pfMsg").textContent="";
+  const _pfm=document.getElementById("pfMsg");if(_pfm){_pfm.textContent="";_pfm.classList.remove("show");}
 }
 (function wireProfile(){
   const eb=document.getElementById("profEditBtn");
@@ -8142,7 +8225,7 @@ function pfFillForm(){
     CURRENT_USER.nameEn=firstName(a.nameEn||a.name);
     if(typeof setGreeting==="function")setGreeting();
     syncProfileUI();
-    msg.textContent="";
+    msg.textContent="";msg.classList.remove("show");
     document.getElementById("profEdit").style.display="none";
     const card=document.getElementById("profCard");if(card)card.scrollIntoView({behavior:"smooth",block:"center"});
   };
@@ -9394,17 +9477,62 @@ showScreen=function(id){
     return libsReady;
   }
   ensureLibs();
+  /* ONE-SHOT TOASTS — the root fix for the stuck PDF toast.
+     The old mechanism reused one persistent DOM element and trusted a single
+     wall-clock setTimeout to hide it: in a backgrounded or frozen webview
+     that timer is throttled or never fires, the element kept its .show class
+     (and its text, in the language of its moment) forever, and nothing ever
+     re-checked it — so the "downloaded" toast outlived navigation, guest
+     expiry and language switches. Now:
+       • every toast renders ONCE into a FRESH element, and dismissal REMOVES
+         the element from the DOM — there is no persistent node to resurrect;
+       • dismissal is driven by FOREGROUND time: a watchdog banks only the
+         milliseconds the page is actually visible (visibilitychange banks /
+         resumes the clock), so a toast always dies within a few seconds of
+         foreground time however long the page sat in the background — with
+         a wall-clock hard cap behind it, so no environment can keep it
+         alive for minutes;
+       • navigation, sign-out, guest expiry and language switches all funnel
+         into __clearToasts (showScreen + applyLang hooks), which removes the
+         element outright — a toast can never be re-rendered by a re-render. */
+  let toastEl=null,toastWatch=null,toastBank=0,toastSince=0,toastLimit=3600,toastBorn=0,toastCap=9000;
+  function toastFgNow(){return toastBank+((toastSince&&document.visibilityState==="visible")?performance.now()-toastSince:0);}
+  function toastDismiss(){
+    if(toastWatch){clearInterval(toastWatch);toastWatch=null;}
+    if(toastEl){try{toastEl.remove();}catch(e){if(toastEl.parentNode)toastEl.parentNode.removeChild(toastEl);}toastEl=null;}
+    toastBank=0;toastSince=0;toastBorn=0;
+  }
+  /* Dismissal has TWO clocks and fires on whichever matures first: the
+     foreground clock (a few seconds of actually-visible time — background
+     time never counts toward it), and a wall-clock hard cap checked by the
+     same watchdog, so that in any environment whose visibility reporting
+     or timer throttling cannot be trusted (a frozen or occluded webview
+     that reports itself hidden while on screen) the toast still dies
+     within seconds and can NEVER stick for minutes. Any real interaction
+     with the page re-checks both clocks immediately. */
+  function toastTick(){
+    if(!toastEl){toastDismiss();return;}
+    if(toastFgNow()>=toastLimit)toastDismiss();
+    else if(toastBorn&&performance.now()-toastBorn>=toastCap)toastDismiss();
+  }
+  document.addEventListener("visibilitychange",()=>{
+    if(!toastEl)return;
+    if(document.visibilityState==="visible"){toastSince=performance.now();toastTick();}
+    else{if(toastSince)toastBank+=performance.now()-toastSince;toastSince=0;}
+  });
+  document.addEventListener("pointerdown",()=>{if(toastEl)toastTick();},true);
+  document.addEventListener("keydown",()=>{if(toastEl)toastTick();},true);
   function toast(msg,sticky){
-    let t=document.getElementById("pdfToast");
-    if(!t){t=document.createElement("div");t.id="pdfToast";document.body.appendChild(t);}
-    t.textContent=msg;t.classList.add("show");
-    if(toastTimer)clearTimeout(toastTimer);
-    /* EVERY toast dismisses itself: a result toast after a few seconds, and
-       even a "sticky" progress toast — refreshed by each progress update
-       while generation runs — carries a hard cap, so no toast can outlive
-       its moment, follow the user across screens, or survive into another
-       session or language (all toast texts go through T() at creation) */
-    toastTimer=setTimeout(()=>{t.classList.remove("show");},sticky?30000:3600);
+    toastDismiss();
+    const t=document.createElement("div");t.id="pdfToast";t.textContent=msg;document.body.appendChild(t);
+    t.classList.add("show");
+    toastEl=t;toastBank=0;toastSince=document.visibilityState==="visible"?performance.now():0;toastBorn=performance.now();
+    /* a result toast lives a few seconds of foreground time; a "sticky"
+       progress toast is refreshed by each progress update while generation
+       runs and still carries a hard foreground cap */
+    toastLimit=sticky?30000:3600;
+    toastCap=sticky?60000:9000;
+    toastWatch=setInterval(toastTick,200);
   }
   /* All of the app's toasts (PDF, streak/tier, guest notice) clear together.
      Hooked into showScreen below — so every screen change clears them, and
@@ -9412,7 +9540,9 @@ showScreen=function(id){
      too — and into applyLang, so a toast written in one language never
      lingers on screen after the language flips. */
   window.__clearToasts=function(){
-    ["pdfToast","streakToast","guestToast"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("show");});
+    toastDismiss();
+    ["streakToast","guestToast"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove("show");});
+    try{if(typeof _streakToastTimer!=="undefined"&&_streakToastTimer){clearTimeout(_streakToastTimer);_streakToastTimer=null;}}catch(e){}
     if(toastTimer){clearTimeout(toastTimer);toastTimer=null;}
   };
   const _ssToast=showScreen;
