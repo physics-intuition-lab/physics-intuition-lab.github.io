@@ -569,7 +569,7 @@ body.auth{padding-bottom:20px}
 .scell.today{border-color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
 /* ===== INFO (?) BUTTON ON THE LOGIN PAGE + ABOUT SCREEN ===== */
 #scr-login .wrap{padding-bottom:118px}
-.infofab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);inset-inline-start:12px;z-index:55;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px;color:var(--teal-d);font-weight:700;min-height:0}
+.infofab{position:absolute;bottom:14px;inset-inline-start:12px;z-index:55;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px;color:var(--teal-d);font-weight:700;min-height:0}
 .infofab .q{width:54px;height:54px;border-radius:50%;background:var(--surface);border:2px solid var(--teal);color:var(--teal-d);font-size:1.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.22);line-height:1;transition:transform .12s ease}
 .infofab .cap{font-size:.72rem;background:var(--surface);border:1px solid var(--line);padding:1px 8px;border-radius:999px;box-shadow:var(--shadow)}
 .infofab:active .q{transform:scale(.93)}
@@ -3994,9 +3994,13 @@ function startPhoto(exp){
     if(emits)sc=scoreFromErr(Math.abs(guessKE-KE0)/5);
     else sc=(guessKE<=0.4?100:guessKE<=1?55:15);
     const dirP=emits?(guessKE>KE0+0.6?T("توقعك كان أكبر من الحقيقة — غالبًا نسيت تطرح دالة الشغل كاملة: الفوتون بيدفع φ ثمنًا لتحرير الإلكترون، والفائض بس هو اللي بيبقى طاقة حركة.","Your prediction was higher than the truth — you probably forgot to subtract the full work function: the photon pays φ to free the electron, and only the surplus becomes kinetic energy."):guessKE<KE0-0.6?T("توقعك كان أصغر من الحقيقة — طاقة الفوتون كانت أعلى من دالة الشغل بفرق واضح، والفرق كله بيتحول لأقصى طاقة حركة للإلكترونات.","Your prediction was lower than the truth — the photon energy was clearly above the work function, and the entire difference becomes the electrons' maximum kinetic energy."):T("توقعك قريب — طبّقت معادلة أينشتاين صح: KE = E − φ.","Your prediction was close — you applied Einstein's equation correctly: KE = E − φ.")):(guessKE>0.4?T("أنت توقعت انبعاثًا، لكن طاقة الفوتون أقل من دالة الشغل — والشدة مهما علت لا تعوّض نقص التردد، فالإجابة الصحيحة كانت صفرًا بالظبط.","You predicted emission, but the photon energy is below the work function — and no intensity, however high, compensates for a missing frequency, so the correct answer was exactly zero."):T("وحكمك صح: لا انبعاث لأن E < φ — الشدة لا تصنع انبعاثًا من غير تردد كافٍ.","And your judgement was right: no emission because E < φ — intensity cannot create emission without a sufficient frequency."));
-    later(()=>completeExp(exp,sc,emits?
+    /* the result panel carries the same explicit «ليه؟ / Why?» heading as every
+       other experiment, and the directional explanation (dirP) is appended in
+       BOTH branches — the verdict ternary is parenthesised so it can no longer
+       swallow dirP in the emission branch */
+    later(()=>completeExp(exp,sc,("<b>"+(LANG==="en"?"Why?":"ليه؟")+"</b> ")+(emits?
       (LANG==="en"?`Electrons really were emitted: the photon energy was ${E0.toFixed(2)} eV and the work function ${phi} eV, so the maximum kinetic energy = the difference = <b>${KE0.toFixed(2)} eV</b> (Einstein's equation). Your prediction was ${guessKE.toFixed(2)} eV.`:`انبعثت إلكترونات فعلًا: طاقة الفوتون كانت ${E0.toFixed(2)} eV، ودالة الشغل ${phi} eV، فأقصى طاقة حركة = الفرق = <b>${KE0.toFixed(2)} eV</b> (معادلة أينشتاين). توقعك كان ${guessKE.toFixed(2)} eV.`):
-      (LANG==="en"?`No emission: the photon energy ${E0.toFixed(2)} eV is less than the work function ${phi} eV. This is the point that overturned physics in 1905: intensity, however high, never compensates for a missing frequency.`:`مفيش انبعاث: طاقة الفوتون ${E0.toFixed(2)} eV أقل من دالة الشغل ${phi} eV. دي النقطة اللي قلبت الفيزياء سنة 1905: الشدة مهما علت مش بتعوّض تردد ناقص.`)+dirP),2400);};
+      (LANG==="en"?`No emission: the photon energy ${E0.toFixed(2)} eV is less than the work function ${phi} eV. This is the point that overturned physics in 1905: intensity, however high, never compensates for a missing frequency.`:`مفيش انبعاث: طاقة الفوتون ${E0.toFixed(2)} eV أقل من دالة الشغل ${phi} eV. دي النقطة اللي قلبت الفيزياء سنة 1905: الشدة مهما علت مش بتعوّض تردد ناقص.`))+dirP),2400);};
 }
 /* ---- FRINGE follow-up questions (30% of the score) + finish ---- */
 const FRINGE_FU={
@@ -4110,8 +4114,11 @@ function startFringe(exp){
     const ord=kind==="double"?2:1;
     truePct=clamp(.5+sideFr*ord*frac,.06,.94);
     fringeGivens=[["الطول الموجي λ","Wavelength λ",lam+" nm"],["المسافة بين الشقين d","Slit separation d",NV(d)+" mm"],["بعد الشاشة عن الشقين L","Distance from slits to screen L",NV(Ld,1)+" m"],["عرض الشاشة","Screen width",W+" mm"]];
-    fringeWhy=g=>{const core=T(`تباعد الهدب Δy = λL/d = ${NV(dy)} مم. ${kind==="double"?`الهدبة المضيئة التانية على بُعد 2Δy = ${NV(2*dy)} مم من الهدبة المركزية`:`أول قمة جانبية على بُعد Δy = ${NV(dy)} مم من القمة المركزية`} — يعني عند ${NV(truePct*100,1)}٪ من عرض الشاشة. دي الحقيقة، وتوقعك ${NV(g,1)}٪.`,`The fringe spacing Δy = λL/d = ${NV(dy)} mm. ${kind==="double"?`The second bright fringe is 2Δy = ${NV(2*dy)} mm from the central fringe`:`The first side peak is Δy = ${NV(dy)} mm from the central peak`} — that is, at ${NV(truePct*100,1)}% of the screen's width. That is the truth, and your prediction was ${NV(g,1)}%.`);
-      const dir=Math.abs(g-truePct*100)<=6?T("توقعك قريب — قدّرت تباعد الهدب من λ وd وL تقديرًا صحيحًا.","Your prediction was close — you sized up the fringe spacing from λ, d and L correctly."):T("التباعد بيتناسب طرديًا مع λL وعكسيًا مع d: شقان أقرب أو طول موجي أكبر يعني هدبًا أوسع — اربط القمة بترتيبها من المركز دايمًا (الأولى عند Δy والتانية عند 2Δy).","The spacing is proportional to λL and inversely proportional to d: closer slits or a longer wavelength mean wider fringes — always tie a peak to its order from the centre (the first at Δy, the second at 2Δy).");
+    fringeWhy=g=>{const mirPct=(1-truePct)*100;
+      const core=kind==="photon"
+        ?T(`تباعد الهدب Δy = λL/d = ${NV(dy)} مم. النمط متماثل حول القمة المركزية، فأول قمة جانبية على بُعد Δy منها على أيٍّ من الجانبين — يعني عند ${NV(truePct*100,1)}٪ أو ${NV(mirPct,1)}٪ من عرض الشاشة؛ الجهتان متكافئتان فيزيائيًا، وتوقعك بيتحسب ضد أقرب قمة أولى منهما. توقعك كان ${NV(g,1)}٪.`,`The fringe spacing Δy = λL/d = ${NV(dy)} mm. The pattern is symmetric about the central peak, so the first side peak stands Δy away from it on EITHER side — at ${NV(truePct*100,1)}% or ${NV(mirPct,1)}% of the screen's width; the two sides are physically equivalent, and your prediction is scored against the nearer first peak. Your prediction was ${NV(g,1)}%.`)
+        :T(`تباعد الهدب Δy = λL/d = ${NV(dy)} مم. الهدبة المضيئة التانية على بُعد 2Δy = ${NV(2*dy)} مم من الهدبة المركزية — يعني عند ${NV(truePct*100,1)}٪ من عرض الشاشة. دي الحقيقة، وتوقعك ${NV(g,1)}٪.`,`The fringe spacing Δy = λL/d = ${NV(dy)} mm. The second bright fringe is 2Δy = ${NV(2*dy)} mm from the central fringe — that is, at ${NV(truePct*100,1)}% of the screen's width. That is the truth, and your prediction was ${NV(g,1)}%.`);
+      const dir=(kind==="photon"?Math.min(Math.abs(g-truePct*100),Math.abs(g-mirPct)):Math.abs(g-truePct*100))<=6?T("توقعك قريب — قدّرت تباعد الهدب من λ وd وL تقديرًا صحيحًا.","Your prediction was close — you sized up the fringe spacing from λ, d and L correctly."):T("التباعد بيتناسب طرديًا مع λL وعكسيًا مع d: شقان أقرب أو طول موجي أكبر يعني هدبًا أوسع — اربط القمة بترتيبها من المركز دايمًا (الأولى عند Δy والتانية عند 2Δy).","The spacing is proportional to λL and inversely proportional to d: closer slits or a longer wavelength mean wider fringes — always tie a peak to its order from the centre (the first at Δy, the second at 2Δy).");
       return core+" "+dir;};
   }else if(kind==="thin"){
     const n=1.33,t=pk([290,310,330,350,370,390]);const lam=Math.round(4*n*t/3);truePct=(lam-380)/320;
@@ -4187,6 +4194,8 @@ function startFringe(exp){
     const y=150;const fakeExp={min:cfg.min,max:cfg.max,unit:cfg.unit};
     ctx.save();ctx.translate(0,0);
     drawAxisF(ctx,y,guessPct,reveal?truePct:null,cfg);
+    /* photon (#53): the mirror first side peak is every bit as true — mark it too */
+    if(kind==="photon"&&reveal){const mx=38+(602-38)*(1-truePct);ctx.fillStyle=C_GOOD;ctx.beginPath();ctx.moveTo(mx,104);ctx.lineTo(mx-7,92);ctx.lineTo(mx+7,92);ctx.fill();}
     ctx.restore();
   }
   function drawAxisF(c,y,gp,tp,cfg2){
@@ -4207,7 +4216,11 @@ function startFringe(exp){
     const step=t=>{const a=clamp((t-t0)/(kind==="photon"?2600:1600),0,1);draw(a,true);
       if(a<1)window.__raf=requestAnimationFrame(step);
       else{const guessVal=cfg.min+guessPct*(cfg.max-cfg.min);
-        const sc=scoreFromErr(Math.abs(guessVal-trueVal)/(cfg.max-cfg.min));
+        /* photon (#53): the accumulated pattern is symmetric about the centre,
+           so the first side peak stands at Δy on BOTH sides — the prediction is
+           scored against whichever first side peak it is closer to */
+        const errVal=kind==="photon"?Math.min(Math.abs(guessVal-trueVal),Math.abs(guessVal-(cfg.min+cfg.max-trueVal))):Math.abs(guessVal-trueVal);
+        const sc=scoreFromErr(errVal/(cfg.max-cfg.min));
         fringeFinish(exp,sc,(fringeWhy?("<b>"+(LANG==="en"?"Why?":"ليه؟")+"</b> "+fringeWhy(guessVal)):(LANG==="en"?`The true peak is at <b>${fmtVal(trueVal,cfg.unit)}</b> and your prediction was ${fmtVal(guessVal,cfg.unit)}. The pattern drawn is this experiment's signature — your eye will learn to read it.`:`القمة الحقيقية عند <b>${fmtVal(trueVal,cfg.unit)}</b> وتوقعك كان ${fmtVal(guessVal,cfg.unit)}. النمط اللي اترسم هو توقيع التجربة دي — عينك هتتعلم تقرأه.`)),kind);}};
     window.__raf=requestAnimationFrame(step);};
 }
@@ -4438,6 +4451,17 @@ function duelRoundPoints(errFrac,usedSec,marked){
   const acc=Math.max(0,1-errFrac/DUEL_TOL)*90;
   const spd=Math.max(0,(DUEL_TIME-Math.min(Math.max(usedSec,0),DUEL_TIME))/DUEL_TIME)*10;
   return Math.round(acc+spd);
+}
+/* The cumulative match board is a pure projection of the totals D.me / D.bot.
+   It is repainted from those totals at every round lock AND again at every
+   round start, so the header can never sit at a stale 0–0 while the totals
+   have already moved — whatever path the previous round ended by. */
+function duelShowScore(){
+  if(!D)return;
+  const meEl=$("#duelMeScore"),boEl=$("#duelBotScore"),balEl=$("#duelBalance");
+  if(meEl)meEl.textContent=AR(D.me);
+  if(boEl)boEl.textContent=AR(D.bot);
+  if(balEl){const tot=D.me+D.bot;balEl.style.width=(tot?D.me/tot*100:50)+"%";}
 }
 /* The bot's error is drawn from a NORMAL distribution whose sigma (as a
    fraction of the round's range) is FIXED per level — easy .16, medium .12,
@@ -11577,7 +11601,7 @@ function duelOverlayAxis(ctx,W,H,guessPct,reveal){
   const marks=[];
   const tri=(pct,col,lbl,home)=>{if(pct==null)return;const x=x0+(x1-x0)*pct;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-14);ctx.lineTo(x-7,y-26);ctx.lineTo(x+7,y-26);ctx.fill();ctx.fillRect(x-1,y-14,2,10);marks.push({x:x,c:col,l:lbl,home:home});};
   tri(guessPct,C_BLUE,T("أنت","You"),0);
-  if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),1);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
+  if(reveal){tri(D.truePct,C_GOOD,T("الصح","Truth"),1);if(D.R&&D.R.altPct!=null)tri(D.R.altPct,C_GOOD,null,1);tri(D.botPct,C_RED,T("البوت","Bot"),0);}
   /* same shared label layout as the marker axis: measured spread, row
      stacking and leaders — labels never overprint each other here either */
   duelAxisLabels(ctx,marks,y,W,y-26);
@@ -12048,7 +12072,7 @@ function duelBuildFringe(exp){
     if(kind==="photon"||kind==="double")return Math.pow(Math.cos((x-.5)*Math.PI*fFr),2)*Math.exp(-Math.pow((x-.5)*1.6,2))+.03;
     return Math.pow(Math.abs(Math.sin(x*Math.PI*3+truePct*2)),1.5)*.8+.15;
   }
-  return {mode:"slider",h:320,axis:true,min:cfg.min,max:cfg.max,unit:cfg.unit,trueVal:trueVal,truePct:truePct,
+  return {mode:"slider",h:320,axis:true,min:cfg.min,max:cfg.max,unit:cfg.unit,trueVal:trueVal,truePct:truePct,altPct:kind==="photon"?(1-truePct):null,
     q:(LANG==="en"?(EN_D[exp.n]||exp.duel):exp.duel)||exp.t,
     ask:T("بص على جهاز التجربة ونمطها: ","Look at the apparatus and its pattern: ")+cfg.label+T(" — اسحب علامتك لمكان القمة على المحور."," — drag your mark to the peak's position on the axis."),
     draw(ctx,W,H,anim,guessPct,reveal){
@@ -12173,6 +12197,7 @@ nextDuelRound=function(){
   D.phase="read";D.startT=0;D.left=DUEL_TIME;D.timer=null;
   $("#duelRoundLbl").textContent=LANG==="en"?("Round "+D.round+" of 5 — "+(EN_T[exp.n]||exp.t)):`الجولة ${AR(D.round)} من 5 — ${exp.t}`;
   $("#duelDots").innerHTML=[1,2,3,4,5].map(i=>`<i class="${i<D.round?"on":i===D.round?"cur":""}"></i>`).join("");
+  duelShowScore(); /* the board re-syncs from the totals at every round start */
   $("#duelTitle").textContent=R.q||exp.t;
   const qEl=$("#duelQ");if(qEl)qEl.textContent=R.ask||"";
   $("#duelConfirm").disabled=true;$("#duelConfirm").textContent=T("أكّد التوقع","Confirm prediction");
@@ -12254,8 +12279,12 @@ confirmDuel=function(timedOut){
   }else{
     const botPct=clamp(D.truePct+duelBotErrFrac(D.lvl),0,1);
     D.botPct=botPct;
-    meErrF=hasMark?Math.abs(D.guess-D.truePct):1;
-    boErrF=Math.abs(botPct-D.truePct);
+    /* symmetric-truth rounds (single-photon #53): the first side peak stands
+       on BOTH sides of the centre, so BOTH players are scored against the
+       nearer first peak — R.altPct carries the mirror position */
+    const errTo=v=>{const e1=Math.abs(v-D.truePct);return (R.altPct!=null)?Math.min(e1,Math.abs(v-R.altPct)):e1;};
+    meErrF=hasMark?errTo(D.guess):1;
+    boErrF=errTo(botPct);
   }
   const mePts=duelRoundPoints(meErrF,used,hasMark);
   const boPts=duelRoundPoints(boErrF,botTime,true);
@@ -12269,8 +12298,7 @@ confirmDuel=function(timedOut){
     const box=$("#duelOpts");
     if(box)box.querySelectorAll(".opt").forEach(b=>{const i=+b.dataset.i;if(i===R.ans)b.classList.add("right");else if(i===D.sel)b.classList.add("wrong");b.disabled=true;});
   }
-  $("#duelMeScore").textContent=AR(D.me);$("#duelBotScore").textContent=AR(D.bot);
-  const tot=D.me+D.bot;$("#duelBalance").style.width=(tot?D.me/tot*100:50)+"%";
+  duelShowScore();
   const win=mePts>=boPts;
   const fb=$("#duelFeedback");fb.className="feedback show "+(win?"good":"bad");
   const pctS=v=>AR(Math.round(v*100))+T("٪","%");
