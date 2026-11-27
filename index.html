@@ -56,16 +56,37 @@ html[data-theme="dark"] #bootSplash{background:#0c1417}
       that does not break rendering never pops UI at the user.
    2) safeMap(): the per-item list guard used by the long list builders —
       one row whose render throws is skipped (and logged); the list lives.
-   3) A boot watchdog keyed on boot completion: if the boot-done flag is
-      not set ~6s after load, the boot is wedged and the recovery card
-      appears regardless of which static DOM is present; a 13s backstop
-      covers a splash that is STILL up past the app's own 12s splash
-      fallback. A completed boot always sets the flag, so the watchdog
-      never fires on a usable app. */
+   3) A boot watchdog keyed on boot PROGRESS, not a fixed deadline: the
+      boot path beats a heartbeat at every awaited server step (sbCall),
+      and the watchdog only shows the recovery card when the boot has
+      made NO progress for a full stall window (20s — longer than the
+      longest single awaited step, sbCall's 15s timeout, so one slow
+      fetch can never trip it), or when the whole boot passes a 60s
+      ceiling after the document finished loading. A slow-but-progressing
+      session restore therefore never sees the card; a genuinely wedged
+      boot (no step ever resolves) still does. And if the card was shown
+      and the boot then completes, boot completion retracts it — a
+      finished restore never leaves the overlay standing over a working
+      app. (The previous fixed ~6s deadline fired spuriously on exactly
+      that: a teacher restore whose sequential hydration reads took
+      longer than 6s on a real connection, then completed and rendered
+      the workspace correctly BEHIND the card, which nothing removed.) */
 (function(){
   "use strict";
   var T0=Date.now();
   window.__ilBootDone=false;
+  /* boot-progress heartbeat: the boot/restore path calls __ilBootBeat()
+     as each awaited step STARTS (sbCall wraps every server read of the
+     restore: session, profile, ledgers, progress, purchases, invites),
+     so a restore that is still working keeps beating at least once per
+     step. The watchdog below reads this clock — never a fixed deadline. */
+  window.__ilBootLastBeat=T0;
+  window.__ilBootBeat=function(){window.__ilBootLastBeat=Date.now();};
+  window.__ilHideRecovery=function(){
+    try{var d=document.getElementById("ilRecovery");if(d)d.remove();}catch(e){}
+  };
+  var IL_STALL_MS=20000,IL_CEIL_MS=60000,ilLoadedAt=0;
+  function bootStalled(){return Date.now()-window.__ilBootLastBeat>IL_STALL_MS;}
   window.safeMap=function(arr,fn){
     var out=[];
     if(!arr||typeof arr.length!=="number")return out;
@@ -119,7 +140,11 @@ html[data-theme="dark"] #bootSplash{background:#0c1417}
     setTimeout(function(){
       try{
         if(appBlank())window.__ilShowRecovery();
-        else if(splashUp()&&!window.__ilBootDone&&Date.now()-T0>6000)window.__ilShowRecovery();
+        /* splash still up after an error: only a STALLED boot (no step
+           has beaten for a full stall window) means trouble — a slow
+           restore that is still fetching is progressing, not crashed,
+           and must never be carded for a stray rejection on the way */
+        else if(splashUp()&&!window.__ilBootDone&&bootStalled())window.__ilShowRecovery();
       }catch(e){}
     },350);
   }
@@ -132,27 +157,28 @@ html[data-theme="dark"] #bootSplash{background:#0c1417}
     try{console.error("[stability] unhandled rejection:",e&&e.reason);}catch(_){}
     checkAfterError();
   });
-  /* boot watchdog: keyed on BOOT COMPLETION, not on what the DOM happens
-     to show. If the boot-done flag is not set ~6s after load, the boot is
-     wedged (e.g. session restore hung) — even when a static screen's DOM
-     is present and appBlank() would report "not blank" — so the recovery
-     card is shown regardless of which static DOM is present. A completed
-     boot always sets the flag (every splash lift goes through the wrapped
-     bootHideSplash), so this never fires on a usable app. */
-  setTimeout(function(){
+  /* boot watchdog: keyed on boot PROGRESS. It ticks once a second and:
+       • the moment boot completion is observed, it RETRACTS the recovery
+         card if one is standing and stops — a restore that finishes late
+         (after a stall already carded it) takes its card down with it;
+       • while the document itself is still loading, the page is by
+         definition still arriving — that counts as progress, so a slow
+         download of the page can never be mistaken for a wedged boot;
+       • otherwise it cards the boot only when it has demonstrably
+         stalled: no heartbeat for IL_STALL_MS (20s — beyond the longest
+         single awaited step, sbCall's 15s timeout + retry backoff, so a
+         slow-but-working restore keeps beating and is never carded), or
+         the boot as a whole passes IL_CEIL_MS (60s) after the document
+         finished loading — a restore that never resolves surfaces the
+         recovery card either way, just never a healthy one. */
+  var ilWatch=setInterval(function(){
     try{
-      if(window.__ilBootDone)return;
-      window.__ilShowRecovery();
+      if(window.__ilBootDone){window.__ilHideRecovery();clearInterval(ilWatch);return;}
+      if(document.readyState==="loading"){window.__ilBootBeat();return;}
+      if(!ilLoadedAt)ilLoadedAt=Date.now();
+      if(bootStalled()||Date.now()-ilLoadedAt>IL_CEIL_MS)window.__ilShowRecovery();
     }catch(e){}
-  },6000);
-  /* backstop: the app's own splash fallback lifts the splash at 12s; if it
-     is STILL up at 13s, that fallback itself died — recover here instead */
-  setTimeout(function(){
-    try{
-      if(window.__ilBootDone)return;
-      if(splashUp())window.__ilShowRecovery();
-    }catch(e){}
-  },13000);
+  },1000);
 })();
 </script>
 <script>
@@ -9160,16 +9186,34 @@ window.__sbRecoverySession=false;
 /* ---------- boot splash control: the splash (static HTML, first paint) stays
    up until the boot decision is final — session restored into the app, or no
    session and the sign-in screen is revealed. A hard 12s ceiling guarantees
-   the page can never sit behind the splash forever on a dead network. ------ */
+   the page can never sit behind the splash forever on a dead network.
+   CRITICAL distinction: lifting the splash VISUAL is not boot completion.
+   bootHideSplash() only hides the splash. Only bootComplete() — called
+   exclusively by the genuine boot-decision paths below (session restored,
+   definitively no session, recovery link handled, accounts library
+   missing) — may flag the boot done for the head watchdog and retract a
+   standing recovery card. The 12s fallback deliberately calls the plain
+   visual lift: if the restore is genuinely wedged, boot state stays
+   untouched, so the progress watchdog (20s stall / 60s ceiling) still
+   fires and any recovery card it raised stays up until a real completion
+   arrives. ------ */
 let BOOT_SPLASH_GONE=false;
 function bootHideSplash(){
   if(BOOT_SPLASH_GONE)return;BOOT_SPLASH_GONE=true;
   const sp=document.getElementById("bootSplash");
   if(sp)sp.style.display="none";
 }
+function bootComplete(){
+  window.__ilBootDone=true;
+  /* genuine completion retracts the recovery card: if a stall carded this
+     boot on the way and the restore then completed anyway, the card comes
+     down now — it never stands over a working, fully restored app */
+  try{if(window.__ilHideRecovery)window.__ilHideRecovery();}catch(e){}
+  bootHideSplash();
+}
 setTimeout(()=>{try{bootHideSplash();}catch(e){}},12000);
 function sbServerSession(){return !!(SB&&typeof SESSION!=="undefined"&&SESSION&&SESSION.server&&SESSION.uid);}
-function sbCall(p){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("sb-timeout")),15000))]);}
+function sbCall(p){try{if(window.__ilBootBeat)window.__ilBootBeat();}catch(e){}return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error("sb-timeout")),15000))]);}
 function sbParseWaitSeconds(m){
   const mm=/after\s+(\d+)\s*second/i.exec(m||"");
   return mm?Math.max(1,parseInt(mm[1],10)||0):0;
@@ -10159,6 +10203,7 @@ try{
 }catch(e){}
 function sbRestoreScreen(w){
   if(!w||!w.id)return;
+  try{if(window.__ilBootBeat)window.__ilBootBeat();}catch(e){}
   try{
     if(w.id==="scr-exp"){if(w.exp)openExp(w.exp);else showScreen("scr-exps");return;}
     showScreen(w.id);
@@ -10166,6 +10211,7 @@ function sbRestoreScreen(w){
 }
 async function sbAutoEnter(session,wantScreen){
   if(!session||!session.user)return false;
+  try{if(window.__ilBootBeat)window.__ilBootBeat();}catch(e){}
   if(typeof SESSION==="undefined"||!SESSION||SESSION.mode!=="none")return false;
   if(SB_AUTO_BUSY)return false;
   SB_AUTO_BUSY=true;
@@ -10185,7 +10231,7 @@ if(SB){
         showScreen("scr-login");
         if(typeof authTab==="function")authTab("forgot");
         authMsg("rcMsg",T("تم التحقق من هويتك — اكتب كلمة السر الجديدة في حقلها واضغط «تعيين كلمة سر جديدة».","Your identity is verified — type the new password in its field and press “Set new password”."),true);
-        bootHideSplash();
+        bootComplete();
         return;
       }
       /* Fallback restore path: if the one-shot getSession below stalls (a
@@ -10225,7 +10271,7 @@ if(SB){
     }
     while(SB_AUTO_BUSY)await new Promise(r=>setTimeout(r,150));
     SB_BOOT_OPEN=false;
-    bootHideSplash();
+    bootComplete();
   })();
 }else{
   /* the library itself failed to load: say so cleanly, keep local/guest mode */
@@ -10238,7 +10284,7 @@ if(SB){
       card.appendChild(n);
     }
   }catch(e){}
-  bootHideSplash();
+  bootComplete();
 }
 /* ---------- remember the current screen (this tab only) ----------
    Every navigation records just the screen id (+ open experiment number) in
@@ -13267,23 +13313,22 @@ applyLang=function(l){
    Back to Home) instead of a blank or half-broken page — and because
    showScreen itself survives, navigation to every other screen keeps
    working afterwards. On the happy path this wrapper changes nothing: it
-   calls the previous chain exactly as before and returns. It also flags
-   boot completion for the head safety net's watchdog: whichever path lifts
-   the boot splash, the boot is done. */
+   calls the previous chain exactly as before and returns. */
 (function(){
   "use strict";
-  if(typeof bootHideSplash==="function"){
-    var _bhsIl=bootHideSplash;
-    bootHideSplash=function(){window.__ilBootDone=true;return _bhsIl.apply(this,arguments);};
-  }
-  /* a fast boot can lift the splash BEFORE this last block runs — i.e.
-     before the wrapper above existed (the no-server-library path calls
-     bootHideSplash synchronously during parse, and a fast session restore
-     can settle between script blocks). If the splash is already gone,
-     that boot DID complete: flag it now, so the head watchdog — keyed on
-     this flag alone — can never mistake a finished boot for a wedged one.
-     Every later splash lift goes through the wrapper above. */
-  try{if(typeof BOOT_SPLASH_GONE!=="undefined"&&BOOT_SPLASH_GONE)window.__ilBootDone=true;}catch(e){}
+  /* NOTE — boot completion is deliberately NOT inferred in this block. An
+     earlier version wrapped bootHideSplash() so that ANY splash lift
+     flagged the boot done (__ilBootDone) and retracted the recovery card;
+     that was wrong, because the 12s splash fallback lifts the splash
+     unconditionally — a wedged restore (no step ever resolves) was
+     falsely marked complete at 12s, the head watchdog stopped, and the
+     recovery card never surfaced (or was removed). Completion is now
+     flagged only by bootComplete(), which only the genuine boot-decision
+     paths call (session restored / definitively no session / recovery
+     link / accounts library missing — including the no-library path,
+     which calls it directly during parse, so no retroactive inference
+     from BOOT_SPLASH_GONE is needed either). The fallback's plain visual
+     lift leaves boot state untouched. Nothing to install here. */
   function ilT(ar,en){return (typeof LANG!=="undefined"&&LANG==="en")?en:ar;}
   function ilScreenError(id){
     try{
