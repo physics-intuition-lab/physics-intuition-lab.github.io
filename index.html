@@ -407,14 +407,33 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
 .avwrap.diamond{background:conic-gradient(from 30deg,#dff7ff,#8fd8ef,#ffffff,#5fb8d9,#eafcff,#8fd8ef,#dff7ff)}
 .avwrap.gold{background:conic-gradient(from 25deg,#f7dc6f,#b8860b,#ffe98a,#a87408,#f1c40f,#b8860b,#f7dc6f)}
 .avwrap.leaf{background:conic-gradient(from 15deg,#7fb069,#a7d489,#5da85f,#8fce62,#3e8e4f,#a7d489,#7fb069)}
-/* store accent themes (equip_cosmetic 'theme'): ONLY the accent variables
-   change — backgrounds and surfaces stay exactly as the light/dark theme
-   leaves them, and with no data-accent the app looks exactly as before */
-html[data-accent="gold"]{--teal:#a87408;--teal-d:#8a5f06;--amber:#c99700}
-html[data-accent="diamond"]{--teal:#0e7c9c;--teal-d:#0a5f78;--amber:#2ea8c7}
-html[data-accent="space"]{--teal:#5b3fd4;--teal-d:#452da8;--amber:#7b5fe0}
-html[data-accent="energy"]{--teal:#d95d14;--teal-d:#b34a12;--amber:#2e7fe0}
-html[data-accent="nature"]{--teal:#2e8b3a;--teal-d:#22702e;--amber:#6aa84f}
+/* store accent themes (equip_cosmetic 'theme'): each theme is a small design
+   system — accent (--teal/--teal-d), second accent (--amber + --acc2), a
+   two-stop gradient (--acc-grad), a soft glow (--acc-glow), a chip/tint
+   background (--acc-tint/--amber-bg) and the on-gradient text color
+   (--acc-on). Backgrounds and surfaces stay exactly as the light/dark theme
+   leaves them, and with no data-accent NONE of this applies — the app looks
+   exactly as before. Every theme ships a light set and a dark set (the dark
+   set brightens the accents so they keep their contrast on dark surfaces);
+   the dark set applies under a manual dark theme or a dark system scheme
+   that was not manually overridden to light. */
+html[data-accent="gold"]{--teal:#a87408;--teal-d:#8a5f06;--amber:#c99700;--amber-bg:#faf0d2;--acc2:#e3ac1e;--acc-grad:linear-gradient(135deg,#d9a521,#a87408);--acc-glow:rgba(201,151,0,.38);--acc-tint:#faf0d2;--acc-on:#ffffff}
+html[data-accent="diamond"]{--teal:#0e7c9c;--teal-d:#0a5f78;--amber:#2ea8c7;--amber-bg:#e2f4fa;--acc2:#3fb9dd;--acc-grad:linear-gradient(135deg,#2ea8c7,#0a5f78);--acc-glow:rgba(46,168,199,.38);--acc-tint:#e2f4fa;--acc-on:#ffffff}
+html[data-accent="space"]{--teal:#5b3fd4;--teal-d:#452da8;--amber:#7b5fe0;--amber-bg:#ece7fb;--acc2:#8f6fe8;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(91,63,212,.34);--acc-tint:#ece7fb;--acc-on:#ffffff}
+html[data-accent="energy"]{--teal:#d95d14;--teal-d:#b34a12;--amber:#2e7fe0;--amber-bg:#fdeadd;--acc2:#f07f2e;--acc-grad:linear-gradient(135deg,#f07f2e,#c24e0e);--acc-glow:rgba(217,93,20,.34);--acc-tint:#fdeadd;--acc-on:#ffffff}
+html[data-accent="nature"]{--teal:#2e8b3a;--teal-d:#22702e;--amber:#6aa84f;--amber-bg:#e9f4e2;--acc2:#57a773;--acc-grad:linear-gradient(135deg,#43a047,#22702e);--acc-glow:rgba(46,139,58,.34);--acc-tint:#e9f4e2;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="gold"]{--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#b8860b,#7a5205);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="diamond"]{--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#1d94bc,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="space"]{--teal:#ab90f7;--teal-d:#cdbcff;--amber:#ab90f7;--amber-bg:#241a44;--acc2:#cdbcff;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(171,144,247,.42);--acc-tint:#241a44;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="energy"]{--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#38200f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#e06a1b,#b34a12);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="nature"]{--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#388e3c,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
+@media (prefers-color-scheme: dark){
+html[data-accent="gold"]:not([data-theme="light"]){--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#b8860b,#7a5205);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
+html[data-accent="diamond"]:not([data-theme="light"]){--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#1d94bc,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
+html[data-accent="space"]:not([data-theme="light"]){--teal:#ab90f7;--teal-d:#cdbcff;--amber:#ab90f7;--amber-bg:#241a44;--acc2:#cdbcff;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(171,144,247,.42);--acc-tint:#241a44;--acc-on:#ffffff}
+html[data-accent="energy"]:not([data-theme="light"]){--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#38200f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#e06a1b,#b34a12);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
+html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#388e3c,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
+}
 .avwrap .avmotif{position:absolute;top:50%;left:50%;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 /* store (Settings): item cards + wardrobe frame chips */
 .storegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
@@ -864,6 +883,121 @@ body.auth .card p{line-height:1.9}
 body.auth .authlink{font-size:.95rem;margin-top:4px}
 body.auth .madeby{margin-top:30px;font-size:.88rem}
 @media (max-width:380px){.authlogo{width:88px}.authname{font-size:1.45rem}body.auth .card{padding:18px 14px}}
+/* ===== PREMIUM POLISH 1 — the equipped accent theme on EVERY screen =====
+   All rules in this section are scoped to html[data-accent]: with no theme
+   equipped, none of them apply and the app renders exactly as before. They
+   only consume the per-theme variables defined with the accent themes
+   above, so they compose with light and dark mode automatically. */
+html[data-accent] .btn.primary{background:var(--acc-grad);border-color:var(--teal-d);color:var(--acc-on);box-shadow:0 4px 14px var(--acc-glow)}
+html[data-accent] .btn.amber{box-shadow:0 4px 12px var(--acc-glow)}
+html[data-accent] #duelStart,html[data-accent] #duelReadStart{box-shadow:0 8px 22px var(--acc-glow)}
+html[data-accent] .fld:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--acc-glow)}
+/* login: logo halo in the theme's glow, themed name, tabs, links, toggles */
+html[data-accent] .authlogo{filter:drop-shadow(0 0 16px var(--acc-glow))}
+html[data-accent] .authname{color:var(--teal-d)}
+html[data-accent] .authtab.on{background:var(--acc-tint);border-color:var(--teal);color:var(--teal-d)}
+html[data-accent] .authfab{border-color:var(--acc2);color:var(--teal-d)}
+html[data-accent] .infofab .q{border-color:var(--teal);box-shadow:0 4px 16px var(--acc-glow)}
+html[data-accent] .homebrand{color:var(--teal-d)}
+/* screen & section titles carry a short gradient rule under the text */
+html[data-accent] .screen h1{color:var(--teal-d)}
+html[data-accent] #homeGreet{color:var(--ink)}
+html[data-accent] .wrap>h2,html[data-accent] .secttl{background-image:var(--acc-grad);background-repeat:no-repeat;background-size:52px 3px;background-position:bottom right;padding-bottom:5px}
+html[dir="ltr"][data-accent] .wrap>h2,html[dir="ltr"][data-accent] .secttl{background-position:bottom left}
+/* home: hero card edge, level-card edge, daily-challenge card edge */
+html[data-accent] .card.hero{box-shadow:inset 0 3px 0 var(--teal),var(--shadow)}
+html[data-accent] .lvlcard{box-shadow:inset 0 3px 0 var(--acc2),var(--shadow)}
+html[data-accent] .card:has(#dailyBtn){box-shadow:inset 0 3px 0 var(--amber),var(--shadow)}
+/* catalog & theory: numbered badges and accordion titles take the tint */
+html[data-accent] .expnum{background:var(--acc-tint);color:var(--teal-d)}
+html[data-accent] details.th summary{color:var(--teal-d)}
+html[data-accent] details.th{box-shadow:inset 0 0 0 1px var(--acc-tint)}
+/* interactive lab: the sim frame picks up the second accent */
+html[data-accent] canvas.sim{border-color:var(--acc2)}
+/* duels: ONLY the player's own side takes the theme — the bot stays red */
+html[data-accent] .vsside.me{border-color:var(--teal)}
+html[data-accent] .vsside.me .vstag{color:var(--teal)}
+html[data-accent] .vsside.me .vsdot{background:var(--teal)}
+html[data-accent] .vs .me{background:var(--acc-grad)}
+html[data-accent] .balance i{background:var(--teal)}
+/* leaderboards & rank: own-row tint, own podium glow */
+html[data-accent] .boardrow.me{background:var(--acc-tint)}
+html[data-accent] .rankrow.me{box-shadow:0 0 0 3px var(--acc-glow)}
+html[data-accent] .pod.me{outline-color:var(--teal)}
+/* settings, store, vault: selected options and chips take the tint */
+html[data-accent] .segopt.on{background:var(--acc-tint);border-color:var(--teal)}
+html[data-accent] .chip.l0{background:var(--acc-tint);color:var(--teal-d)}
+html[data-accent] .gembal{border-color:var(--acc2)}
+/* about page: headings and the section previews take the theme */
+html[data-accent] #infoBody h2,html[data-accent] #infoBody h3{color:var(--teal-d)}
+html[data-accent] .mpbtn{background:var(--acc-grad)}
+html[data-accent] .mpstep .n{background:var(--acc-grad)}
+html[data-accent] .pvslider i{background:var(--teal)}
+/* bottom navigation: themed top edge + active indicator bar */
+html[data-accent] .bnav{border-top-color:var(--acc2)}
+html[data-accent] .bnav button.on{box-shadow:inset 0 3px 0 var(--teal)}
+/* toasts: the toast itself becomes a gradient pill with a glow */
+html[data-accent] #pdfToast{background:var(--acc-grad);color:var(--acc-on);box-shadow:0 8px 24px var(--acc-glow),inset 0 0 0 2px rgba(255,255,255,.35)}
+html[data-accent] .streaktoast{box-shadow:0 4px 16px var(--acc-glow)}
+/* ===== PREMIUM POLISH 2 — premium avatar frames =====
+   Layered finish on the existing .avwrap (no markup or layout change).
+   EVERY rule in this section is scoped to the eight framed classes
+   (.crown .rose .gold .diamond .galaxy .bolt .flame .leaf): a bare
+   .avwrap with no frame matches none of them — no glow, no ring, no
+   pseudo-elements — and renders exactly as the pre-polish build:
+   ::before paints a double ring (bright metallic line + darker seat line)
+   as static inset shadows over the band; ::after is a thin outer line in
+   the frame's deep color; the wrapper itself carries a soft static glow in
+   the frame's color family via --fglow. Gold and diamond add ONE shimmer
+   sweep: a masked conic highlight layer on the wreath that only rotates
+   (transform) and fades — shadows never animate, so long leaderboard lists
+   stay cheap. Small frames (.sm, set by frameWrap at <=32px) tighten the
+   glow so the wreath still reads clearly. */
+.avwrap.crown,.avwrap.rose,.avwrap.gold,.avwrap.diamond,.avwrap.galaxy,.avwrap.bolt,.avwrap.flame,.avwrap.leaf{--fglow:transparent;--fring:transparent;box-shadow:0 0 12px 3px var(--fglow)}
+.avwrap.crown.sm,.avwrap.rose.sm,.avwrap.gold.sm,.avwrap.diamond.sm,.avwrap.galaxy.sm,.avwrap.bolt.sm,.avwrap.flame.sm,.avwrap.leaf.sm{box-shadow:0 0 6px 1px var(--fglow)}
+.avwrap.crown::before,.avwrap.rose::before,.avwrap.gold::before,.avwrap.diamond::before,.avwrap.galaxy::before,.avwrap.bolt::before,.avwrap.flame::before,.avwrap.leaf::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),inset 0 0 0 4px rgba(0,0,0,.16);pointer-events:none;z-index:1}
+.avwrap.crown::after,.avwrap.rose::after,.avwrap.gold::after,.avwrap.diamond::after,.avwrap.galaxy::after,.avwrap.bolt::after,.avwrap.flame::after,.avwrap.leaf::after{content:"";position:absolute;inset:-2.5px;border-radius:50%;border:1.5px solid var(--fring);pointer-events:none;z-index:0}
+.avwrap.crown{--fglow:rgba(217,165,33,.45);--fring:rgba(168,116,8,.65)}
+.avwrap.gold{--fglow:rgba(217,165,33,.45);--fring:rgba(168,116,8,.65)}
+.avwrap.rose{--fglow:rgba(231,84,128,.38);--fring:rgba(199,62,106,.60)}
+.avwrap.bolt{--fglow:rgba(46,127,224,.42);--fring:rgba(27,79,158,.60)}
+.avwrap.flame{--fglow:rgba(230,59,31,.42);--fring:rgba(184,32,10,.60)}
+.avwrap.galaxy{--fglow:rgba(123,63,212,.48);--fring:rgba(70,32,140,.65)}
+.avwrap.diamond{--fglow:rgba(95,184,217,.50);--fring:rgba(46,140,180,.60)}
+.avwrap.leaf{--fglow:rgba(93,168,95,.42);--fring:rgba(46,110,60,.60)}
+.avwrap.gold .avwreath::after,.avwrap.diamond .avwreath::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,255,255,.65) 16deg,transparent 42deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));animation:avshim 3.8s linear infinite;pointer-events:none}
+@keyframes avshim{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.avwrap.gold .avwreath::after,.avwrap.diamond .avwreath::after{animation:none}}
+/* ===== PREMIUM POLISH 3 — product-grade store cards & vault =====
+   Bundle cards get a themed gradient header band (the bundle's own color
+   identity) with the frame preview worn large on the user's avatar, a
+   diagonal owned ribbon, content chips and a gem price pill. Essentials
+   use the same card language, smaller. Elevation is transform/opacity
+   only and rests under reduced motion. */
+.storecard{position:relative;overflow:hidden;background:var(--surface);border-radius:14px;padding:0;display:flex;flex-direction:column;transition:transform .16s ease,box-shadow .16s ease}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){.storecard:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(10,20,25,.16)}}
+.storecard:active{transform:scale(.995)}
+@media (prefers-reduced-motion: reduce){.storecard{transition:none}.storecard:active{transform:none}}
+.sc-band{position:relative;display:flex;align-items:center;gap:10px;padding:12px;color:#fff;min-height:78px}
+.sc-band .sc-name{color:#fff;font-size:1.03rem;text-shadow:0 1px 3px rgba(0,0,0,.35)}
+.sc-bandsub{font-size:.8rem;line-height:1.55;opacity:.94}
+.sc-bandicon{font-size:1.9rem;line-height:1;flex:0 0 auto;filter:drop-shadow(0 2px 4px rgba(0,0,0,.30))}
+.sc-preview{margin-inline-start:auto;flex:0 0 auto;filter:drop-shadow(0 3px 6px rgba(0,0,0,.30))}
+.storecard.ess .sc-band{min-height:0;padding:9px 12px}
+.storecard.ess .sc-bandicon{font-size:1.35rem}
+.sc-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.sc-body .sc-foot{margin-top:auto}
+.sc-ribbon{position:absolute;top:15px;inset-inline-end:-37px;width:134px;text-align:center;background:var(--good);color:#fff;font-size:.74rem;font-weight:800;line-height:1.5;padding:3px 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:3}
+html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
+.pricepill{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);border-radius:99px;padding:3px 12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* vault: the equipped item carries a ring and a «مُجهّز» tag. The ring is
+   scoped to chips that select an actual item (non-empty data-v* value), so
+   the default «بدون إطار / بدون لقب / الثيم الأساسي» chips keep exactly
+   their base selected look when nothing is equipped. */
+.framechip{transition:box-shadow .15s ease,background-color .15s ease,border-color .15s ease}
+.framechip.on[data-vframe]:not([data-vframe=""]),.framechip.on[data-vtitle]:not([data-vtitle=""]),.framechip.on[data-vtheme]:not([data-vtheme=""]){box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--amber)}
+.vtag{background:var(--amber);color:#231a04;font-size:.68rem;font-weight:800;border-radius:99px;padding:1px 8px;line-height:1.6}
+@media (prefers-reduced-motion: reduce){.framechip{transition:none}}
 </style>
 </head>
 <body class="auth">
@@ -5938,7 +6072,7 @@ const CHOICE_EXTRA_EN={
   const ob=document.getElementById("openLoginBtn");
   if(ob)ob.onclick=()=>showScreen("scr-login");
 })();
-/* ---- i18n: login screen + store (coming soon) ---- */
+/* ---- i18n: login screen + store ---- */
 Object.assign(I18N,{
 "login_h":["تسجيل الدخول","Sign in"],
 "login_sub":["سجّل دخولك بحسابك في مختبر الحدس الفيزيائي لمتابعة تقدمك ورتبتك.","Sign in with your Physics Intuition Lab account to continue your progress and tier."],
@@ -5953,10 +6087,8 @@ Object.assign(I18N,{
 "login_note":["حسابك يحفظ تقدمك ورتبتك ونتائجك، واسمك يظهر في تحية المختبر عند كل دخول.","Your account keeps your progress, tier and results, and your name greets you in the lab at every sign-in."],
 "set_acc_login_btn":["افتح شاشة تسجيل الدخول","Open the sign-in screen"],
 "set_store_h":["المتجر","Store"],
-"set_store_soon":["قريباً","Coming soon"],
 "set_store_d":["في المتجر هتلاقي محتوى خاصًا إضافيًا (Premium) تشتريه بالجيمز اللي بتجمعها من الدعوات والإنجازات: حزم تجارب متقدمة إضافية، وحزم نظرية موسّعة بجرافات وصور أكثر، وأنماط تحدٍّ خاصة في الدويل، وتلميحات ذكية وأدوات مساعدة جوه المعمل، وحزم PDF كاملة.","In the store you will find special premium content to buy with the gems you collect from invites and achievements: extra advanced experiment packs, extended theory packs with more graphs and images, special duel challenge modes, smart hints and helper tools inside the lab, and complete PDF bundles."],
-"set_store_bal":["رصيدك الحالي:","Your current balance:"],
-"set_store_note":["اجمع الجيمز من دعوة الأصدقاء وإنهاء التحديات، وخليها جاهزة ليوم افتتاح المتجر.","Collect gems from inviting friends and finishing challenges, and keep them ready for the store's opening day."]});
+"set_store_bal":["رصيدك الحالي:","Your current balance:"]});
 if(LANG==="en")applyLang("en");
 </script>
 <script>
@@ -8628,7 +8760,8 @@ function frameOfAccount(a){
 function frameWrap(inner,frame,px){
   if(frame!=="crown"&&frame!=="rose"&&frame!=="bolt"&&frame!=="flame"&&frame!=="galaxy"&&frame!=="diamond"&&frame!=="gold"&&frame!=="leaf")return inner;
   const bs=Math.max(10,Math.round((px||30)*0.45));
-  if(frame==="crown")return `<span class="avwrap crown">${inner}<span class="avbadge" style="font-size:${bs}px">👑</span></span>`;
+  const smCls=(px||30)<=32?" sm":""; /* small sizes tighten the premium glow */
+  if(frame==="crown")return `<span class="avwrap crown${smCls}">${inner}<span class="avbadge" style="font-size:${bs}px">👑</span></span>`;
   /* store frames: a themed wreath in the rose construction — small motifs
      spaced evenly around the whole circumference on the frame's own ring
      band, absolutely positioned inside the same wrapper box (visual
@@ -8644,7 +8777,7 @@ function frameWrap(inner,frame,px){
       const a2=Math.round(i*360/n2);
       mot+=`<span class="avmotif" style="font-size:${fs2}px;transform:translate(-50%,-50%) rotate(${a2}deg) translateY(-${r2}px) rotate(${-a2}deg)">${GLYPH[i%GLYPH.length]}</span>`;
     }
-    return `<span class="avwrap ${frame}">${inner}<span class="avwreath" aria-hidden="true">${mot}</span></span>`;
+    return `<span class="avwrap ${frame}${smCls}">${inner}<span class="avwreath" aria-hidden="true">${mot}</span></span>`;
   }
   /* rose: a full wreath — small rose glyphs spaced evenly around the whole
      circumference with tiny green leaf dots between them, all absolutely
@@ -8663,7 +8796,7 @@ function frameWrap(inner,frame,px){
     const la=a+Math.round(180/n);
     motifs+=`<span class="avleaf" style="width:${lw}px;height:${lh}px;transform:translate(-50%,-50%) rotate(${la}deg) translateY(-${r}px) rotate(45deg)"></span>`;
   }
-  return `<span class="avwrap rose">${inner}<span class="avwreath" aria-hidden="true">${motifs}</span></span>`;
+  return `<span class="avwrap rose${smCls}">${inner}<span class="avwreath" aria-hidden="true">${motifs}</span></span>`;
 }
 function avatarHTML(px){
   const p=profOf();
@@ -13002,7 +13135,6 @@ applyLang=function(l){
    offline sessions see the registered-only note and can buy nothing. */
 Object.assign(I18N,{
 "set_store_open":["مفتوح الآن","Open now"],
-"set_store_soon":["مفتوح الآن","Open now"],
 "set_store_d":["المتجر مفتوح: حزم مواضيعية فيها إطارات وألقاب وثيمات لصورتك وحسابك، ودرع يحمي سلسلة دخولك، ومحاولة إضافية لتحدي اليوم — وكلها بالجيمز اللي بتجمعها.","The store is open: themed bundles with frames, titles and themes for your picture and account, a shield that protects your login streak, and an extra daily-challenge attempt — all for the gems you collect."],
 "vault_h":["خزنتي","My vault"],
 "vault_d":["كل اللي تملكه من المتجر والهدايا — بدّل إطارك ولقبك وثيمك من هنا، والتغيير بيظهر في كل مكان فورًا.","Everything you own from the store and gifts — switch your frame, title and theme here, and the change shows everywhere at once."],
@@ -13039,6 +13171,9 @@ const STORE_BUNDLES=[
 const STORE_ESSENTIALS=[
   {item:"shield",price:150,icon:"🛡️",ar:"درع السلسلة",en:"Streak shield",da:"يحمي سلسلتك لو فاتك يوم واحد",de:"Protects your streak if you miss one day"},
   {item:"daily_extra",price:100,icon:"🎯",ar:"محاولة إضافية لتحدي اليوم",en:"Extra daily-challenge attempt",da:"محاولة ثانية النهاردة لتحسين نتيجتك (من غير XP إضافي)",de:"A second attempt today to improve your result (no extra XP)"}];
+/* each bundle's own color identity for its product-card header band */
+const BUNDLE_GRAD={gold:"linear-gradient(120deg,#e9b93c,#a87408)",diamond:"linear-gradient(120deg,#6fd3ef,#0e7c9c)",space:"linear-gradient(120deg,#8f6fe8,#2b1055)",energy:"linear-gradient(120deg,#ff9d2e,#e63b1f)",nature:"linear-gradient(120deg,#8fce62,#2e7d32)"};
+const ESS_GRAD={shield:"linear-gradient(120deg,#546e7a,#263238)",daily_extra:"linear-gradient(120deg,#f0a832,#d97706)"};
 /* ---------- purchases-derived ownership ---------- */
 function purchasesRows(){return (typeof SB_PURCHASES!=="undefined"&&Array.isArray(SB_PURCHASES))?SB_PURCHASES:[];}
 function ownsItem(key){return purchasesRows().some(r=>r&&r.item_key===key);}
@@ -13134,8 +13269,8 @@ function storeAvatarInner(px){
 }
 function bundleContentsHTML(b){
   const chips=b.frames.map(f=>`<span class="chip" style="display:inline-flex;align-items:center;gap:6px">${frameWrap(storeAvatarInner(26),f,26)} ${escHTML(LANG==="en"?FRAME_META[f].en:FRAME_META[f].ar)}</span>`).join(" ");
-  return chips+` <span class="chip l1">${T("لقب: ","Title: ")}${escHTML(titleLabel(b.title))}</span>`
-    +` <span class="chip"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${THEME_META[b.theme].dot}"></span> ${escHTML(LANG==="en"?THEME_META[b.theme].en:THEME_META[b.theme].ar)}</span>`;
+  return chips+` <span class="chip l1">🏷️ ${T("لقب: ","Title: ")}${escHTML(titleLabel(b.title))}</span>`
+    +` <span class="chip">🎨 <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${THEME_META[b.theme].dot}"></span> ${escHTML(LANG==="en"?THEME_META[b.theme].en:THEME_META[b.theme].ar)}</span>`;
 }
 function renderStore(){
   const zone=document.getElementById("storeZone");if(!zone)return;
@@ -13150,15 +13285,18 @@ function renderStore(){
   const owned=ownedBundles();
   const bundles=STORE_BUNDLES.map(b=>{
     const has=owned.has(b.k);
-    return `<div class="storecard"><div class="sc-top"><span style="font-size:1.7rem;line-height:1">${b.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?b.en:b.ar)}</div><div class="sc-desc">${T("حزمة كاملة: إطار ولقب وثيم بلونها","A complete bundle: a frame, a title and a matching theme")}</div></div></div>`
-      +`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">${bundleContentsHTML(b)}</div>`
-      +`<div class="sc-foot">${has?`<span class="chip l0">${T("عندك ✓","Owned ✓")}</span>`:`<span class="storeprice">${AR(b.price)} 💠</span><button class="btn primary sm" data-buy="bundle:${b.k}">${T("شراء","Buy")}</button>`}</div></div>`;
+    return `<div class="storecard">`
+      +(has?`<span class="sc-ribbon">${T("في خزنتك ✓","In your vault ✓")}</span>`:"")
+      +`<div class="sc-band" style="background:${BUNDLE_GRAD[b.k]}"><span class="sc-bandicon">${b.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?b.en:b.ar)}</div><div class="sc-bandsub">${T("حزمة كاملة: إطار ولقب وثيم بلونها","A complete bundle: a frame, a title and a matching theme")}</div></div><span class="sc-preview">${frameWrap(storeAvatarInner(46),b.frames[0],46)}</span></div>`
+      +`<div class="sc-body"><div style="display:flex;flex-wrap:wrap;gap:6px">${bundleContentsHTML(b)}</div>`
+      +`<div class="sc-foot">${has?`<span class="small">${T("بدّل بين ممتلكاتك من «خزنتي» تحت","Switch your items from “My vault” below")}</span>`:`<span class="pricepill">💠 ${AR(b.price)}</span><button class="btn primary sm" data-buy="bundle:${b.k}">${T("شراء","Buy")}</button>`}</div></div></div>`;
   }).join("");
   const ess=STORE_ESSENTIALS.map(it=>{
     const extra=it.item==="shield"?`<div class="sc-desc">${T("عندك دلوقتي: ","You currently hold: ")}<b>${AR(shieldsAvailable())}</b> ${T("درع — يقدر يتراكم","shields — they stack up")}</div>`
       :it.item==="daily_extra"?`<div class="sc-desc">${T("محاولات إضافية اشتريتها النهاردة: ","Extra attempts bought today: ")}<b>${AR(dailyExtrasToday())}</b></div>`:"";
-    return `<div class="storecard"><div class="sc-top"><span style="font-size:1.7rem;line-height:1">${it.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?it.en:it.ar)}</div><div class="sc-desc">${LANG==="en"?it.de:it.da}</div>${extra}</div></div>`
-      +`<div class="sc-foot"><span class="storeprice">${AR(it.price)} 💠</span><button class="btn primary sm" data-buy="${it.item}">${T("شراء","Buy")}</button></div></div>`;
+    return `<div class="storecard ess"><div class="sc-band" style="background:${ESS_GRAD[it.item]}"><span class="sc-bandicon">${it.icon}</span><div class="sc-name">${escHTML(LANG==="en"?it.en:it.ar)}</div></div>`
+      +`<div class="sc-body"><div class="sc-desc">${LANG==="en"?it.de:it.da}</div>${extra}`
+      +`<div class="sc-foot"><span class="pricepill">💠 ${AR(it.price)}</span><button class="btn primary sm" data-buy="${it.item}">${T("شراء","Buy")}</button></div></div></div>`;
   }).join("");
   zone.innerHTML=
     `<p class="small">${T("بتكسب الجيمز من سلسلة الدخول اليومية، وترقيات الرتب، ودعوات الأصدقاء، وهدايا المالك.","You earn gems from the daily login streak, tier promotions, friend invites and owner gifts.")}</p>`
@@ -13316,19 +13454,20 @@ function renderVault(){
   const worn=a?frameOfAccount(a):"";
   const order=["crown","gold","diamond","galaxy","rose","bolt","flame","leaf"];
   const frames=order.filter(f=>ownedFramesSet().has(f));
-  fw.innerHTML=(frames.length?frames.map(f=>`<button class="framechip ${worn===f?"on":""}" data-vframe="${f}">${frameWrap(storeAvatarInner(26),f,26)}<span>${escHTML(LANG==="en"?FRAME_META[f].en:FRAME_META[f].ar)}</span>${worn===f?" ✓":""}</button>`).join("")
+  const eqTag=` <span class="vtag">${T("مُجهّز","Equipped")}</span>`;
+  fw.innerHTML=(frames.length?frames.map(f=>`<button class="framechip ${worn===f?"on":""}" data-vframe="${f}">${frameWrap(storeAvatarInner(26),f,26)}<span>${escHTML(LANG==="en"?FRAME_META[f].en:FRAME_META[f].ar)}</span>${worn===f?eqTag:""}</button>`).join("")
     :`<span class="small">${T("لسه معندكش إطارات — اشتري حزمة من المتجر أو استنى هدية.","No frames yet — buy a bundle from the store or wait for a gift.")}</span>`)
-    +`<button class="framechip ${!worn?"on":""}" data-vframe="">${T("بدون إطار","No frame")}${!worn?" ✓":""}</button>`;
+    +`<button class="framechip ${!worn?"on":""}" data-vframe="">${T("بدون إطار","No frame")}${!worn?eqTag:""}</button>`;
   const titles=Object.keys(TITLE_META).filter(k=>ownedTitlesSet().has(k));
   const curTitle=(p&&p.title)||"";
-  tw.innerHTML=(titles.length?titles.map(k=>`<button class="framechip ${curTitle===k?"on":""}" data-vtitle="${k}"><span>${escHTML(titleLabel(k))}</span>${curTitle===k?" ✓":""}</button>`).join("")
+  tw.innerHTML=(titles.length?titles.map(k=>`<button class="framechip ${curTitle===k?"on":""}" data-vtitle="${k}"><span>${escHTML(titleLabel(k))}</span>${curTitle===k?eqTag:""}</button>`).join("")
     :`<span class="small">${T("لسه معندكش ألقاب — الألقاب بتيجي مع حزم المتجر.","No titles yet — titles come with the store bundles.")}</span>`)
-    +`<button class="framechip ${!curTitle?"on":""}" data-vtitle="">${T("بدون لقب","No title")}${!curTitle?" ✓":""}</button>`;
+    +`<button class="framechip ${!curTitle?"on":""}" data-vtitle="">${T("بدون لقب","No title")}${!curTitle?eqTag:""}</button>`;
   const themes=Object.keys(THEME_META).filter(k=>ownedThemesSet().has(k));
   const curTheme=(p&&p.theme)||"";
-  hw.innerHTML=(themes.length?themes.map(k=>`<button class="framechip ${curTheme===k?"on":""}" data-vtheme="${k}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${THEME_META[k].dot}"></span><span>${escHTML(LANG==="en"?THEME_META[k].en:THEME_META[k].ar)}</span>${curTheme===k?" ✓":""}</button>`).join("")
+  hw.innerHTML=(themes.length?themes.map(k=>`<button class="framechip ${curTheme===k?"on":""}" data-vtheme="${k}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${THEME_META[k].dot}"></span><span>${escHTML(LANG==="en"?THEME_META[k].en:THEME_META[k].ar)}</span>${curTheme===k?eqTag:""}</button>`).join("")
     :`<span class="small">${T("لسه معندكش ثيمات — الثيمات بتيجي مع حزم المتجر.","No themes yet — themes come with the store bundles.")}</span>`)
-    +`<button class="framechip ${!curTheme?"on":""}" data-vtheme="">${T("الثيم الأساسي","Default theme")}${!curTheme?" ✓":""}</button>`;
+    +`<button class="framechip ${!curTheme?"on":""}" data-vtheme="">${T("الثيم الأساسي","Default theme")}${!curTheme?eqTag:""}</button>`;
   fw.querySelectorAll("[data-vframe]").forEach(b=>{b.onclick=()=>equipCosmetic("frame",b.dataset.vframe);});
   tw.querySelectorAll("[data-vtitle]").forEach(b=>{b.onclick=()=>equipCosmetic("title",b.dataset.vtitle);});
   hw.querySelectorAll("[data-vtheme]").forEach(b=>{b.onclick=()=>equipCosmetic("theme",b.dataset.vtheme);});
