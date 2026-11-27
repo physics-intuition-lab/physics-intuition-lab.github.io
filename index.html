@@ -4,6 +4,34 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="color-scheme" content="light dark" />
+<style>
+/* ===== BOOT SPLASH — CRITICAL FIRST-PAINT COVER =====
+   The splash's only styling used to live in the main stylesheet, which
+   sits AFTER three parser-blocking CDN scripts and two external
+   stylesheets in this head — so on a slow connection the browser could
+   paint the page (the sign-in screen is the default .on screen) before
+   the splash's opaque cover was styled at all, and the sign-in form
+   flashed "behind" the splash while a stored session restored. This
+   tiny block is parsed before any of that: from the very first frame
+   the splash is a fully opaque, full-viewport cover, in the app's exact
+   background colors — same values and same resolution order as --bg in
+   the main stylesheet (system scheme first, then the manual theme
+   override; the purchased accents never change --bg, so these hexes
+   match it in every theme). The main stylesheet's #bootSplash rule
+   still layers on top once it loads. Boot timing, session logic and
+   the watchdog are untouched — this is the splash's own paint only. */
+#bootSplash{position:fixed;inset:0;z-index:3000;background:#f2f5f4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+@media (prefers-color-scheme:dark){#bootSplash{background:#0c1417}html[data-theme="light"] #bootSplash{background:#f2f5f4}}
+html[data-theme="dark"] #bootSplash{background:#0c1417}
+#bootSplash img{width:92px;height:92px;object-fit:contain}
+#bootSplash .bsbar{width:148px;height:5px;border-radius:99px;background:#d8e0dc;overflow:hidden}
+@media (prefers-color-scheme:dark){#bootSplash .bsbar{background:#2a3d45}}
+#bootSplash .bsbar i{display:block;height:100%;width:40%;border-radius:99px;background:#0b766e;animation:bslideCrit 1.1s ease-in-out infinite alternate}
+@media (prefers-color-scheme:dark){#bootSplash .bsbar i{background:#2dd4bf}}
+@keyframes bslideCrit{from{transform:translateX(-60%)}to{transform:translateX(260%)}}
+@media (prefers-reduced-motion:reduce){#bootSplash .bsbar i{animation:none;width:100%}}
+@media print{#bootSplash{display:none!important}}
+</style>
 <link rel="icon" type="image/png" href="assets/logo.png" />
 <link rel="manifest" href="assets/manifest.webmanifest" />
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f5f4" />
@@ -1017,7 +1045,7 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
 </style>
 </head>
 <body class="auth">
-<div id="bootSplash" aria-hidden="true"><img src="assets/logo.png" alt=""><div class="bsbar"><i></i></div></div>
+<div id="bootSplash" aria-hidden="true" style="position:fixed;inset:0;z-index:3000"><img src="assets/logo.png" alt=""><div class="bsbar"><i></i></div></div>
 
 <!-- ============ AUTH (official entry: sign in / create account / guest preview) ============ -->
 <div class="guestbar" id="guestBar"></div>
@@ -8992,7 +9020,7 @@ function renderTeacherSpace(openId){
   sph("trTopic",T("مثال: قياس سرعة الصوت بالرنين","Example: Measuring the speed of sound by resonance"));
   sph("trNotes",T("أي تفاصيل تساعد المالك: الهدف التعليمي، الجهاز المتاح، ملاحظات للطلاب…","Any details that help the owner: the learning goal, the available apparatus, notes for students…"));
   const lv=document.getElementById("trLevel");
-  if(lv){const vals=[T("سهل","Easy"),T("متوسط","Medium"),T("متقدم","Advanced")];for(let i=0;i<3;i++)lv.options[i].textContent=vals[i];}
+  if(lv&&lv.options){const vals=[T("سهل","Easy"),T("متوسط","Medium"),T("متقدم","Advanced")];for(let i=0;i<3&&i<lv.options.length;i++)if(lv.options[i])lv.options[i].textContent=vals[i];}
   renderTcPick();renderTcSel();renderTcMine();renderTrMine();
   if(openId)openCourse(openId);
 }
