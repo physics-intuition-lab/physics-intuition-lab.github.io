@@ -392,7 +392,7 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
    absolutely positioned, so it never shifts the row's layout; an avatar with
    no frame renders exactly as before */
 .avwrap{position:relative;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;padding:2.5px;vertical-align:middle;flex:0 0 auto;line-height:0}
-.avwrap.crown{background:linear-gradient(140deg,#f7dc6f,#d9a521 40%,#a87408 65%,#f1c40f)}
+.avwrap.crown{background:linear-gradient(140deg,#fff3b0,#f7dc6f 22%,#d9a521 45%,#a87408 68%,#8a5f06 82%,#f1c40f)}
 .avwrap.rose{background:conic-gradient(from 15deg,#7fb069,#f2a7bb,#5da85f,#e75480,#8fce62,#f6b8c8,#7fb069,#e75480,#5da85f,#f2a7bb,#7fb069)}
 .avwrap .avbadge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);line-height:1;pointer-events:none;z-index:2;text-shadow:0 1px 3px rgba(0,0,0,.35)}
 .avwrap .avwreath{position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2}
@@ -401,12 +401,12 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
 /* store frames (bought with gems): same wreath construction as rose — a
    themed ring band plus small motifs spaced around the whole circumference,
    all absolutely positioned inside the wrapper box, so no layout shift */
-.avwrap.bolt{background:conic-gradient(from 20deg,#f9e04b,#2e7fe0,#ffe95e,#1b4f9e,#ffd21f,#2e7fe0,#f9e04b)}
-.avwrap.flame{background:conic-gradient(from 10deg,#ff9d2e,#e63b1f,#ffc93c,#d81f06,#ff7a1a,#e63b1f,#ff9d2e)}
-.avwrap.galaxy{background:conic-gradient(from 0deg,#2b1055,#5b2a9d,#170b33,#7b3fd4,#31135e,#5b2a9d,#2b1055)}
-.avwrap.diamond{background:conic-gradient(from 30deg,#dff7ff,#8fd8ef,#ffffff,#5fb8d9,#eafcff,#8fd8ef,#dff7ff)}
-.avwrap.gold{background:conic-gradient(from 25deg,#f7dc6f,#b8860b,#ffe98a,#a87408,#f1c40f,#b8860b,#f7dc6f)}
-.avwrap.leaf{background:conic-gradient(from 15deg,#7fb069,#a7d489,#5da85f,#8fce62,#3e8e4f,#a7d489,#7fb069)}
+.avwrap.bolt{background:conic-gradient(from 20deg,#ffe95e,#f9e04b 14%,#2e7fe0 30%,#ffd21f 46%,#1b4f9e 60%,#ffe95e 76%,#2e7fe0 90%,#ffe95e)}
+.avwrap.flame{background:conic-gradient(from 10deg,#ffc93c,#ff9d2e 16%,#e63b1f 34%,#ff7a1a 50%,#d81f06 66%,#ffc93c 84%,#ff9d2e 93%,#ffc93c)}
+.avwrap.galaxy{background:radial-gradient(circle at 22% 26%,rgba(255,255,255,.95) 0 1px,transparent 1.8px),radial-gradient(circle at 76% 16%,rgba(196,165,255,.85) 0 1px,transparent 1.8px),radial-gradient(circle at 85% 72%,rgba(255,255,255,.9) 0 1px,transparent 1.8px),radial-gradient(circle at 28% 84%,rgba(255,170,220,.75) 0 1.2px,transparent 2px),radial-gradient(circle at 58% 92%,rgba(160,200,255,.8) 0 1px,transparent 1.8px),conic-gradient(from 0deg,#170b33,#3d1a78 15%,#5b2a9d 29%,#241047 46%,#7b3fd4 60%,#8e2a6e 74%,#2b1055 88%,#170b33)}
+.avwrap.diamond{background:conic-gradient(from 30deg,#ffffff,#dff7ff 13%,#8fd8ef 27%,#ffffff 41%,#5fb8d9 56%,#bdeffb 70%,#eafcff 84%,#8fd8ef 93%,#ffffff)}
+.avwrap.gold{background:conic-gradient(from 25deg,#fff3b0,#f7dc6f 13%,#d9a521 27%,#a87408 44%,#ffe98a 58%,#f1c40f 70%,#b8860b 84%,#ffe98a 93%,#fff3b0)}
+.avwrap.leaf{background:conic-gradient(from 15deg,#a7d489,#7fb069 17%,#5da85f 34%,#8fce62 51%,#3e8e4f 68%,#a7d489 85%,#7fb069 94%,#a7d489)}
 /* store accent themes (equip_cosmetic 'theme'): each theme is a small design
    system — accent (--teal/--teal-d), second accent (--amber + --acc2), a
    two-stop gradient (--acc-grad), a soft glow (--acc-glow), a chip/tint
@@ -417,22 +417,22 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
    set brightens the accents so they keep their contrast on dark surfaces);
    the dark set applies under a manual dark theme or a dark system scheme
    that was not manually overridden to light. */
-html[data-accent="gold"]{--teal:#a87408;--teal-d:#8a5f06;--amber:#c99700;--amber-bg:#faf0d2;--acc2:#e3ac1e;--acc-grad:linear-gradient(135deg,#d9a521,#a87408);--acc-glow:rgba(201,151,0,.38);--acc-tint:#faf0d2;--acc-on:#ffffff}
-html[data-accent="diamond"]{--teal:#0e7c9c;--teal-d:#0a5f78;--amber:#2ea8c7;--amber-bg:#e2f4fa;--acc2:#3fb9dd;--acc-grad:linear-gradient(135deg,#2ea8c7,#0a5f78);--acc-glow:rgba(46,168,199,.38);--acc-tint:#e2f4fa;--acc-on:#ffffff}
+html[data-accent="gold"]{--teal:#a87408;--teal-d:#8a5f06;--amber:#8a6d00;--amber-bg:#faf0d2;--acc2:#e3ac1e;--acc-grad:linear-gradient(135deg,#96700a,#7a5205);--acc-glow:rgba(201,151,0,.38);--acc-tint:#faf0d2;--acc-on:#ffffff}
+html[data-accent="diamond"]{--teal:#0e7c9c;--teal-d:#0a5f78;--amber:#1b87ab;--amber-bg:#e2f4fa;--acc2:#3fb9dd;--acc-grad:linear-gradient(135deg,#147d9f,#0a5f78);--acc-glow:rgba(46,168,199,.38);--acc-tint:#e2f4fa;--acc-on:#ffffff}
 html[data-accent="space"]{--teal:#5b3fd4;--teal-d:#452da8;--amber:#7b5fe0;--amber-bg:#ece7fb;--acc2:#8f6fe8;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(91,63,212,.34);--acc-tint:#ece7fb;--acc-on:#ffffff}
-html[data-accent="energy"]{--teal:#d95d14;--teal-d:#b34a12;--amber:#2e7fe0;--amber-bg:#fdeadd;--acc2:#f07f2e;--acc-grad:linear-gradient(135deg,#f07f2e,#c24e0e);--acc-glow:rgba(217,93,20,.34);--acc-tint:#fdeadd;--acc-on:#ffffff}
-html[data-accent="nature"]{--teal:#2e8b3a;--teal-d:#22702e;--amber:#6aa84f;--amber-bg:#e9f4e2;--acc2:#57a773;--acc-grad:linear-gradient(135deg,#43a047,#22702e);--acc-glow:rgba(46,139,58,.34);--acc-tint:#e9f4e2;--acc-on:#ffffff}
-html[data-theme="dark"][data-accent="gold"]{--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#b8860b,#7a5205);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
-html[data-theme="dark"][data-accent="diamond"]{--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#1d94bc,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
+html[data-accent="energy"]{--teal:#c24e0e;--teal-d:#b34a12;--amber:#2e7fe0;--amber-bg:#e9f1fd;--acc2:#f07f2e;--acc-grad:linear-gradient(135deg,#b9520d,#a3440d);--acc-glow:rgba(217,93,20,.34);--acc-tint:#fdeadd;--acc-on:#ffffff}
+html[data-accent="nature"]{--teal:#2e7d33;--teal-d:#22702e;--amber:#4c7a28;--amber-bg:#e9f4e2;--acc2:#57a773;--acc-grad:linear-gradient(135deg,#35823a,#22702e);--acc-glow:rgba(46,139,58,.34);--acc-tint:#e9f4e2;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="gold"]{--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#8f6607,#654604);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="diamond"]{--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#147d9f,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
 html[data-theme="dark"][data-accent="space"]{--teal:#ab90f7;--teal-d:#cdbcff;--amber:#ab90f7;--amber-bg:#241a44;--acc2:#cdbcff;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(171,144,247,.42);--acc-tint:#241a44;--acc-on:#ffffff}
-html[data-theme="dark"][data-accent="energy"]{--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#38200f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#e06a1b,#b34a12);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
-html[data-theme="dark"][data-accent="nature"]{--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#388e3c,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="energy"]{--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#16283f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#b9520d,#8f3c0a);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
+html[data-theme="dark"][data-accent="nature"]{--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#2f7d33,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
 @media (prefers-color-scheme: dark){
-html[data-accent="gold"]:not([data-theme="light"]){--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#b8860b,#7a5205);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
-html[data-accent="diamond"]:not([data-theme="light"]){--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#1d94bc,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
+html[data-accent="gold"]:not([data-theme="light"]){--teal:#eec44f;--teal-d:#f7dc6f;--amber:#eec44f;--amber-bg:#2b2113;--acc2:#f7dc6f;--acc-grad:linear-gradient(135deg,#8f6607,#654604);--acc-glow:rgba(238,196,79,.42);--acc-tint:#2b2113;--acc-on:#ffffff}
+html[data-accent="diamond"]:not([data-theme="light"]){--teal:#55c7e8;--teal-d:#9fe6fa;--amber:#55c7e8;--amber-bg:#12303c;--acc2:#9fe6fa;--acc-grad:linear-gradient(135deg,#147d9f,#0a5f78);--acc-glow:rgba(85,199,232,.42);--acc-tint:#12303c;--acc-on:#ffffff}
 html[data-accent="space"]:not([data-theme="light"]){--teal:#ab90f7;--teal-d:#cdbcff;--amber:#ab90f7;--amber-bg:#241a44;--acc2:#cdbcff;--acc-grad:linear-gradient(135deg,#7b5fe0,#452da8);--acc-glow:rgba(171,144,247,.42);--acc-tint:#241a44;--acc-on:#ffffff}
-html[data-accent="energy"]:not([data-theme="light"]){--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#38200f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#e06a1b,#b34a12);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
-html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#388e3c,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
+html[data-accent="energy"]:not([data-theme="light"]){--teal:#ff9040;--teal-d:#ffb27a;--amber:#5ea2f0;--amber-bg:#16283f;--acc2:#ffb27a;--acc-grad:linear-gradient(135deg,#b9520d,#8f3c0a);--acc-glow:rgba(255,144,64,.40);--acc-tint:#38200f;--acc-on:#ffffff}
+html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9adea6;--amber:#8fce62;--amber-bg:#17301b;--acc2:#9adea6;--acc-grad:linear-gradient(135deg,#2f7d33,#1e5c27);--acc-glow:rgba(99,200,115,.40);--acc-tint:#17301b;--acc-on:#ffffff}
 }
 .avwrap .avmotif{position:absolute;top:50%;left:50%;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 /* store (Settings): item cards + wardrobe frame chips */
@@ -953,18 +953,18 @@ html[data-accent] .streaktoast{box-shadow:0 4px 16px var(--acc-glow)}
    (transform) and fades — shadows never animate, so long leaderboard lists
    stay cheap. Small frames (.sm, set by frameWrap at <=32px) tighten the
    glow so the wreath still reads clearly. */
-.avwrap.crown,.avwrap.rose,.avwrap.gold,.avwrap.diamond,.avwrap.galaxy,.avwrap.bolt,.avwrap.flame,.avwrap.leaf{--fglow:transparent;--fring:transparent;box-shadow:0 0 12px 3px var(--fglow)}
-.avwrap.crown.sm,.avwrap.rose.sm,.avwrap.gold.sm,.avwrap.diamond.sm,.avwrap.galaxy.sm,.avwrap.bolt.sm,.avwrap.flame.sm,.avwrap.leaf.sm{box-shadow:0 0 6px 1px var(--fglow)}
-.avwrap.crown::before,.avwrap.rose::before,.avwrap.gold::before,.avwrap.diamond::before,.avwrap.galaxy::before,.avwrap.bolt::before,.avwrap.flame::before,.avwrap.leaf::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),inset 0 0 0 4px rgba(0,0,0,.16);pointer-events:none;z-index:1}
+.avwrap.crown,.avwrap.rose,.avwrap.gold,.avwrap.diamond,.avwrap.galaxy,.avwrap.bolt,.avwrap.flame,.avwrap.leaf{--fglow:transparent;--fglow2:transparent;--fring:transparent;box-shadow:0 0 7px 1px var(--fglow),0 0 18px 5px var(--fglow2)}
+.avwrap.crown.sm,.avwrap.rose.sm,.avwrap.gold.sm,.avwrap.diamond.sm,.avwrap.galaxy.sm,.avwrap.bolt.sm,.avwrap.flame.sm,.avwrap.leaf.sm{box-shadow:0 0 5px 1px var(--fglow),0 0 10px 2px var(--fglow2)}
+.avwrap.crown::before,.avwrap.rose::before,.avwrap.gold::before,.avwrap.diamond::before,.avwrap.galaxy::before,.avwrap.bolt::before,.avwrap.flame::before,.avwrap.leaf::before{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.55),inset 0 0 0 4px rgba(0,0,0,.16),inset 0 3px 4px rgba(255,255,255,.38),inset 0 -3px 4px rgba(0,0,0,.22);pointer-events:none;z-index:1}
 .avwrap.crown::after,.avwrap.rose::after,.avwrap.gold::after,.avwrap.diamond::after,.avwrap.galaxy::after,.avwrap.bolt::after,.avwrap.flame::after,.avwrap.leaf::after{content:"";position:absolute;inset:-2.5px;border-radius:50%;border:1.5px solid var(--fring);pointer-events:none;z-index:0}
-.avwrap.crown{--fglow:rgba(217,165,33,.45);--fring:rgba(168,116,8,.65)}
-.avwrap.gold{--fglow:rgba(217,165,33,.45);--fring:rgba(168,116,8,.65)}
-.avwrap.rose{--fglow:rgba(231,84,128,.38);--fring:rgba(199,62,106,.60)}
-.avwrap.bolt{--fglow:rgba(46,127,224,.42);--fring:rgba(27,79,158,.60)}
-.avwrap.flame{--fglow:rgba(230,59,31,.42);--fring:rgba(184,32,10,.60)}
-.avwrap.galaxy{--fglow:rgba(123,63,212,.48);--fring:rgba(70,32,140,.65)}
-.avwrap.diamond{--fglow:rgba(95,184,217,.50);--fring:rgba(46,140,180,.60)}
-.avwrap.leaf{--fglow:rgba(93,168,95,.42);--fring:rgba(46,110,60,.60)}
+.avwrap.crown{--fglow:rgba(217,165,33,.50);--fglow2:rgba(217,165,33,.20);--fring:rgba(168,116,8,.65)}
+.avwrap.gold{--fglow:rgba(217,165,33,.50);--fglow2:rgba(241,196,15,.22);--fring:rgba(168,116,8,.65)}
+.avwrap.rose{--fglow:rgba(231,84,128,.42);--fglow2:rgba(231,84,128,.18);--fring:rgba(199,62,106,.60)}
+.avwrap.bolt{--fglow:rgba(46,127,224,.46);--fglow2:rgba(249,224,75,.20);--fring:rgba(27,79,158,.60)}
+.avwrap.flame{--fglow:rgba(230,59,31,.46);--fglow2:rgba(255,157,46,.20);--fring:rgba(184,32,10,.60)}
+.avwrap.galaxy{--fglow:rgba(123,63,212,.52);--fglow2:rgba(142,42,110,.22);--fring:rgba(70,32,140,.65)}
+.avwrap.diamond{--fglow:rgba(95,184,217,.55);--fglow2:rgba(189,239,251,.30);--fring:rgba(46,140,180,.60)}
+.avwrap.leaf{--fglow:rgba(93,168,95,.46);--fglow2:rgba(143,206,98,.20);--fring:rgba(46,110,60,.60)}
 .avwrap.gold .avwreath::after,.avwrap.diamond .avwreath::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,255,255,.65) 16deg,transparent 42deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));mask:radial-gradient(farthest-side,transparent calc(100% - 9px),#000 calc(100% - 8px));animation:avshim 3.8s linear infinite;pointer-events:none}
 @keyframes avshim{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.avwrap.gold .avwreath::after,.avwrap.diamond .avwreath::after{animation:none}}
@@ -990,6 +990,11 @@ html[data-accent] .streaktoast{box-shadow:0 4px 16px var(--acc-glow)}
 .sc-ribbon{position:absolute;top:15px;inset-inline-end:-37px;width:134px;text-align:center;background:var(--good);color:#fff;font-size:.74rem;font-weight:800;line-height:1.5;padding:3px 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.25);z-index:3}
 html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
 .pricepill{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);border-radius:99px;padding:3px 12px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* unaffordable right now (live balance below the price): the price softens
+   so the eye reads "not yet" before the tap — the Buy tap itself answers
+   with the insufficient-balance message, no server call needed */
+.pricepill.cant{opacity:.55;filter:saturate(.35);border-style:dashed}
+.storecant{opacity:.55;filter:saturate(.4)}
 /* vault: the equipped item carries a ring and a «مُجهّز» tag. The ring is
    scoped to chips that select an actual item (non-empty data-v* value), so
    the default «بدون إطار / بدون لقب / الثيم الأساسي» chips keep exactly
@@ -8791,9 +8796,9 @@ function frameWrap(inner,frame,px){
      band, absolutely positioned inside the same wrapper box (visual
      overflow only, no layout shift) */
   if(frame==="bolt"||frame==="flame"||frame==="galaxy"||frame==="diamond"||frame==="gold"||frame==="leaf"){
-    const GLYPH={bolt:["⚡"],flame:["🔥"],galaxy:["✨","⭐"],diamond:["💎"],gold:["✨","🌿"],leaf:["🍃","🌿"]}[frame];
+    const GLYPH={bolt:["⚡"],flame:["🔥"],galaxy:["⭐","✨","🌟"],diamond:["💎","🔷"],gold:["✨","⭐"],leaf:["🍃","🌿"]}[frame];
     const size2=px||30;
-    const n2=size2<=32?8:(size2<=48?10:12);
+    const n2=size2<=32?6:(size2<=48?8:10);
     const r2=Math.round(size2/2)+2;
     const fs2=Math.max(9,Math.round(size2*0.38));
     let mot="";
@@ -13284,7 +13289,15 @@ function storeErrText(raw,gift){
   if(m.indexOf("no_such_user")>=0)return T("المستخدم ده مش موجود.","That user does not exist.");
   if(m.indexOf("not_signed_in")>=0)return T("لازم تسجّل الدخول بحسابك الأول.","You must sign in first.");
   if(m.indexOf("bad_item")>=0)return T("العنصر ده مش متاح في المتجر.","That item is not available in the store.");
+  if(m.indexOf("bad_value")>=0)return T("القيمة دي مش صالحة للعنصر ده.","That value is not valid for this item.");
   return T("حصل خطأ — حاول تاني.","Something went wrong — please try again.");
+}
+/* the insufficient-balance answer, shared by the client-side pre-check
+   (Buy tap and Confirm tap) and the server-error backstop: it always
+   names the live balance and the price, in the user's language */
+function storeInsuffMsg(price){
+  return T("لا يتوفر رصيد كافٍ 💎 — رصيدك الحالي "+AR(S.gems||0)+" جوهرة والمطلوب "+AR(price),
+           "Insufficient gems balance 💎 — you have "+AR(S.gems||0)+", this needs "+AR(price));
 }
 /* ---------- store rendering ---------- */
 const STORE={confirm:null,busy:false,msg:"",giftBundle:"gold",giftUid:null,giftName:"",giftQ:"",users:null};
@@ -13317,14 +13330,14 @@ function renderStore(){
       +(has?`<span class="sc-ribbon">${T("في خزنتك ✓","In your vault ✓")}</span>`:"")
       +`<div class="sc-band" style="background:${BUNDLE_GRAD[b.k]}"><span class="sc-bandicon">${b.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?b.en:b.ar)}</div><div class="sc-bandsub">${T("حزمة كاملة: إطار ولقب وثيم بلونها","A complete bundle: a frame, a title and a matching theme")}</div></div><span class="sc-preview">${frameWrap(storeAvatarInner(46),b.frames[0],46)}</span></div>`
       +`<div class="sc-body"><div style="display:flex;flex-wrap:wrap;gap:6px">${bundleContentsHTML(b)}</div>`
-      +`<div class="sc-foot">${has?`<span class="small">${T("بدّل بين ممتلكاتك من «خزنتي» تحت","Switch your items from “My vault” below")}</span>`:`<span class="pricepill">💠 ${AR(b.price)}</span><button class="btn primary sm" data-buy="bundle:${b.k}">${T("شراء","Buy")}</button>`}</div></div></div>`;
+      +`<div class="sc-foot">${has?`<span class="small">${T("بدّل بين ممتلكاتك من «خزنتي» تحت","Switch your items from “My vault” below")}</span>`:`<span class="pricepill${(S.gems||0)<b.price?" cant":""}">💠 ${AR(b.price)}</span><button class="btn primary sm" data-buy="bundle:${b.k}">${T("شراء","Buy")}</button>`}</div></div></div>`;
   }).join("");
   const ess=STORE_ESSENTIALS.map(it=>{
     const extra=it.item==="shield"?`<div class="sc-desc">${T("عندك دلوقتي: ","You currently hold: ")}<b>${AR(shieldsAvailable())}</b> ${T("درع — يقدر يتراكم","shields — they stack up")}</div>`
       :it.item==="daily_extra"?`<div class="sc-desc">${T("محاولات إضافية اشتريتها النهاردة: ","Extra attempts bought today: ")}<b>${AR(dailyExtrasToday())}</b></div>`:"";
     return `<div class="storecard ess"><div class="sc-band" style="background:${ESS_GRAD[it.item]}"><span class="sc-bandicon">${it.icon}</span><div class="sc-name">${escHTML(LANG==="en"?it.en:it.ar)}</div></div>`
       +`<div class="sc-body"><div class="sc-desc">${LANG==="en"?it.de:it.da}</div>${extra}`
-      +`<div class="sc-foot"><span class="pricepill">💠 ${AR(it.price)}</span><button class="btn primary sm" data-buy="${it.item}">${T("شراء","Buy")}</button></div></div></div>`;
+      +`<div class="sc-foot"><span class="pricepill${(S.gems||0)<it.price?" cant":""}">💠 ${AR(it.price)}</span><button class="btn primary sm" data-buy="${it.item}">${T("شراء","Buy")}</button></div></div></div>`;
   }).join("");
   zone.innerHTML=
     `<p class="small">${T("بتكسب الجيمز من سلسلة الدخول اليومية، وترقيات الرتب، ودعوات الأصدقاء، وهدايا المالك.","You earn gems from the daily login streak, tier promotions, friend invites and owner gifts.")}</p>`
@@ -13332,7 +13345,7 @@ function renderStore(){
     +`<h3 style="margin:16px 0 0">${T("أساسيات","Essentials")}</h3><div class="storegrid">${ess}</div>`
     +`<h3 style="margin:16px 0 0">${T("🎁 إهداء حزمة لصديق","🎁 Gift a bundle to a friend")}</h3>`
     +`<p class="small" style="margin-top:4px">${T("اختار الحزمة والصديق — الحزمة بتوصله فورًا وبيتلبس أول إطار فيها تلقائيًا، وبيوصله إشعار بالهدية.","Pick the bundle and the friend — it reaches them at once, its first frame is auto-worn, and they get a gift notification.")}</p>`
-    +`<div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px" id="storeGiftBundles">${STORE_BUNDLES.map(b=>`<button class="btn sm" data-gbundle="${b.k}" style="${STORE.giftBundle===b.k?"background:var(--amber-bg);border-color:var(--amber)":""}">${b.icon} ${escHTML(LANG==="en"?b.en:b.ar)} · ${AR(b.price)} 💠</button>`).join("")}</div>`
+    +`<div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px" id="storeGiftBundles">${STORE_BUNDLES.map(b=>`<button class="btn sm${(S.gems||0)<b.price?" storecant":""}" data-gbundle="${b.k}" style="${STORE.giftBundle===b.k?"background:var(--amber-bg);border-color:var(--amber)":""}">${b.icon} ${escHTML(LANG==="en"?b.en:b.ar)} · ${AR(b.price)} 💠</button>`).join("")}</div>`
     +`<input class="fld" id="storeGiftSearch" type="text" style="margin-top:10px" placeholder="${T("ابحث بالاسم…","Search by name…")}" value="${escHTML(STORE.giftQ)}">`
     +`<div id="storeGiftUsers" style="max-height:230px;overflow:auto;margin-top:6px"></div>`
     +`<button class="btn primary" id="storeGiftBtn" style="margin-top:10px">${T("إهداء الحزمة","Gift the bundle")}</button>`
@@ -13391,6 +13404,19 @@ function storeItemPrice(item){
   const e=STORE_ESSENTIALS.find(x=>x.item===item);return e?e.price:0;
 }
 function storeAskConfirm(item,target,targetName){
+  if(STORE.busy)return; /* a purchase is in flight — never stack a second one */
+  /* CLIENT-SIDE BALANCE PRE-CHECK: if the live balance (S.gems) is below
+     the price, answer immediately — inline in the store and as a toast —
+     and never open the confirmation or call buy_item. The server-side
+     insufficient_gems mapping stays as the backstop in storeDoBuy. */
+  const price=storeItemPrice(item);
+  if((S.gems||0)<price){
+    STORE.confirm=null;
+    STORE.msg=storeInsuffMsg(price);
+    if(typeof toast==="function")toast(STORE.msg);
+    try{renderStore();}catch(e){}
+    return;
+  }
   STORE.confirm={item:item,target:target||null,targetName:targetName||""};
   STORE.msg="";
   renderStoreConfirm();
@@ -13419,6 +13445,16 @@ async function storeDoBuy(){
   const c=STORE.confirm;
   if(!c||STORE.busy)return;
   if(!storeServer()){STORE.msg=T("سجّل الدخول بحسابك الأونلاين الأول عشان تشتري.","Sign in with your online account first to buy.");STORE.confirm=null;renderStore();return;}
+  /* FINAL BALANCE GUARD — this runs BEFORE the buy_item RPC below, so an
+     insufficient balance can never reach the server: if the balance fell
+     below the price since the confirmation opened, answer locally. */
+  if((S.gems||0)<storeItemPrice(c.item)){
+    STORE.msg=storeInsuffMsg(storeItemPrice(c.item));
+    if(typeof toast==="function")toast(STORE.msg);
+    STORE.confirm=null;
+    try{renderStore();}catch(e){}
+    return;
+  }
   STORE.busy=true;renderStoreConfirm();
   try{
     const r=await sbCall(SB.rpc("buy_item",{p_item:c.item,p_target:c.target||null}));
@@ -13442,7 +13478,11 @@ async function storeDoBuy(){
     refreshGemUI();
     await storeRefreshPurchases();
   }catch(e){
-    STORE.msg=storeErrText(e&&e.message,!!c.target);
+    /* backstop: the balance changed between the pre-check and the server
+       call — the server's insufficient_gems gets the same named message */
+    STORE.msg=(String(e&&e.message||"").indexOf("insufficient_gems")>=0)
+      ?storeInsuffMsg(storeItemPrice(c.item))
+      :storeErrText(e&&e.message,!!c.target);
     STORE.confirm=null;
   }
   STORE.busy=false;
