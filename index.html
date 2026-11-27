@@ -310,7 +310,7 @@ canvas.sim{width:100%;height:auto;display:block;background:var(--surface2);borde
 .invslots i{flex:1;height:10px;border-radius:99px;background:var(--surface2);border:1.5px dashed var(--line)}
 .invrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:.9rem;font-weight:600}
 .gembal{background:var(--surface2);border:1px solid var(--line);border-radius:99px;padding:4px 12px}
-.madeby{text-align:center;color:var(--ink2,#7d939e);font-size:.85rem;letter-spacing:.02em;margin:26px 0 6px;opacity:.85}
+.madeby{text-align:center;color:var(--ink2,#7d939e);font-size:.85rem;margin:26px 0 6px;opacity:.85}
 .phase{display:flex;gap:6px;margin-bottom:12px}
 .phase div{flex:1;text-align:center;padding:7px 4px;border-radius:10px;background:var(--surface2);color:var(--muted);font-size:.85rem;font-weight:600}
 .phase div.on{background:var(--teal);color:#fff}
@@ -529,7 +529,7 @@ html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9a
   #printSheet h1{font-size:19pt;border-bottom:3px solid #0b766e;padding-bottom:8px}
   #printSheet h2{font-size:14.5pt;color:#095e58;border-bottom:1.5px solid #9fc6c0;padding-bottom:4px;margin-top:26px;break-before:page}
   #printSheet h2:first-of-type{break-before:auto}
-  #printSheet p{margin-bottom:7px;text-align:justify}
+  #printSheet p{margin-bottom:7px;text-align:start}
   #printSheet h3{font-size:12.5pt;color:#095e58;margin:18px 0 4px}
   #printSheet .formula{font-size:13pt;text-align:center}
   #printSheet .thfig,#printSheet .thimg{break-inside:avoid;border:1px solid #bbb;background:#fff}
@@ -543,7 +543,7 @@ html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9a
 #pdfStage h1{font-size:24px;color:#095e58;border-bottom:3px solid #0b766e;padding-bottom:10px;margin:0 0 14px}
 #pdfStage h2{font-size:19px;color:#095e58;border-bottom:1.5px solid #9fc6c0;padding-bottom:5px;margin:0 0 10px}
 #pdfStage h3{font-size:16px;color:#095e58;margin:16px 0 5px}
-#pdfStage p{margin:0 0 8px;text-align:justify}
+#pdfStage p{margin:0 0 8px;text-align:start}
 #pdfStage .thlaw{color:#095e58;font-weight:700;margin:14px 0 4px}
 #pdfStage .thsum,#pdfStage .small{color:#141414}
 #pdfStage .formula{background:#f5f5f3;border:1px solid #b9b9b9;color:#141414}
@@ -569,11 +569,11 @@ html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9a
 /* ===== راحة قراءة النظرية الأكاديمية ===== */
 #theoryPanel{padding:22px 20px}
 #theoryPanel p{line-height:1.95}
-#theoryPanel .thsum{font-size:1.03rem;text-align:justify;margin-bottom:6px}
-#theoryPanel .thlaw{margin-top:26px;margin-bottom:4px;font-size:.95rem;letter-spacing:.01em}
+#theoryPanel .thsum{font-size:1.03rem;text-align:start;margin-bottom:6px}
+#theoryPanel .thlaw{margin-top:26px;margin-bottom:4px;font-size:.95rem}
 #theoryPanel .formula{font-size:1.16rem;padding:14px 12px}
 #theoryPanel .thfig,#theoryPanel .thimg{margin:18px 0}
-details.th .body .thsum{line-height:1.9;text-align:justify}
+details.th .body .thsum{line-height:1.9;text-align:start}
 details.th .body .thlaw{margin-top:22px;margin-bottom:4px}
 details.th .body .thfig,details.th .body .thimg{margin:16px 0}
 #expPrep .card{margin-bottom:14px}
@@ -14862,6 +14862,100 @@ input[type=range]:focus-visible{outline:3px solid var(--amber);outline-offset:2p
   .bnav button{transition:none}
   .lvlcard:active,.modecard:active,.backbtn:active{transform:none}
 }
+</style>
+
+<style>
+/* ===== TYPOGRAPHY SYSTEM 3 — the deep text-formatting raise =====
+   Appended last so it refines — never replaces — the type systems above.
+   Presentation only: no wording, no colors, no markup, no behavior change.
+   What it settles, on every screen, in both languages:
+   1) Prose leading per language. Arabic script needs air: body text now
+      leads at 1.9 and paragraphs at 1.95 (the study-document range), with
+      secondary text at 1.8. English mirrors the same roles a touch tighter
+      (body 1.6, paragraphs 1.65, long-form reading 1.7–1.75) — the earlier
+      layers left general paragraphs at 1.8/1.7, below both targets.
+   2) Component prose that still sat below the rhythm (course-quiz cards
+      and reviews, store descriptions, auth notices, the gift popup,
+      feedback) is lifted to the same leading as the surface it lives on.
+   3) Single-line labels — chips, pills, phase steps, nav labels, price
+      pills, toasts — get one explicit safe leading (1.5–1.6) and a touch
+      more vertical padding, so Arabic ascenders and diacritics are never
+      clipped by a tight line box while labels stay vertically centred.
+   4) Nothing overflows: prose breaks long words only when they would
+      otherwise spill, and codes (join codes, CERT codes, verification
+      codes) may break anywhere instead of pushing their card wider.
+   5) Tabular figures on the remaining numeric surfaces (form fields,
+      duel scale, quiz score, course codes, invite rows, prize chips), so
+      every number in the app aligns digit-for-digit in both languages.
+   6) The last off-scale card titles resolve to the one card-title role. */
+/* 1 — prose leading per language */
+body{line-height:1.9}
+p{line-height:1.95}
+.small{line-height:1.8}
+.feedback{line-height:1.9}
+html[dir="ltr"] body{line-height:1.6}
+html[dir="ltr"] p{line-height:1.65}
+html[dir="ltr"] .small{line-height:1.6}
+html[dir="ltr"] .feedback{line-height:1.7}
+/* long-form reading: Theory lists take the document rhythm too */
+#theoryPanel li{line-height:1.95;margin-bottom:6px}
+#theoryPanel ul,#theoryPanel ol{margin:6px 0 12px}
+#pdfStage .thsum,#pdfStage li,#printSheet .thsum{text-align:start}
+html[dir="ltr"] #theoryPanel li{line-height:1.75}
+html[dir="ltr"] #theoryPanel p,html[dir="ltr"] details.th .body p{line-height:1.75}
+html[dir="ltr"] details.th .body,html[dir="ltr"] details.th .body li{line-height:1.75}
+html[dir="ltr"] #infoBody p,html[dir="ltr"] #infoBody li{line-height:1.7}
+html[dir="ltr"] #expGoal{line-height:1.7}
+/* 2 — component prose lifted to the rhythm of its surface */
+.qzqb,.qzcard{line-height:1.9}
+.qzrevrow{line-height:1.85}
+.qzopt{line-height:1.75}
+.opt{line-height:1.7}
+.storecard .sc-desc{line-height:1.8}
+.autherr,.authok{line-height:1.85}
+.giftpop-msg{line-height:1.9}
+.notice{line-height:1.85}
+.duelscale{line-height:1.6}
+html[dir="ltr"] .qzqb,html[dir="ltr"] .qzcard{line-height:1.7}
+html[dir="ltr"] .qzrevrow{line-height:1.7}
+html[dir="ltr"] .qzopt{line-height:1.6}
+html[dir="ltr"] .opt{line-height:1.6}
+html[dir="ltr"] .storecard .sc-desc{line-height:1.65}
+html[dir="ltr"] .autherr,html[dir="ltr"] .authok{line-height:1.7}
+html[dir="ltr"] .giftpop-msg{line-height:1.7}
+html[dir="ltr"] .notice{line-height:1.7}
+/* 3 — single-line labels: one safe leading, centred, never clipped */
+.chip{line-height:1.6;padding-top:4px;padding-bottom:4px}
+.tag{line-height:1.6;padding-top:2px;padding-bottom:2px}
+.mchip{line-height:1.6;padding-top:3px;padding-bottom:3px}
+.phase div{line-height:1.6}
+.fchip{line-height:1.5}
+.segbtn{line-height:1.5}
+.bnav button{line-height:1.5}
+.framechip{line-height:1.5}
+.gatebtn{line-height:1.5}
+.switch{line-height:1.5}
+.duelclock{line-height:1.5}
+.pricepill{line-height:1.6}
+.vsprize span{line-height:1.6}
+.guestbar{line-height:1.6}
+.infofab .cap{line-height:1.6}
+.lawchip{line-height:1.7}
+.guesttoast,.streaktoast,#pdfToast{line-height:1.7}
+.lvlcard .n,.expnum,.medal,.czbadge{line-height:1.4}
+/* 4 — graceful breaking: no spill at 360–430px, codes break anywhere */
+p,li,h1,h2,h3,h4,td,th{overflow-wrap:break-word}
+#theoryPanel,details.th .body,#infoBody{overflow-wrap:break-word}
+.czcode,.vfcode,.vfcodeshow b,.mycode .code{overflow-wrap:anywhere}
+.invitem>span,.invitem>b{min-width:0;overflow-wrap:anywhere}
+.tierrow>span{min-width:0;overflow-wrap:break-word}
+/* 5 — tabular figures on every remaining numeric surface */
+input,select,textarea{font-variant-numeric:tabular-nums}
+.duelscale,.qzscore,.czcode,.invitem,.vsprize{font-variant-numeric:tabular-nums}
+/* 6 — the last off-scale card titles join the one card-title role */
+.quizq h3{font-size:1.02rem;line-height:1.85}
+.storecard .sc-name{font-size:1.02rem}
+html[dir="ltr"] .quizq h3{line-height:1.7}
 </style>
 </body>
 </html>
