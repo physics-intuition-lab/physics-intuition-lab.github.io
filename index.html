@@ -398,6 +398,36 @@ details.th ul{margin:4px 0;padding-inline-start:20px}
 .avwrap .avwreath{position:absolute;inset:0;border-radius:50%;pointer-events:none;z-index:2}
 .avwrap .avrose{position:absolute;top:50%;left:50%;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 .avwrap .avleaf{position:absolute;top:50%;left:50%;background:linear-gradient(135deg,#6fbf5a,#3e8e4f);border-radius:0 60% 0 60%;pointer-events:none;box-shadow:0 0 0 1px rgba(46,110,60,.25)}
+/* store frames (bought with gems): same wreath construction as rose — a
+   themed ring band plus small motifs spaced around the whole circumference,
+   all absolutely positioned inside the wrapper box, so no layout shift */
+.avwrap.bolt{background:conic-gradient(from 20deg,#f9e04b,#2e7fe0,#ffe95e,#1b4f9e,#ffd21f,#2e7fe0,#f9e04b)}
+.avwrap.flame{background:conic-gradient(from 10deg,#ff9d2e,#e63b1f,#ffc93c,#d81f06,#ff7a1a,#e63b1f,#ff9d2e)}
+.avwrap.galaxy{background:conic-gradient(from 0deg,#2b1055,#5b2a9d,#170b33,#7b3fd4,#31135e,#5b2a9d,#2b1055)}
+.avwrap.diamond{background:conic-gradient(from 30deg,#dff7ff,#8fd8ef,#ffffff,#5fb8d9,#eafcff,#8fd8ef,#dff7ff)}
+.avwrap.gold{background:conic-gradient(from 25deg,#f7dc6f,#b8860b,#ffe98a,#a87408,#f1c40f,#b8860b,#f7dc6f)}
+.avwrap.leaf{background:conic-gradient(from 15deg,#7fb069,#a7d489,#5da85f,#8fce62,#3e8e4f,#a7d489,#7fb069)}
+/* store accent themes (equip_cosmetic 'theme'): ONLY the accent variables
+   change — backgrounds and surfaces stay exactly as the light/dark theme
+   leaves them, and with no data-accent the app looks exactly as before */
+html[data-accent="gold"]{--teal:#a87408;--teal-d:#8a5f06;--amber:#c99700}
+html[data-accent="diamond"]{--teal:#0e7c9c;--teal-d:#0a5f78;--amber:#2ea8c7}
+html[data-accent="space"]{--teal:#5b3fd4;--teal-d:#452da8;--amber:#7b5fe0}
+html[data-accent="energy"]{--teal:#d95d14;--teal-d:#b34a12;--amber:#2e7fe0}
+html[data-accent="nature"]{--teal:#2e8b3a;--teal-d:#22702e;--amber:#6aa84f}
+.avwrap .avmotif{position:absolute;top:50%;left:50%;line-height:1;pointer-events:none;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+/* store (Settings): item cards + wardrobe frame chips */
+.storegrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+@media (max-width:560px){.storegrid{grid-template-columns:1fr}}
+.storecard{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface2)}
+.storecard .sc-top{display:flex;gap:10px;align-items:center}
+.storecard .sc-name{font-weight:800}
+.storecard .sc-desc{font-size:.85rem;color:var(--muted);line-height:1.6;margin-top:2px}
+.storecard .sc-foot{display:flex;align-items:center;gap:8px;margin-top:10px}
+.storeprice{font-weight:800;color:var(--amber);white-space:nowrap}
+.framechip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface2);border-radius:99px;padding:4px 12px 4px 6px;cursor:pointer;font:inherit;font-size:.86rem;color:inherit}
+.framechip.on{border-color:var(--amber);background:var(--amber-bg);font-weight:700}
+[dir="ltr"] .framechip{padding:4px 6px 4px 12px}
 /* celebratory gift popup (recipient side of owner gifts) */
 .giftpop-ov{position:fixed;inset:0;background:rgba(10,14,20,.55);display:flex;align-items:center;justify-content:center;z-index:999;padding:18px}
 .giftpop{background:var(--surface);border:1px solid var(--amber);border-radius:16px;padding:22px 20px;max-width:340px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35)}
@@ -1015,6 +1045,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <div class="row between"><h2 style="margin:0" data-i18n="home_daily">تحدي اليوم</h2><span class="chip l1" data-i18n="home_daily_chip">+XP إضافي</span></div>
       <p id="dailyText" style="margin-top:6px"></p>
       <button class="btn amber block" id="dailyBtn" data-i18n="home_daily_btn">العب تحدي اليوم</button>
+      <button class="btn block" id="dailyExtraBtn" style="display:none;margin-top:8px"></button>
     </div>
 
     <div class="card" id="streakCard" style="display:none">
@@ -1097,7 +1128,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <p class="small" id="onlineSoonNote" style="display:none;margin:0 2px 12px" data-i18n="mode_on_note">مواجهات اللاعبين الحقيقيين أونلاين قيد التجهيز الآن — أول ما تتفعّل هتلاقيها هنا على طول، وبنفس شكل الماتشات اللي متعود عليه.</p>
       <div class="card">
         <div class="vshero">
-          <div class="vsside me"><span class="vsdot"></span><span id="duelAvatar"></span><b data-i18n="duel_you">أنت</b><span class="vstag" id="duelYouName"></span><span class="vstag" data-i18n="vs_blue">اللاعب الأزرق</span></div>
+          <div class="vsside me"><span class="vsdot"></span><span id="duelAvatar"></span><b data-i18n="duel_you">أنت</b><span class="vstag" id="duelYouName"></span><span class="chip l1" id="duelTitleChip" style="display:none"></span><span class="vstag" data-i18n="vs_blue">اللاعب الأزرق</span></div>
           <div class="vsmid" data-i18n="duel_vs">ضد</div>
           <div class="vsside bot"><span class="vsdot"></span><span class="avatar letter" style="width:34px;height:34px;font-size:16px;background:var(--red)" data-i18n="bot_initial">ب</span><b data-i18n="duel_bot">البوت</b><span class="vstag" data-i18n="vs_red">اللاعب الأحمر</span></div>
         </div>
@@ -1123,7 +1154,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
     </div>
     <div id="duelGame" style="display:none">
       <div class="vs">
-        <div class="side me"><div><span id="duelMeAvatar"></span> <span data-i18n="duel_you">أنت</span><span class="crown" id="duelCrown"></span></div><b class="scorebig" id="duelMeScore">0</b></div>
+        <div class="side me"><div><span id="duelMeAvatar"></span> <span data-i18n="duel_you">أنت</span><span class="crown" id="duelCrown"></span> <span class="chip l1" id="duelTitleChip2" style="display:none"></span></div><b class="scorebig" id="duelMeScore">0</b></div>
         <div class="mid" data-i18n="duel_vs">ضد</div>
         <div class="side bot"><div><span class="avatar letter" style="width:26px;height:26px;font-size:13px;background:var(--red)" data-i18n="bot_initial">ب</span> <span data-i18n="duel_bot">البوت</span></div><b class="scorebig" id="duelBotScore">0</b></div>
       </div>
@@ -1380,7 +1411,7 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <div class="row" style="align-items:center;gap:12px">
         <span id="profAvatar"></span>
         <div class="grow" style="min-width:0">
-          <b id="profName" style="font-size:1.06rem"></b>
+          <b id="profName" style="font-size:1.06rem"></b> <span class="chip l1" id="profTitleChip" style="display:none"></span>
           <div class="small" id="profNick"></div>
           <div class="small" id="profAbout" style="color:var(--muted);white-space:pre-wrap"></div>
         </div>
@@ -1404,6 +1435,17 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       <input class="fld" id="pfNick" type="text" autocomplete="nickname" maxlength="30">
       <label class="fldlbl"><span data-i18n="pf_about">نبذة عنك</span> <span class="small" id="pfAboutCount"></span></label>
       <input class="fld" id="pfAbout" type="text" maxlength="140">
+      <div id="vaultSec" style="margin-top:14px">
+        <h3 style="margin:0 0 4px" data-i18n="vault_h">خزنتي</h3>
+        <p class="small" style="margin:0 0 6px" data-i18n="vault_d">كل اللي تملكه من المتجر والهدايا — بدّل إطارك ولقبك وثيمك من هنا، والتغيير بيظهر في كل مكان فورًا.</p>
+        <label class="fldlbl" data-i18n="vault_frames">الإطارات</label>
+        <div id="vaultFrames" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <label class="fldlbl" data-i18n="vault_titles">الألقاب</label>
+        <div id="vaultTitles" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <label class="fldlbl" data-i18n="vault_themes">الثيمات</label>
+        <div id="vaultThemes" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+        <p class="small" id="vaultMsg" style="margin-top:8px;min-height:1em"></p>
+      </div>
       <div class="autherr" id="pfMsg"></div>
       <div class="ctlrow" style="margin-top:10px">
         <button class="btn primary" id="pfSave" data-i18n="pf_save">حفظ الملف الشخصي</button>
@@ -1468,11 +1510,11 @@ body.auth .madeby{margin-top:30px;font-size:.88rem}
       </div>
       <div id="invList" style="margin-top:12px"></div>
     </div>
-    <div class="card">
-      <div class="row between"><h2 style="margin:0" data-i18n="set_store_h">المتجر</h2><span class="chip l1" data-i18n="set_store_soon">قريباً</span></div>
-      <p class="small" style="margin-top:8px" data-i18n="set_store_d">في المتجر هتلاقي محتوى خاصًا إضافيًا (Premium) تشتريه بالجيمز اللي بتجمعها من الدعوات والإنجازات: حزم تجارب متقدمة إضافية، وحزم نظرية موسّعة بجرافات وصور أكثر، وأنماط تحدٍّ خاصة في الدويل، وتلميحات ذكية وأدوات مساعدة جوه المعمل، وحزم PDF كاملة.</p>
+    <div class="card" id="storeCard">
+      <div class="row between"><h2 style="margin:0" data-i18n="set_store_h">المتجر</h2><span class="chip l0" data-i18n="set_store_open">مفتوح الآن</span></div>
+      <p class="small" style="margin-top:8px" data-i18n="set_store_d">المتجر مفتوح: حزم مواضيعية فيها إطارات وألقاب وثيمات لصورتك وحسابك، ودرع يحمي سلسلة دخولك، ومحاولة إضافية لتحدي اليوم — وكلها بالجيمز اللي بتجمعها.</p>
       <div class="invrow"><span data-i18n="set_store_bal">رصيدك الحالي:</span><span class="gembal"><span data-i18n="set_inv_gems">رصيد الجيمز:</span> <b id="storeGemBal">0</b> 💠</span></div>
-      <p class="small" style="margin-top:8px" data-i18n="set_store_note">اجمع الجيمز من دعوة الأصدقاء وإنهاء التحديات، وخليها جاهزة ليوم افتتاح المتجر.</p>
+      <div id="storeZone" style="margin-top:10px"></div>
     </div>
     <div class="card" id="installCard">
       <div class="row between"><h2 style="margin:0" data-i18n="set_install_h">تثبيت التطبيق</h2><span class="chip l0" data-i18n="set_install_chip">على جهازك</span></div>
@@ -1840,6 +1882,32 @@ function checkLoginStreak(){
   const today=localDayNum();
   if(_streakClaimBusy||_streakClaimedDays.has(today)){renderStreakCard();return;}
   if(typeof window!=="undefined"&&window.__sbStreakBlocked){renderStreakCard();return;}
+  /* STREAK SHIELD (store item): when the run would reset because EXACTLY ONE
+     calendar day was missed (last attended = today-2) and the user holds a
+     shield, ask the server to bridge the missed day (consume_shield with the
+     missed day's local midday). On success the bridged day counts as attended
+     with NO reward — the cycle position advances and today's normal claim
+     then proceeds; the server's 'streak_shield' xp_ledger row is the durable
+     attendance marker future derivations count. On ANY failure, fall through
+     to the normal reset, silently. Two or more missed days never reach this
+     branch. One attempt per day (window.__shieldTryDay). */
+  const _st0=(S.streak&&typeof S.streak==="object")?S.streak:{last:null,count:0};
+  if(_st0.last===today-2&&(_st0.count||0)>0&&window.__shieldTryDay!==today
+     &&(typeof shieldsAvailable==="function")&&shieldsAvailable()>0
+     &&(typeof sbServerSession==="function")&&sbServerSession()
+     &&(typeof shieldBridgeDay==="function")){
+    window.__shieldTryDay=today;
+    shieldBridgeDay(today-1).then(ok=>{
+      if(ok){
+        S.streak={last:today-1,count:(_st0.count||0)+1};
+        try{saveCurrentAccount();}catch(e){}
+        if(typeof toast==="function")toast(T("🛡️ درع السلسلة أنقذ سلسلتك!","🛡️ Your streak shield saved your streak!"));
+        if(typeof storeRefreshPurchases==="function")storeRefreshPurchases();
+      }
+      try{checkLoginStreak();}catch(e){}
+    });
+    renderStreakCard();return;
+  }
   const adv=streakAdvance(S.streak,today);
   if(!adv.claimed){renderStreakCard();return;}
   /* Durable synchronous claim marker, per account: written FIRST — before
@@ -2135,8 +2203,8 @@ function renderBoard(){
   const rows=mine>0?[{name:myName,xp:mine,me:true}]:[];
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const myAv=(typeof avatarHTML==="function")?avatarHTML(26):"";
-  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
-  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
+  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?titleChipHTML(ownTitleKey()):""}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div></div>`).join("");
+  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${r.me?myAv+" ":""}${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?titleChipHTML(ownTitleKey()):""}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</span><b>${AR(r.xp)} XP</b></div>`).join("");
   board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
@@ -2187,7 +2255,7 @@ function completeExp(exp,score,explain){
   let gained;
   if(isReplay){gained=5;if(prevBest!=null&&score>prevBest)improve=Math.max(0,entitled(score)-entitled(prevBest));gained+=improve;}
   else gained=entitled(score);
-  const completionGain=gained;
+  let completionGain=gained;
   const notes=[isReplay?(T("إعادة لعب: +","Replay: +")+AR(5)+" XP"+(improve?(T(" أساسية + مكافأة كسر رقمك القياسي ("," base + personal-best bonus (")+AR(prevBest)+T("٪ ← ","% → ")+AR(score)+T("٪): +","%): +")+AR(improve)+" XP"):"")):(T("إكمال التجربة (دقة ","Experiment completed (accuracy ")+AR(score)+T("٪): +","%): +")+AR(gained)+" XP")];
   if(prevBest==null||score>prevBest)S.best[exp.n]=score;
   if(!Array.isArray(S.hist))S.hist=[];
@@ -2199,6 +2267,20 @@ function completeExp(exp,score,explain){
     S.dailyDay=localDayNum();
     const db=100+(score>80?50:0);gained+=db;
     notes.push(T("تحدي اليوم: +","Daily challenge: +")+AR(db)+" XP"+(score>80?T(" (منها 50 مكافأة دقة فوق 80٪)"," (including 50 bonus for accuracy above 80%)"):"")+T(" — معدِّل اليوم كان: "," — today's modifier was: ")+dailyModName(dcToday.mod));
+    if(!S.dailyBest||S.dailyBest.day!==localDayNum()||score>S.dailyBest.acc)S.dailyBest={day:localDayNum(),acc:score};
+  }
+  /* DAILY EXTRA run (the store's extra attempt): plays exactly like the
+     daily challenge, but awards NO XP at all and never touches the first
+     attempt's reward record (S.dailyDay was already set by it) — it only
+     counts one extra attempt used today and may raise the day's displayed
+     best accuracy */
+  if(typeof DAILY_EXTRA_RUN!=="undefined"&&DAILY_EXTRA_RUN&&dcToday.exp.n===exp.n){
+    DAILY_EXTRA_RUN=false;
+    const usedT=(S.dailyExtra&&S.dailyExtra.day===localDayNum())?(S.dailyExtra.used||0):0;
+    S.dailyExtra={day:localDayNum(),used:usedT+1};
+    gained=0;completionGain=0;
+    notes.length=0;notes.push(T("محاولة إضافية 🎯 — لعبتها لتحسين نتيجتك، ومن غير أي XP.","Extra attempt 🎯 — played to improve your result, with no XP awarded."));
+    if(!S.dailyBest||S.dailyBest.day!==localDayNum()||score>S.dailyBest.acc)S.dailyBest={day:localDayNum(),acc:score};
   }
   /* the daily run (and its modifier) ends with this completion */
   if(ACTIVE_DAILY){ACTIVE_DAILY=null;try{document.body.classList.remove("daily-nogivens");const bn=document.getElementById("dailyModBanner");if(bn)bn.style.display="none";}catch(e){}}
@@ -4096,11 +4178,12 @@ function startLab(exp){
   {const bn=document.getElementById("dailyModBanner");
    try{
      const dc=dailyChallenge();
-     if(dc.exp.n===exp.n&&S.dailyDay!==localDayNum()){
+     if(dc.exp.n===exp.n&&(S.dailyDay!==localDayNum()||(typeof DAILY_EXTRA_RUN!=="undefined"&&DAILY_EXTRA_RUN))){
        ACTIVE_DAILY={mod:dc.mod.k};
        if(dc.mod.k==="nogivens")document.body.classList.add("daily-nogivens");
-       if(bn){bn.style.display="block";bn.innerHTML="<b>"+T("تحدي اليوم — المعدِّل الفعّال: ","Daily challenge — modifier in force: ")+dailyModName(dc.mod)+"</b> — "+dailyModDesc(dc.mod);}
+       if(bn){bn.style.display="block";bn.innerHTML="<b>"+T("تحدي اليوم — المعدِّل الفعّال: ","Daily challenge — modifier in force: ")+dailyModName(dc.mod)+"</b> — "+dailyModDesc(dc.mod)+((typeof DAILY_EXTRA_RUN!=="undefined"&&DAILY_EXTRA_RUN)?T(" — محاولة إضافية 🎯 (من غير XP)"," — extra attempt 🎯 (no XP)"):"");}
      }else if(bn){bn.style.display="none";}
+     if(dc.exp.n!==exp.n)DAILY_EXTRA_RUN=false;
    }catch(e){if(bn)bn.style.display="none";}}
   /* A (re)start wipes the previous result box completely — its buttons and
      summary belong to the finished run, and leaving them under the fresh lab
@@ -7114,7 +7197,7 @@ auth_pw_req_sy:["رمز واحد على الأقل (! @ # …)","At least one sy
 const ACCOUNTS={};
 let PENDING_REG=null;
 let SESSION={mode:"none",email:null,guestLeft:0,guestTimer:null,expired:false};
-function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},streak:{last:null,count:0},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,tierPaid:[],dailyHist:[],expXp:{},lastExp:null};}
+function freshProgress(){return {xp:0,xpLog:[],best:{},theoryRead:{},theoryXP:{},quiz:{},gems:0,invitesUsed:0,invites:[],invitedBy:null,pcode:null,invRewarded:false,hist:[],daily:{date:null,done:false},dailyExtra:{day:-1,used:0},dailyBest:null,streak:{last:null,count:0},duelWins:0,dailyDay:-1,days:[],streakAwardedFor:0,tierPaid:[],dailyHist:[],expXp:{},lastExp:null};}
 /* S.theoryRead MUST stay a real Set at runtime: enterLab() and the progress-ring
    wrapper call .has()/.add() on it. Stored progress is JSON, where a Set serializes
    to {} — so every load rehydrates whatever shape was stored (Set / array of ids /
@@ -7129,12 +7212,12 @@ function loadProgress(p){p=p||{};S.xp=p.xp||0;S.xpLog=Array.isArray(p.xpLog)?p.x
    lastExp:null, so the Home «كمّل من حيث وقفت» card can never resurrect an
    earlier session's last-viewed experiment — while a registered account's
    saved progress still restores its own lastExp exactly as before */
-S.lastExp=p.lastExp?p.lastExp:null;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===localDayNum())?localDayNum():-1);S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;{const _tp=new Set(Array.isArray(p.tierPaid)?p.tierPaid:[]);if(S.tierPaid instanceof Set)S.tierPaid.forEach(k=>_tp.add(k));S.tierPaid=_tp;}S.dailyHist=Array.isArray(p.dailyHist)?p.dailyHist.filter(e=>e&&typeof e.d==="number"&&e.e):[];
+S.lastExp=p.lastExp?p.lastExp:null;S.dailyDay=(typeof p.dailyDay==="number")?p.dailyDay:((p.daily&&p.daily.done&&p.daily.day===localDayNum())?localDayNum():-1);S.dailyExtra=(p.dailyExtra&&typeof p.dailyExtra==="object")?{day:(typeof p.dailyExtra.day==="number"?p.dailyExtra.day:-1),used:(+p.dailyExtra.used||0)}:{day:-1,used:0};S.dailyBest=(p.dailyBest&&typeof p.dailyBest.day==="number")?{day:p.dailyBest.day,acc:(+p.dailyBest.acc||0)}:null;S.days=new Set(Array.isArray(p.days)?p.days.map(Number):[]);S.days.add(todayNum());S.streakAwardedFor=p.streakAwardedFor||0;{const _tp=new Set(Array.isArray(p.tierPaid)?p.tierPaid:[]);if(S.tierPaid instanceof Set)S.tierPaid.forEach(k=>_tp.add(k));S.tierPaid=_tp;}S.dailyHist=Array.isArray(p.dailyHist)?p.dailyHist.filter(e=>e&&typeof e.d==="number"&&e.e):[];
   /* tier catch-up at hydration: XP restored from any source may already
      cross tiers — pay each unpaid tier exactly once (deferred a tick so
      the rest of this load settles first) */
   setTimeout(()=>{try{checkTierUps();}catch(e){}},0);if(typeof expXpMap==="object"&&expXpMap){for(const k in expXpMap)delete expXpMap[k];if(p.expXp)for(const k in p.expXp)expXpMap[k]=Math.min(100,p.expXp[k]||0);}}
-function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n]=true;});return JSON.parse(JSON.stringify({xp:S.xp,xpLog:Array.isArray(S.xpLog)?S.xpLog:[],best:S.best,done:Array.from(S.done||[]),attempts:S.attempts||0,accSum:S.accSum||0,lastExp:S.lastExp,theoryRead:tr,theoryXP:S.theoryXP,quiz:S.quiz,gems:S.gems,invitesUsed:(Array.isArray(S.invites)?S.invites.length:(S.invitesUsed||0)),invites:Array.isArray(S.invites)?S.invites:[],invitedBy:S.invitedBy||null,pcode:S.pcode||null,invRewarded:!!S.invRewarded,hist:Array.isArray(S.hist)?S.hist:[],daily:(S.dailyDay===localDayNum()?{day:localDayNum(),done:true}:(S.daily||{date:null,done:false})),streak:S.streak,duelWins:S.duelWins,dailyDay:(typeof S.dailyDay==="number"?S.dailyDay:-1),days:Array.from(S.days||[]),streakAwardedFor:S.streakAwardedFor||0,tierPaid:(S.tierPaid instanceof Set)?Array.from(S.tierPaid):(Array.isArray(S.tierPaid)?S.tierPaid:[]),dailyHist:Array.isArray(S.dailyHist)?S.dailyHist:[],expXp:(typeof expXpMap==="object"&&expXpMap)?Object.assign({},expXpMap):{}}));}
+function snapProgress(){const tr={};theoryReadSet(S.theoryRead).forEach(n=>{tr[n]=true;});return JSON.parse(JSON.stringify({xp:S.xp,xpLog:Array.isArray(S.xpLog)?S.xpLog:[],best:S.best,done:Array.from(S.done||[]),attempts:S.attempts||0,accSum:S.accSum||0,lastExp:S.lastExp,theoryRead:tr,theoryXP:S.theoryXP,quiz:S.quiz,gems:S.gems,invitesUsed:(Array.isArray(S.invites)?S.invites.length:(S.invitesUsed||0)),invites:Array.isArray(S.invites)?S.invites:[],invitedBy:S.invitedBy||null,pcode:S.pcode||null,invRewarded:!!S.invRewarded,hist:Array.isArray(S.hist)?S.hist:[],daily:(S.dailyDay===localDayNum()?{day:localDayNum(),done:true}:(S.daily||{date:null,done:false})),streak:S.streak,duelWins:S.duelWins,dailyDay:(typeof S.dailyDay==="number"?S.dailyDay:-1),dailyExtra:(S.dailyExtra||{day:-1,used:0}),dailyBest:(S.dailyBest||null),days:Array.from(S.days||[]),streakAwardedFor:S.streakAwardedFor||0,tierPaid:(S.tierPaid instanceof Set)?Array.from(S.tierPaid):(Array.isArray(S.tierPaid)?S.tierPaid:[]),dailyHist:Array.isArray(S.dailyHist)?S.dailyHist:[],expXp:(typeof expXpMap==="object"&&expXpMap)?Object.assign({},expXpMap):{}}));}
 function saveCurrentAccount(){if((SESSION.mode==="user"||SESSION.mode==="owner")&&SESSION.email&&ACCOUNTS[SESSION.email])ACCOUNTS[SESSION.email].progress=snapProgress();}
 function authMsg(id,txt,ok){const el=document.getElementById(id);if(!el)return;if(!txt){el.textContent="";el.classList.remove("show");return;}el.textContent=txt;el.className=(ok?"authok":"autherr")+" show";}
 function emailOk(e){return typeof e==="string"&&e.length<=254&&!/^\.|\.\.|\.@|@\.|\.$/.test(e)&&/^[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/.test(e);}
@@ -8535,7 +8618,7 @@ function displayName(){
    untouched when there is no frame, so unframed rendering is byte-for-byte
    what it has always been. */
 function frameResolve(frame,role){
-  if(frame==="crown"||frame==="rose")return frame;
+  if(frame==="crown"||frame==="rose"||frame==="bolt"||frame==="flame"||frame==="galaxy"||frame==="diamond"||frame==="gold"||frame==="leaf")return frame;
   return role==="owner"?"crown":"";
 }
 function frameOfAccount(a){
@@ -8543,9 +8626,26 @@ function frameOfAccount(a){
   return frameResolve(a.profile&&a.profile.frame,a.role);
 }
 function frameWrap(inner,frame,px){
-  if(frame!=="crown"&&frame!=="rose")return inner;
+  if(frame!=="crown"&&frame!=="rose"&&frame!=="bolt"&&frame!=="flame"&&frame!=="galaxy"&&frame!=="diamond"&&frame!=="gold"&&frame!=="leaf")return inner;
   const bs=Math.max(10,Math.round((px||30)*0.45));
   if(frame==="crown")return `<span class="avwrap crown">${inner}<span class="avbadge" style="font-size:${bs}px">👑</span></span>`;
+  /* store frames: a themed wreath in the rose construction — small motifs
+     spaced evenly around the whole circumference on the frame's own ring
+     band, absolutely positioned inside the same wrapper box (visual
+     overflow only, no layout shift) */
+  if(frame==="bolt"||frame==="flame"||frame==="galaxy"||frame==="diamond"||frame==="gold"||frame==="leaf"){
+    const GLYPH={bolt:["⚡"],flame:["🔥"],galaxy:["✨","⭐"],diamond:["💎"],gold:["✨","🌿"],leaf:["🍃","🌿"]}[frame];
+    const size2=px||30;
+    const n2=size2<=32?8:(size2<=48?10:12);
+    const r2=Math.round(size2/2)+2;
+    const fs2=Math.max(9,Math.round(size2*0.38));
+    let mot="";
+    for(let i=0;i<n2;i++){
+      const a2=Math.round(i*360/n2);
+      mot+=`<span class="avmotif" style="font-size:${fs2}px;transform:translate(-50%,-50%) rotate(${a2}deg) translateY(-${r2}px) rotate(${-a2}deg)">${GLYPH[i%GLYPH.length]}</span>`;
+    }
+    return `<span class="avwrap ${frame}">${inner}<span class="avwreath" aria-hidden="true">${mot}</span></span>`;
+  }
   /* rose: a full wreath — small rose glyphs spaced evenly around the whole
      circumference with tiny green leaf dots between them, all absolutely
      positioned inside the same wrapper box (visual overflow only, no layout
@@ -9010,6 +9110,7 @@ async function sbDoSetRecoveredPassword(np){
 }
 /* ---------- entering the app with a server session: profile + ledgers + progress ---------- */
 let SB_PROFILES_BY_ID={};
+let SB_PURCHASES=[]; /* this account's store purchases rows (item_key, price, created_at) — filled at hydration, refreshed after every buy */
 async function sbFetchProfile(uid){
   for(let i=0;i<3;i++){
     try{
@@ -9085,7 +9186,7 @@ async function sbRehydrateLedgers(uid){
     if(!xlData||!glData)return;
     window.__sbStreakBlocked=false;
     const daySet=new Set();
-    xlData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
+    xlData.forEach(r=>{if(r&&(r.reason==="streak"||r.reason==="streak_shield")&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
     glData.forEach(r=>{if(r&&r.reason==="streak"&&r.created_at)daySet.add(localDayNum(new Date(r.created_at).getTime()));});
     /* same claim-marker merge as sign-in hydration: a day claimed in this
        browser whose ledger write has not landed yet stays claimed here too */
@@ -9125,7 +9226,14 @@ function sbGiftNotifText(n){
   if(n.kind==="gift_frame"){
     if(pl.frame==="rose")return T("🎁 وصّلتك هدية من مالك المختبر: إطار ورد جديد لصورتك!","🎁 A gift from the lab owner just arrived for you: a new rose frame for your picture!");
     if(pl.frame==="crown")return T("🎁 وصّلتك هدية من مالك المختبر: إطار تاج جديد لصورتك!","🎁 A gift from the lab owner just arrived for you: a new crown frame for your picture!");
+    if(pl.frame)return T("🎁 وصّلتك هدية من مالك المختبر: إطار جديد لصورتك!","🎁 A gift from the lab owner just arrived for you: a new frame for your picture!");
     return "";
+  }
+  if(n.kind==="gift_bundle"){
+    /* bundle gifts can come from ANY user, not just the owner */
+    const BN={gold:["الحزمة الذهبية","the Golden bundle"],diamond:["حزمة الماس","the Diamond bundle"],space:["حزمة الفضاء","the Space bundle"],energy:["حزمة الطاقة","the Energy bundle"],nature:["حزمة الطبيعة","the Nature bundle"]};
+    const b=BN[pl.bundle];if(!b)return "";
+    return T("🎁 وصّلتك حزمة هدية: ","🎁 A gift bundle just arrived for you: ")+T(b[0],b[1])+"!";
   }
   return "";
 }
@@ -9171,7 +9279,8 @@ async function sbEnterWithSession(session){
      panel, teacher space) reads ACCOUNTS — the shadow is filled FROM the server
      and every edit is written back TO the server by the hooks below. */
   ACCOUNTS[email]={name:dispName,nameEn:dispName,email:email,phone:meta.phone||"",dob:meta.dob||"",role:role,progress:freshProgress(),
-    profile:{pic:(prof&&prof.avatar_url)||"",nick:(prof&&prof.nickname)||"",about:(prof&&prof.about)||"",frame:(prof&&prof.frame)||""},courses:[],_uid:uid,_server:true};
+    profile:{pic:(prof&&prof.avatar_url)||"",nick:(prof&&prof.nickname)||"",about:(prof&&prof.about)||"",frame:(prof&&prof.frame)||"",title:(prof&&prof.title_key)||"",theme:(prof&&prof.theme_key)||""},courses:[],_uid:uid,_server:true};
+  try{if(typeof applyAccentTheme==="function")applyAccentTheme((prof&&prof.theme_key)||"");}catch(e){}
   SESSION={mode:role==="owner"?"owner":"user",email:email,guestLeft:0,guestTimer:null,expired:false,server:true,uid:uid};
   if(role==="owner"){CURRENT_USER.name=OWNER_ADMIN.name;CURRENT_USER.nameEn=OWNER_ADMIN.nameEn;}
   else{CURRENT_USER.name=firstName(dispName);CURRENT_USER.nameEn=firstName(dispName);}
@@ -9228,6 +9337,14 @@ async function sbEnterWithSession(session){
     }
     else window.__sbProgressBlocked=true; /* progress unreadable: enter, but re-read it in the background (sbRehydrateLedgers) instead of showing 0/60 all session */
   }catch(e){}
+  /* store purchases (own rows via RLS): owned frames/titles/themes/bundles,
+     shields held and daily extras bought today all derive from these rows —
+     the store, the vault («خزنتي»), the streak shield and the daily-extra
+     offer read them through the helpers in the store section */
+  try{
+    const pu=await sbCall(SB.from("purchases").select("item_key,price,created_at").eq("user_id",uid).order("created_at",{ascending:true}).limit(500));
+    if(!pu.error&&Array.isArray(pu.data))SB_PURCHASES=pu.data;
+  }catch(e){}
   /* my invite codes as stored on the server. The live invites table is
      exactly (code, inviter, used_by, created_at) — the old read named
      inviter_id / friend_email / status / id, none of which exist, so it
@@ -9263,7 +9380,7 @@ async function sbEnterWithSession(session){
      days ending at the latest claim. No separate streak storage to drift. */
   try{
     const daySet=new Set();
-    (fp.xpLog||[]).forEach(e=>{if(e&&e.why==="streak"&&e.t)daySet.add(localDayNum(e.t));});
+    (fp.xpLog||[]).forEach(e=>{if(e&&(e.why==="streak"||e.why==="streak_shield")&&e.t)daySet.add(localDayNum(e.t));});
     (fp._streakGemDays||[]).forEach(d=>daySet.add(d));
     /* merge this browser's synchronous streak-claim marker (written by
        checkLoginStreak at the moment of the claim, before the gain was
@@ -9335,7 +9452,7 @@ async function sbLoadOwnerExtras(){
     pr.data.forEach(p=>{
       const em=(p.email||"").toLowerCase();if(!em||em===SESSION.email)return;
       const prev=ACCOUNTS[em];
-      ACCOUNTS[em]={name:p.display_name||em,nameEn:p.display_name||em,email:em,phone:"",dob:"",role:p.role||"student",progress:{xp:sums[p.id]||0},profile:{pic:p.avatar_url||"",nick:p.nickname||"",about:p.about||"",frame:p.frame||""},courses:(prev&&prev.courses)||[],_uid:p.id,_server:true};
+      ACCOUNTS[em]={name:p.display_name||em,nameEn:p.display_name||em,email:em,phone:"",dob:"",role:p.role||"student",progress:{xp:sums[p.id]||0},profile:{pic:p.avatar_url||"",nick:p.nickname||"",about:p.about||"",frame:p.frame||"",title:p.title_key||"",theme:p.theme_key||""},courses:(prev&&prev.courses)||[],_uid:p.id,_server:true};
     });
     const rq=await sbCall(SB.from("exp_requests").select("*").order("created_at",{ascending:false}).limit(100));
     if(!rq.error&&rq.data){
@@ -9778,8 +9895,8 @@ async function sbPaintBoard(){
   const medalC=["#d9a521","#9aa7ad","#b0793f"],medalN=["1","2","3"];
   const av=r=>r.me?((typeof avatarHTML==="function")?avatarHTML(26):""):sbAvatarFor(r.prof,26);
   const tier=r=>escHTML(rankOf(r.xp).cur[0]);
-  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
-  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
+  const pod=safeMap(rows.slice(0,3),(r,i)=>`<div class="pod p${i+1} ${r.me?"me":""}"><span class="pmedal" style="background:${medalC[i]}2b;border:2px solid ${medalC[i]};color:${medalC[i]}">${medalN[i]}</span><div class="pname">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${titleChipHTML(r.me?ownTitleKey():((r.prof&&r.prof.title_key)||""))}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""}</div><div class="pxp">${AR(r.xp)} XP</div><div class="small">${tier(r)}</div></div>`).join("");
+  const rest=safeMap(rows.slice(3),(r,i)=>`<div class="boardrow ${r.me?"me":""}"><b style="width:26px">${AR(i+4)}</b><span class="grow">${av(r)} ${escHTML(r.name)}${crownHTML(r.me?S.xp:r.xp)}${titleChipHTML(r.me?ownTitleKey():((r.prof&&r.prof.title_key)||""))}${r.me?' <span class="chip l0">'+T("أنت","You")+"</span>":""} <span class="small">· ${tier(r)}</span></span><b>${AR(r.xp)} XP</b></div>`).join("");
   board.innerHTML=(rows.length?`<div class="podium">${pod}</div>`+rest:BOARD_EMPTY_HTML())+
    `<p class="small" style="margin-top:8px">${T("مكسبك في الفترة دي: ","Your earnings in this period: ")}<b>${AR(mine)} XP</b>${rankPeriod!=="all"?T(" — ورصيدك الكلي منذ البداية: "," — and your all-time balance: ")+"<b>"+AR(S.xp)+" XP</b>":""}</p>`;
 }
@@ -12319,7 +12436,7 @@ function renderInfo(){
       `<ul class="infolist">
         <li>${T("<b>الجيمز</b> عملة الموقع الخاصة: بتكسبها من اليوم السابع في الستريك (50 جيم) ومن دعوات الأصدقاء.","<b>Gems</b> are the site's own currency: you earn them from day 7 of the streak (50 gems) and from inviting friends.")}</li>
         <li>${T("من الإعدادات، زر «+» بيولّد دعوة لصديق ببريد معين؛ لما صديقك يسجّل عن طريق دعوتك بتكسب <b>100 جيم</b> — بحد أقصى ٥ دعوات.","From Settings, the “+” button creates an invite for a specific friend's email; when your friend registers through your invite you earn <b>100 gems</b> — up to 5 invites.")}</li>
-        <li>${T("الجيمز هتتصرف في <b>متجر</b> المحتوى الخاص القادم: حزم تجارب ونظرية إضافية وأنماط تحدٍّ خاصة — ورصيدك محفوظ في حسابك من دلوقتي.","Gems will be spent in the upcoming premium-content <b>store</b>: extra experiment and theory packs and special challenge modes — and your balance is already saved in your account.")}</li>
+        <li>${T("الجيمز بتتصرف في <b>متجر</b> المختبر المفتوح دلوقتي: حزم مواضيعية فيها إطارات وألقاب وثيمات لحسابك، ودرع يحمي سلسلة دخولك، ومحاولة إضافية لتحدي اليوم — وتقدر تهدي حزمة كاملة لصديق.","Gems are spent in the lab's now-open <b>store</b>: themed bundles with frames, titles and themes for your account, a shield that protects your login streak, and an extra daily-challenge attempt — and you can gift a whole bundle to a friend.")}</li>
        </ul>
        <p style="margin-top:12px">${T("جاهز تبني حدسك؟ ارجع لصفحة الدخول، أنشئ حسابك، وابدأ بأول تجربة: الوحدات والأبعاد.","Ready to build your intuition? Head back to the sign-in page, create your account, and start with the first experiment: Units & Dimensions.")}</p>
        <button class="btn primary block" id="infoCta" style="margin-top:8px">${loggedIn?T("ابدأ اللعب","Start playing"):T("ارجع لصفحة الدخول وابدأ","Back to sign-in and start")}</button>`);
@@ -12868,6 +12985,397 @@ applyLang=function(l){
     }
   };
 })();
+</script>
+<script>
+"use strict";
+/* ================= THE STORE — themed bundles, essentials, gifting =================
+   The Settings store is LIVE: everything is bought with gems through the
+   server RPC buy_item(p_item, p_target) — p_target is null except when
+   gifting a bundle. The server enforces prices and ownership and returns
+   the buyer's new gems balance; buying or gifting a bundle AUTO-WEARS its
+   first frame for the recipient, and a gift also sends a 'gift_bundle'
+   notification. What the user owns derives from their `purchases` rows
+   (hydrated into SB_PURCHASES): 'bundle:*' bundles, 'frame:*' frames,
+   'title:*' titles, 'theme:*' themes, 'shield' rows minus 'shield_used'
+   rows, and 'daily_extra' rows dated today. Equipping any cosmetic goes
+   through equip_cosmetic(p_kind, p_value) — never set_frame. Guests and
+   offline sessions see the registered-only note and can buy nothing. */
+Object.assign(I18N,{
+"set_store_open":["مفتوح الآن","Open now"],
+"set_store_soon":["مفتوح الآن","Open now"],
+"set_store_d":["المتجر مفتوح: حزم مواضيعية فيها إطارات وألقاب وثيمات لصورتك وحسابك، ودرع يحمي سلسلة دخولك، ومحاولة إضافية لتحدي اليوم — وكلها بالجيمز اللي بتجمعها.","The store is open: themed bundles with frames, titles and themes for your picture and account, a shield that protects your login streak, and an extra daily-challenge attempt — all for the gems you collect."],
+"vault_h":["خزنتي","My vault"],
+"vault_d":["كل اللي تملكه من المتجر والهدايا — بدّل إطارك ولقبك وثيمك من هنا، والتغيير بيظهر في كل مكان فورًا.","Everything you own from the store and gifts — switch your frame, title and theme here, and the change shows everywhere at once."],
+"vault_frames":["الإطارات","Frames"],
+"vault_titles":["الألقاب","Titles"],
+"vault_themes":["الثيمات","Themes"]});
+const FRAME_META={
+  gold:{emoji:"✨",ar:"إطار ذهبي فاخر",en:"Luxury gold frame"},
+  diamond:{emoji:"💎",ar:"إطار الماس",en:"Diamond frame"},
+  galaxy:{emoji:"🌌",ar:"إطار المجرة",en:"Galaxy frame"},
+  bolt:{emoji:"⚡",ar:"إطار البرق",en:"Bolt frame"},
+  flame:{emoji:"🔥",ar:"إطار اللهب",en:"Flame frame"},
+  leaf:{emoji:"🍃",ar:"إطار الأوراق",en:"Leaf frame"},
+  rose:{emoji:"🌹",ar:"إطار الورد",en:"Rose frame"},
+  crown:{emoji:"👑",ar:"إطار التاج",en:"Crown frame"}};
+const TITLE_META={
+  gold:{ar:"الذهبي",en:"The Golden"},
+  diamond:{ar:"الماسي",en:"The Diamond"},
+  space:{ar:"رائد الفضاء",en:"Astronaut"},
+  energy:{ar:"العاصفة",en:"The Storm"},
+  nature:{ar:"روح الطبيعة",en:"Nature Spirit"}};
+const THEME_META={
+  gold:{ar:"الثيم الذهبي",en:"Gold theme",dot:"#c99700"},
+  diamond:{ar:"الثيم البلوري",en:"Crystal theme",dot:"#2ea8c7"},
+  space:{ar:"الثيم الفضائي",en:"Space theme",dot:"#5b3fd4"},
+  energy:{ar:"ثيم الطاقة",en:"Energy theme",dot:"#d95d14"},
+  nature:{ar:"الثيم الطبيعي",en:"Nature theme",dot:"#2e8b3a"}};
+const STORE_BUNDLES=[
+  {k:"gold",price:2000,icon:"🌟",ar:"الحزمة الذهبية",en:"Golden bundle",frames:["gold"],title:"gold",theme:"gold"},
+  {k:"diamond",price:3000,icon:"💎",ar:"حزمة الماس",en:"Diamond bundle",frames:["diamond"],title:"diamond",theme:"diamond"},
+  {k:"space",price:1500,icon:"🌌",ar:"حزمة الفضاء",en:"Space bundle",frames:["galaxy"],title:"space",theme:"space"},
+  {k:"energy",price:1000,icon:"⚡",ar:"حزمة الطاقة",en:"Energy bundle",frames:["bolt","flame"],title:"energy",theme:"energy"},
+  {k:"nature",price:800,icon:"🌿",ar:"حزمة الطبيعة",en:"Nature bundle",frames:["leaf"],title:"nature",theme:"nature"}];
+const STORE_ESSENTIALS=[
+  {item:"shield",price:150,icon:"🛡️",ar:"درع السلسلة",en:"Streak shield",da:"يحمي سلسلتك لو فاتك يوم واحد",de:"Protects your streak if you miss one day"},
+  {item:"daily_extra",price:100,icon:"🎯",ar:"محاولة إضافية لتحدي اليوم",en:"Extra daily-challenge attempt",da:"محاولة ثانية النهاردة لتحسين نتيجتك (من غير XP إضافي)",de:"A second attempt today to improve your result (no extra XP)"}];
+/* ---------- purchases-derived ownership ---------- */
+function purchasesRows(){return (typeof SB_PURCHASES!=="undefined"&&Array.isArray(SB_PURCHASES))?SB_PURCHASES:[];}
+function ownsItem(key){return purchasesRows().some(r=>r&&r.item_key===key);}
+function ownedBundles(){const s=new Set();purchasesRows().forEach(r=>{if(r&&typeof r.item_key==="string"&&r.item_key.indexOf("bundle:")===0)s.add(r.item_key.slice(7));});return s;}
+function ownedFramesSet(){
+  const s=new Set();
+  purchasesRows().forEach(r=>{if(r&&typeof r.item_key==="string"&&r.item_key.indexOf("frame:")===0)s.add(r.item_key.slice(6));});
+  ownedBundles().forEach(k=>{const b=STORE_BUNDLES.find(x=>x.k===k);if(b)b.frames.forEach(f=>s.add(f));});
+  const a=(typeof profAccount==="function")?profAccount():null;
+  if(a&&a.role==="owner")s.add("crown"); /* the owner's crown rule */
+  const p=(typeof profOf==="function")?profOf():null;
+  if(p&&p.frame)s.add(p.frame); /* a worn gifted frame (e.g. the owner's rose) is the user's to keep wearing */
+  return s;
+}
+function ownedTitlesSet(){
+  const s=new Set();
+  purchasesRows().forEach(r=>{if(r&&typeof r.item_key==="string"&&r.item_key.indexOf("title:")===0)s.add(r.item_key.slice(6));});
+  ownedBundles().forEach(k=>{const b=STORE_BUNDLES.find(x=>x.k===k);if(b)s.add(b.title);});
+  const p=(typeof profOf==="function")?profOf():null;
+  if(p&&p.title)s.add(p.title);
+  return s;
+}
+function ownedThemesSet(){
+  const s=new Set();
+  purchasesRows().forEach(r=>{if(r&&typeof r.item_key==="string"&&r.item_key.indexOf("theme:")===0)s.add(r.item_key.slice(6));});
+  ownedBundles().forEach(k=>{const b=STORE_BUNDLES.find(x=>x.k===k);if(b)s.add(b.theme);});
+  const p=(typeof profOf==="function")?profOf():null;
+  if(p&&p.theme)s.add(p.theme);
+  return s;
+}
+function shieldsAvailable(){
+  let held=0,used=0;
+  purchasesRows().forEach(r=>{if(!r)return;if(r.item_key==="shield")held++;else if(r.item_key==="shield_used")used++;});
+  return Math.max(0,held-used);
+}
+function dailyExtrasToday(){
+  const today=localDayNum();let n=0;
+  purchasesRows().forEach(r=>{if(r&&r.item_key==="daily_extra"&&r.created_at&&localDayNum(new Date(r.created_at).getTime())===today)n++;});
+  return n;
+}
+function dailyExtrasLeft(){
+  const used=(S.dailyExtra&&S.dailyExtra.day===localDayNum())?(S.dailyExtra.used||0):0;
+  return Math.max(0,dailyExtrasToday()-used);
+}
+async function storeRefreshPurchases(){
+  try{
+    if(!((typeof sbServerSession==="function")&&sbServerSession()))return;
+    const r=await sbCall(SB.from("purchases").select("item_key,price,created_at").eq("user_id",SESSION.uid).order("created_at",{ascending:true}).limit(500));
+    if(!r.error&&Array.isArray(r.data))SB_PURCHASES=r.data;
+  }catch(e){}
+  try{renderStore();}catch(e){}
+  try{renderVault();}catch(e){}
+}
+/* ---------- titles & accent themes ---------- */
+function ownTitleKey(){const p=(typeof profOf==="function")?profOf():null;return (p&&p.title)||"";}
+function ownThemeKey(){const p=(typeof profOf==="function")?profOf():null;return (p&&p.theme)||"";}
+function titleLabel(key){const m=TITLE_META[key];return m?(LANG==="en"?m.en:m.ar):"";}
+function titleChipHTML(key){
+  if(!key||!TITLE_META[key])return "";
+  return ` <span class="chip l1">${escHTML(titleLabel(key))}</span>`;
+}
+function syncTitleChips(){
+  const lbl=titleLabel(ownTitleKey());
+  ["profTitleChip","duelTitleChip","duelTitleChip2"].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    el.style.display=lbl?"":"none";el.textContent=lbl;
+  });
+}
+function applyAccentTheme(key){
+  const de=document.documentElement;
+  if(key&&THEME_META[key])de.setAttribute("data-accent",key);
+  else de.removeAttribute("data-accent");
+}
+/* ---------- store errors ---------- */
+function storeErrText(raw,gift){
+  const m=String(raw||"");
+  if(m.indexOf("insufficient_gems")>=0)return T("جواهرك لا تكفي لهذا الشراء.","Your gems are not enough for this purchase.");
+  if(m.indexOf("already_owned")>=0)return gift?T("الحزمة دي عند صاحبك أصلًا.","Your friend already owns this bundle."):T("الحزمة دي عندك أصلًا.","You already own this bundle.");
+  if(m.indexOf("not_owned")>=0)return T("أنت لا تملك هذا العنصر.","You do not own this item.");
+  if(m.indexOf("no_such_user")>=0)return T("المستخدم ده مش موجود.","That user does not exist.");
+  if(m.indexOf("not_signed_in")>=0)return T("لازم تسجّل الدخول بحسابك الأول.","You must sign in first.");
+  if(m.indexOf("bad_item")>=0)return T("العنصر ده مش متاح في المتجر.","That item is not available in the store.");
+  return T("حصل خطأ — حاول تاني.","Something went wrong — please try again.");
+}
+/* ---------- store rendering ---------- */
+const STORE={confirm:null,busy:false,msg:"",giftBundle:"gold",giftUid:null,giftName:"",giftQ:"",users:null};
+function storeServer(){return (typeof sbServerSession==="function")&&sbServerSession();}
+function storeAvatarInner(px){
+  const p=(typeof profOf==="function")?profOf():null;
+  if(p&&p.pic)return `<img class="avatar" style="width:${px}px;height:${px}px" src="${p.pic}" alt="">`;
+  const nm=(typeof displayName==="function")?displayName():"?";
+  return `<span class="avatar letter" style="width:${px}px;height:${px}px;font-size:${Math.max(11,Math.round(px*.48))}px">${escHTML(String(nm||"?").trim().charAt(0)||"?")}</span>`;
+}
+function bundleContentsHTML(b){
+  const chips=b.frames.map(f=>`<span class="chip" style="display:inline-flex;align-items:center;gap:6px">${frameWrap(storeAvatarInner(26),f,26)} ${escHTML(LANG==="en"?FRAME_META[f].en:FRAME_META[f].ar)}</span>`).join(" ");
+  return chips+` <span class="chip l1">${T("لقب: ","Title: ")}${escHTML(titleLabel(b.title))}</span>`
+    +` <span class="chip"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${THEME_META[b.theme].dot}"></span> ${escHTML(LANG==="en"?THEME_META[b.theme].en:THEME_META[b.theme].ar)}</span>`;
+}
+function renderStore(){
+  const zone=document.getElementById("storeZone");if(!zone)return;
+  const bal=document.getElementById("storeGemBal");if(bal)bal.textContent=AR(S.gems||0);
+  if(!storeServer()){
+    const guest=(typeof SESSION!=="undefined"&&SESSION&&SESSION.mode==="guest");
+    zone.innerHTML=`<p class="small" style="border:1px dashed var(--line);border-radius:10px;padding:10px 12px">${guest
+      ?T("أنت تتصفح كزائر دلوقتي — والمتجر متاح للحسابات المسجّلة بس، عشان مشترياتك تتربط بحسابك وتفضل معاك. أنشئ حسابًا أو سجّل الدخول وارجع اشتري.","You are browsing as a guest right now — the store is available to registered accounts only, so your purchases stay tied to your account. Create an account or sign in, then come back and shop.")
+      :T("المشتريات بتتم من حسابك المسجّل على السيرفر — سجّل الدخول بحسابك الأونلاين (أو ارجع لما يكون الاتصال متاحًا) وارجع اشتري.","Purchases run through your registered server account — sign in with your online account (or come back when the connection is available) and shop.")}</p>`;
+    return;
+  }
+  const owned=ownedBundles();
+  const bundles=STORE_BUNDLES.map(b=>{
+    const has=owned.has(b.k);
+    return `<div class="storecard"><div class="sc-top"><span style="font-size:1.7rem;line-height:1">${b.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?b.en:b.ar)}</div><div class="sc-desc">${T("حزمة كاملة: إطار ولقب وثيم بلونها","A complete bundle: a frame, a title and a matching theme")}</div></div></div>`
+      +`<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px">${bundleContentsHTML(b)}</div>`
+      +`<div class="sc-foot">${has?`<span class="chip l0">${T("عندك ✓","Owned ✓")}</span>`:`<span class="storeprice">${AR(b.price)} 💠</span><button class="btn primary sm" data-buy="bundle:${b.k}">${T("شراء","Buy")}</button>`}</div></div>`;
+  }).join("");
+  const ess=STORE_ESSENTIALS.map(it=>{
+    const extra=it.item==="shield"?`<div class="sc-desc">${T("عندك دلوقتي: ","You currently hold: ")}<b>${AR(shieldsAvailable())}</b> ${T("درع — يقدر يتراكم","shields — they stack up")}</div>`
+      :it.item==="daily_extra"?`<div class="sc-desc">${T("محاولات إضافية اشتريتها النهاردة: ","Extra attempts bought today: ")}<b>${AR(dailyExtrasToday())}</b></div>`:"";
+    return `<div class="storecard"><div class="sc-top"><span style="font-size:1.7rem;line-height:1">${it.icon}</span><div class="grow"><div class="sc-name">${escHTML(LANG==="en"?it.en:it.ar)}</div><div class="sc-desc">${LANG==="en"?it.de:it.da}</div>${extra}</div></div>`
+      +`<div class="sc-foot"><span class="storeprice">${AR(it.price)} 💠</span><button class="btn primary sm" data-buy="${it.item}">${T("شراء","Buy")}</button></div></div>`;
+  }).join("");
+  zone.innerHTML=
+    `<p class="small">${T("بتكسب الجيمز من سلسلة الدخول اليومية، وترقيات الرتب، ودعوات الأصدقاء، وهدايا المالك.","You earn gems from the daily login streak, tier promotions, friend invites and owner gifts.")}</p>`
+    +`<div class="storegrid">${bundles}</div>`
+    +`<h3 style="margin:16px 0 0">${T("أساسيات","Essentials")}</h3><div class="storegrid">${ess}</div>`
+    +`<h3 style="margin:16px 0 0">${T("🎁 إهداء حزمة لصديق","🎁 Gift a bundle to a friend")}</h3>`
+    +`<p class="small" style="margin-top:4px">${T("اختار الحزمة والصديق — الحزمة بتوصله فورًا وبيتلبس أول إطار فيها تلقائيًا، وبيوصله إشعار بالهدية.","Pick the bundle and the friend — it reaches them at once, its first frame is auto-worn, and they get a gift notification.")}</p>`
+    +`<div class="row" style="flex-wrap:wrap;gap:8px;margin-top:8px" id="storeGiftBundles">${STORE_BUNDLES.map(b=>`<button class="btn sm" data-gbundle="${b.k}" style="${STORE.giftBundle===b.k?"background:var(--amber-bg);border-color:var(--amber)":""}">${b.icon} ${escHTML(LANG==="en"?b.en:b.ar)} · ${AR(b.price)} 💠</button>`).join("")}</div>`
+    +`<input class="fld" id="storeGiftSearch" type="text" style="margin-top:10px" placeholder="${T("ابحث بالاسم…","Search by name…")}" value="${escHTML(STORE.giftQ)}">`
+    +`<div id="storeGiftUsers" style="max-height:230px;overflow:auto;margin-top:6px"></div>`
+    +`<button class="btn primary" id="storeGiftBtn" style="margin-top:10px">${T("إهداء الحزمة","Gift the bundle")}</button>`
+    +`<p class="small" id="storeMsg" style="margin-top:8px;min-height:1em">${escHTML(STORE.msg||"")}</p>`
+    +`<div id="storeConfirm"></div>`;
+  zone.querySelectorAll("[data-buy]").forEach(btn=>{btn.onclick=()=>{storeAskConfirm(btn.dataset.buy,null,"");};});
+  zone.querySelectorAll("[data-gbundle]").forEach(btn=>{btn.onclick=()=>{STORE.giftBundle=btn.dataset.gbundle;STORE.msg="";renderStore();};});
+  const gs=document.getElementById("storeGiftSearch");
+  if(gs)gs.addEventListener("input",()=>{STORE.giftQ=gs.value;renderStoreGiftUsers();});
+  const gb=document.getElementById("storeGiftBtn");
+  if(gb)gb.onclick=()=>{
+    if(!STORE.giftUid){STORE.msg=T("اختار الصديق اللي هتهدي له الحزمة الأول.","Choose the friend to gift first.");renderStore();return;}
+    storeAskConfirm("bundle:"+STORE.giftBundle,STORE.giftUid,STORE.giftName);
+  };
+  renderStoreGiftUsers();
+  renderStoreConfirm();
+}
+function renderStoreGiftUsers(){
+  const box=document.getElementById("storeGiftUsers");if(!box)return;
+  if(!STORE.users){
+    box.innerHTML=`<p class="small">${T("جارٍ تحميل الحسابات…","Loading accounts…")}</p>`;
+    storeLoadGiftUsers().then(()=>{try{renderStoreGiftUsers();}catch(e){}});
+    return;
+  }
+  const q=STORE.giftQ.trim().toLowerCase();
+  const users=STORE.users.filter(u=>!q||u.name.toLowerCase().indexOf(q)>=0);
+  box.innerHTML=users.length?safeMap(users,u=>`<div class="owrow" data-suser="${escHTML(u.uid)}" style="cursor:pointer;${STORE.giftUid===u.uid?"background:var(--amber-bg);border-radius:8px;padding-inline:6px":""}">${(typeof anyAvatarHTML==="function")?anyAvatarHTML(u.name,u.pic||"",30,u.frame||""):""}<span class="grow"><b>${escHTML(u.name)}</b></span>${STORE.giftUid===u.uid?`<span class="chip l1">${T("مختار","Selected")}</span>`:""}</div>`).join(""):`<p class="small">${T("لا توجد حسابات مطابقة للبحث.","No accounts match your search.")}</p>`;
+  box.querySelectorAll("[data-suser]").forEach(r=>{r.onclick=()=>{const u=STORE.users.find(x=>x.uid===r.dataset.suser);if(!u)return;STORE.giftUid=u.uid;STORE.giftName=u.name;STORE.msg="";renderStoreGiftUsers();renderStoreConfirm();};});
+}
+async function storeLoadGiftUsers(){
+  if(STORE.users)return STORE.users;
+  const map={};
+  try{
+    const r=await sbCall(SB.rpc("get_leaderboard",{period:"all"}));
+    if(!r.error&&Array.isArray(r.data))r.data.forEach(row=>{
+      if(row&&row.user_id&&row.user_id!==SESSION.uid)map[row.user_id]={uid:row.user_id,name:((row.nickname||"").trim())||((row.display_name||"").trim())||T("طالب","Student"),pic:row.avatar_url||"",frame:(typeof frameResolve==="function")?frameResolve(row.frame,row.role):""};
+    });
+  }catch(e){}
+  try{
+    if(typeof owGiftUsers==="function")owGiftUsers().forEach(u=>{
+      if(u.uid!==SESSION.uid&&!map[u.uid]){
+        const acc=Object.values(ACCOUNTS).find(a=>a&&a._uid===u.uid);
+        map[u.uid]={uid:u.uid,name:u.name,pic:(acc&&acc.profile&&acc.profile.pic)||"",frame:(typeof frameOfAccount==="function")?frameOfAccount(acc):""};
+      }
+    });
+  }catch(e){}
+  STORE.users=Object.values(map).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  return STORE.users;
+}
+function storeItemLabel(item){
+  if(item.indexOf("bundle:")===0){const b=STORE_BUNDLES.find(x=>"bundle:"+x.k===item);return b?(LANG==="en"?b.en:b.ar):item;}
+  const e=STORE_ESSENTIALS.find(x=>x.item===item);return e?(LANG==="en"?e.en:e.ar):item;
+}
+function storeItemPrice(item){
+  if(item.indexOf("bundle:")===0){const b=STORE_BUNDLES.find(x=>"bundle:"+x.k===item);return b?b.price:0;}
+  const e=STORE_ESSENTIALS.find(x=>x.item===item);return e?e.price:0;
+}
+function storeAskConfirm(item,target,targetName){
+  STORE.confirm={item:item,target:target||null,targetName:targetName||""};
+  STORE.msg="";
+  renderStoreConfirm();
+  const z=document.getElementById("storeZone");if(z)renderStoreMsg();
+}
+function renderStoreMsg(){const m=document.getElementById("storeMsg");if(m)m.textContent=STORE.msg||"";}
+function renderStoreConfirm(){
+  const box=document.getElementById("storeConfirm");if(!box)return;
+  const c=STORE.confirm;
+  if(!c){box.innerHTML="";return;}
+  const price=storeItemPrice(c.item),label=storeItemLabel(c.item);
+  const what=c.target
+    ?T("هتهدي «"+label+"» لـ "+escHTML(c.targetName)+" بـ "+AR(price)+" جوهرة؟","Gift “"+label+"” to "+escHTML(c.targetName)+" for "+AR(price)+" gems?")
+    :T("هتشتري «"+label+"» بـ "+AR(price)+" جوهرة؟","Buy “"+label+"” for "+AR(price)+" gems?");
+  box.innerHTML=`<div style="margin-top:10px;border:1px solid var(--amber);background:var(--amber-bg);border-radius:10px;padding:10px 12px"><b>${what}</b><div class="row" style="margin-top:8px"><button class="btn primary sm" id="storeBuyYes" ${STORE.busy?"disabled":""}>${STORE.busy?T("جارٍ التنفيذ…","Working…"):T("تأكيد","Confirm")}</button><button class="btn sm" id="storeBuyNo" ${STORE.busy?"disabled":""}>${T("إلغاء","Cancel")}</button></div></div>`;
+  const yes=document.getElementById("storeBuyYes"),no=document.getElementById("storeBuyNo");
+  if(yes)yes.onclick=storeDoBuy;
+  if(no)no.onclick=()=>{STORE.confirm=null;renderStoreConfirm();};
+}
+function refreshGemUI(){
+  const gc=document.getElementById("gemsChip");if(gc)gc.textContent=AR(S.gems||0);
+  const gb=document.getElementById("invGemBal");if(gb)gb.textContent=AR(S.gems||0);
+  const sb2=document.getElementById("storeGemBal");if(sb2)sb2.textContent=AR(S.gems||0);
+}
+async function storeDoBuy(){
+  const c=STORE.confirm;
+  if(!c||STORE.busy)return;
+  if(!storeServer()){STORE.msg=T("سجّل الدخول بحسابك الأونلاين الأول عشان تشتري.","Sign in with your online account first to buy.");STORE.confirm=null;renderStore();return;}
+  STORE.busy=true;renderStoreConfirm();
+  try{
+    const r=await sbCall(SB.rpc("buy_item",{p_item:c.item,p_target:c.target||null}));
+    if(r&&r.error)throw new Error(r.error.message||String(r.error));
+    if(r&&typeof r.data==="number")S.gems=r.data;
+    STORE.confirm=null;
+    if(!c.target&&c.item.indexOf("bundle:")===0){
+      /* a bought bundle auto-wears its first frame (the server sets
+         profiles.frame) — mirror it locally at once, and say so */
+      const b=STORE_BUNDLES.find(x=>"bundle:"+x.k===c.item);
+      const a=(typeof profAccount==="function")?profAccount():null;
+      if(b&&a&&a.profile)a.profile.frame=b.frames[0];
+      try{saveCurrentAccount();}catch(e){}
+      try{syncProfileUI();}catch(e){}
+      if(typeof toast==="function")toast(T("تم شراء «"+storeItemLabel(c.item)+"» — وتم ارتداء إطارها ✓","Bought “"+storeItemLabel(c.item)+"” — its frame is now worn ✓"));
+    }else if(c.target){
+      if(typeof toast==="function")toast(T("تم إهداء «"+storeItemLabel(c.item)+"» لـ "+c.targetName+" 🎁","Gifted “"+storeItemLabel(c.item)+"” to "+c.targetName+" 🎁"));
+    }else{
+      if(typeof toast==="function")toast(T("تم شراء «"+storeItemLabel(c.item)+"» بنجاح","Bought “"+storeItemLabel(c.item)+"” successfully"));
+    }
+    refreshGemUI();
+    await storeRefreshPurchases();
+  }catch(e){
+    STORE.msg=storeErrText(e&&e.message,!!c.target);
+    STORE.confirm=null;
+  }
+  STORE.busy=false;
+  try{renderStore();}catch(e){}
+}
+/* ---------- THE VAULT («خزنتي»): equip frames / titles / themes ---------- */
+async function equipCosmetic(kind,value){
+  const msg=document.getElementById("vaultMsg");
+  const fail=t=>{if(msg)msg.textContent=t;};
+  if(!storeServer()){fail(T("تجهيز الإطارات والألقاب والثيمات بيتم من حسابك الأونلاين — سجّل الدخول بحسابك على السيرفر الأول.","Equipping frames, titles and themes runs through your online account — sign in with your server account first."));return;}
+  try{
+    const r=await sbCall(SB.rpc("equip_cosmetic",{p_kind:kind,p_value:value}));
+    if(r&&r.error)throw new Error(r.error.message||String(r.error));
+    const a=(typeof profAccount==="function")?profAccount():null;
+    if(a){
+      if(!a.profile)a.profile={pic:"",nick:"",about:""};
+      if(kind==="frame")a.profile.frame=value;
+      if(kind==="title")a.profile.title=value;
+      if(kind==="theme")a.profile.theme=value;
+      try{saveCurrentAccount();}catch(e){}
+    }
+    if(kind==="theme")applyAccentTheme(value);
+    if(kind==="title")syncTitleChips();
+    if(kind==="frame"){try{syncProfileUI();}catch(e){} const pv=document.getElementById("pfPreview"); if(pv&&(typeof pfPendingPic==="undefined"||pfPendingPic===undefined))pv.innerHTML=avatarHTML(56);}
+    if(msg)msg.textContent=T("تم التجهيز ✓","Equipped ✓");
+    renderVault();
+  }catch(e){
+    /* failure: say it plainly and keep the old value everywhere */
+    fail(storeErrText(e&&e.message,false));
+  }
+}
+function renderVault(){
+  const fw=document.getElementById("vaultFrames"),tw=document.getElementById("vaultTitles"),hw=document.getElementById("vaultThemes");
+  if(!fw||!tw||!hw)return;
+  const a=(typeof profAccount==="function")?profAccount():null;
+  const p=(typeof profOf==="function")?profOf():null;
+  const worn=a?frameOfAccount(a):"";
+  const order=["crown","gold","diamond","galaxy","rose","bolt","flame","leaf"];
+  const frames=order.filter(f=>ownedFramesSet().has(f));
+  fw.innerHTML=(frames.length?frames.map(f=>`<button class="framechip ${worn===f?"on":""}" data-vframe="${f}">${frameWrap(storeAvatarInner(26),f,26)}<span>${escHTML(LANG==="en"?FRAME_META[f].en:FRAME_META[f].ar)}</span>${worn===f?" ✓":""}</button>`).join("")
+    :`<span class="small">${T("لسه معندكش إطارات — اشتري حزمة من المتجر أو استنى هدية.","No frames yet — buy a bundle from the store or wait for a gift.")}</span>`)
+    +`<button class="framechip ${!worn?"on":""}" data-vframe="">${T("بدون إطار","No frame")}${!worn?" ✓":""}</button>`;
+  const titles=Object.keys(TITLE_META).filter(k=>ownedTitlesSet().has(k));
+  const curTitle=(p&&p.title)||"";
+  tw.innerHTML=(titles.length?titles.map(k=>`<button class="framechip ${curTitle===k?"on":""}" data-vtitle="${k}"><span>${escHTML(titleLabel(k))}</span>${curTitle===k?" ✓":""}</button>`).join("")
+    :`<span class="small">${T("لسه معندكش ألقاب — الألقاب بتيجي مع حزم المتجر.","No titles yet — titles come with the store bundles.")}</span>`)
+    +`<button class="framechip ${!curTitle?"on":""}" data-vtitle="">${T("بدون لقب","No title")}${!curTitle?" ✓":""}</button>`;
+  const themes=Object.keys(THEME_META).filter(k=>ownedThemesSet().has(k));
+  const curTheme=(p&&p.theme)||"";
+  hw.innerHTML=(themes.length?themes.map(k=>`<button class="framechip ${curTheme===k?"on":""}" data-vtheme="${k}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${THEME_META[k].dot}"></span><span>${escHTML(LANG==="en"?THEME_META[k].en:THEME_META[k].ar)}</span>${curTheme===k?" ✓":""}</button>`).join("")
+    :`<span class="small">${T("لسه معندكش ثيمات — الثيمات بتيجي مع حزم المتجر.","No themes yet — themes come with the store bundles.")}</span>`)
+    +`<button class="framechip ${!curTheme?"on":""}" data-vtheme="">${T("الثيم الأساسي","Default theme")}${!curTheme?" ✓":""}</button>`;
+  fw.querySelectorAll("[data-vframe]").forEach(b=>{b.onclick=()=>equipCosmetic("frame",b.dataset.vframe);});
+  tw.querySelectorAll("[data-vtitle]").forEach(b=>{b.onclick=()=>equipCosmetic("title",b.dataset.vtitle);});
+  hw.querySelectorAll("[data-vtheme]").forEach(b=>{b.onclick=()=>equipCosmetic("theme",b.dataset.vtheme);});
+}
+/* ---------- streak shield bridge (called by checkLoginStreak) ---------- */
+async function shieldBridgeDay(missedDay){
+  try{
+    const base=new Date(missedDay*86400000);
+    const mid=new Date(base.getUTCFullYear(),base.getUTCMonth(),base.getUTCDate(),12,0,0,0);
+    const r=await sbCall(SB.rpc("consume_shield",{p_ts:mid.toISOString()}));
+    return !(r&&r.error);
+  }catch(e){return false;}
+}
+/* ---------- daily extra on the Home card ---------- */
+let DAILY_EXTRA_RUN=false;
+function storeDailyExtraUI(){
+  const btn=document.getElementById("dailyExtraBtn");if(!btn)return;
+  const registered=(typeof SESSION!=="undefined"&&SESSION&&(SESSION.mode==="user"||SESSION.mode==="owner"));
+  const left=dailyExtrasLeft();
+  if(registered&&S.dailyDay===localDayNum()&&left>0){
+    btn.style.display="block";
+    btn.textContent=T("استخدم محاولة إضافية 🎯 (فاضل ","Use an extra attempt 🎯 (")+AR(left)+T(")"," left)");
+    btn.onclick=()=>{DAILY_EXTRA_RUN=true;const dc=dailyChallenge();openExp(dc.exp.n);};
+  }else{
+    btn.style.display="none";
+  }
+  const dt=document.getElementById("dailyText");
+  if(dt&&S.dailyBest&&S.dailyBest.day===localDayNum()&&S.dailyDay===localDayNum()){
+    dt.textContent+=T(" أفضل دقة النهاردة: "," Today's best accuracy: ")+AR(S.dailyBest.acc)+"٪.";
+  }
+}
+/* ---------- hooks: re-render the store/vault/chips with the app's own flows ---------- */
+const _rhStore=renderHome;
+renderHome=function(){_rhStore();try{storeDailyExtraUI();}catch(e){}};
+const _ssStore=showScreen;
+showScreen=function(id){_ssStore(id);if(id==="scr-settings"){try{renderStore();}catch(e){}try{renderVault();}catch(e){}}};
+const _alStore=applyLang;
+applyLang=function(l){_alStore(l);try{renderStore();}catch(e){}try{renderVault();}catch(e){}try{syncTitleChips();}catch(e){}};
+const _raStore=renderAll;
+renderAll=function(){_raStore();try{renderStore();}catch(e){}try{syncTitleChips();}catch(e){}};
+const _pfFillStore=pfFillForm;
+pfFillForm=function(){_pfFillStore();try{renderVault();}catch(e){}};
+const _spStore=syncProfileUI;
+syncProfileUI=function(){_spStore();try{syncTitleChips();}catch(e){}};
+try{applyAccentTheme(ownThemeKey());}catch(e){}
+try{syncTitleChips();}catch(e){}
+try{applyLang(LANG);}catch(e){}
 </script>
 </body>
 </html>
