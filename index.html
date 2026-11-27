@@ -13337,6 +13337,30 @@ function storeInsuffMsg(price){
   return T("لا يتوفر رصيد كافٍ 💎 — رصيدك الحالي "+AR(S.gems||0)+" جوهرة والمطلوب "+AR(price),
            "Insufficient gems balance 💎 — you have "+AR(S.gems||0)+", this needs "+AR(price));
 }
+/* ---------- the store's OWN on-screen feedback ----------
+   Root cause of the "dead Buy button": the app-wide toast() helper is
+   scoped inside the Theory-PDF module and is NOT a global, so every
+   store toast silently no-opped — and the only other feedback (the
+   #storeMsg line and the #storeConfirm box) renders at the very bottom
+   of the store zone, below the whole gift section, far off-screen from
+   the Buy button on a phone. A tap therefore changed nothing the user
+   could see. These two helpers guarantee every store tap answers on
+   screen: a fixed pill in the app's toast styling that cannot be
+   missed, plus scrolling the inline message / confirmation into view. */
+let STORE_TOAST_T=null;
+function storeToast(msg){
+  try{
+    const old=document.getElementById("storeToast");if(old)old.remove();
+    const t=document.createElement("div");t.id="storeToast";t.setAttribute("role","status");t.textContent=msg;
+    t.style.cssText="position:fixed;left:50%;transform:translateX(-50%);bottom:92px;z-index:300;background:#123c38;color:#fff;padding:10px 18px;border-radius:99px;font-size:.92rem;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw;text-align:center;line-height:1.6";
+    document.body.appendChild(t);
+    if(STORE_TOAST_T)clearTimeout(STORE_TOAST_T);
+    STORE_TOAST_T=setTimeout(()=>{const el=document.getElementById("storeToast");if(el)el.remove();},4200);
+  }catch(e){}
+}
+function storeReveal(id){
+  setTimeout(()=>{const el=document.getElementById(id);if(el){try{el.scrollIntoView({behavior:"smooth",block:"center"});}catch(e){}}},40);
+}
 /* ---------- store rendering ---------- */
 const STORE={confirm:null,busy:false,msg:"",giftBundle:"gold",giftUid:null,giftName:"",giftQ:"",users:null};
 function storeServer(){return (typeof sbServerSession==="function")&&sbServerSession();}
@@ -13395,7 +13419,7 @@ function renderStore(){
   if(gs)gs.addEventListener("input",()=>{STORE.giftQ=gs.value;renderStoreGiftUsers();});
   const gb=document.getElementById("storeGiftBtn");
   if(gb)gb.onclick=()=>{
-    if(!STORE.giftUid){STORE.msg=T("اختار الصديق اللي هتهدي له الحزمة الأول.","Choose the friend to gift first.");renderStore();return;}
+    if(!STORE.giftUid){STORE.msg=T("اختار الصديق اللي هتهدي له الحزمة الأول.","Choose the friend to gift first.");storeToast(STORE.msg);renderStore();storeReveal("storeMsg");return;}
     storeAskConfirm("bundle:"+STORE.giftBundle,STORE.giftUid,STORE.giftName);
   };
   renderStoreGiftUsers();
@@ -13451,14 +13475,18 @@ function storeAskConfirm(item,target,targetName){
   if((S.gems||0)<price){
     STORE.confirm=null;
     STORE.msg=storeInsuffMsg(price);
-    if(typeof toast==="function")toast(STORE.msg);
+    storeToast(STORE.msg);
     try{renderStore();}catch(e){}
+    storeReveal("storeMsg");
     return;
   }
   STORE.confirm={item:item,target:target||null,targetName:targetName||""};
   STORE.msg="";
   renderStoreConfirm();
   const z=document.getElementById("storeZone");if(z)renderStoreMsg();
+  /* the confirmation renders at the bottom of the store zone — bring it
+     to the user's eyes, or the tap looks like it did nothing */
+  storeReveal("storeConfirm");
 }
 function renderStoreMsg(){const m=document.getElementById("storeMsg");if(m)m.textContent=STORE.msg||"";}
 function renderStoreConfirm(){
@@ -13482,15 +13510,16 @@ function refreshGemUI(){
 async function storeDoBuy(){
   const c=STORE.confirm;
   if(!c||STORE.busy)return;
-  if(!storeServer()){STORE.msg=T("سجّل الدخول بحسابك الأونلاين الأول عشان تشتري.","Sign in with your online account first to buy.");STORE.confirm=null;renderStore();return;}
+  if(!storeServer()){STORE.msg=T("سجّل الدخول بحسابك الأونلاين الأول عشان تشتري.","Sign in with your online account first to buy.");STORE.confirm=null;storeToast(STORE.msg);renderStore();storeReveal("storeMsg");return;}
   /* FINAL BALANCE GUARD — this runs BEFORE the buy_item RPC below, so an
      insufficient balance can never reach the server: if the balance fell
      below the price since the confirmation opened, answer locally. */
   if((S.gems||0)<storeItemPrice(c.item)){
     STORE.msg=storeInsuffMsg(storeItemPrice(c.item));
-    if(typeof toast==="function")toast(STORE.msg);
+    storeToast(STORE.msg);
     STORE.confirm=null;
     try{renderStore();}catch(e){}
+    storeReveal("storeMsg");
     return;
   }
   STORE.busy=true;renderStoreConfirm();
@@ -13507,11 +13536,14 @@ async function storeDoBuy(){
       if(b&&a&&a.profile)a.profile.frame=b.frames[0];
       try{saveCurrentAccount();}catch(e){}
       try{syncProfileUI();}catch(e){}
-      if(typeof toast==="function")toast(T("تم شراء «"+storeItemLabel(c.item)+"» — وتم ارتداء إطارها ✓","Bought “"+storeItemLabel(c.item)+"” — its frame is now worn ✓"));
+      STORE.msg=T("تم شراء «"+storeItemLabel(c.item)+"» — وتم ارتداء إطارها ✓","Bought “"+storeItemLabel(c.item)+"” — its frame is now worn ✓");
+      storeToast(STORE.msg);
     }else if(c.target){
-      if(typeof toast==="function")toast(T("تم إهداء «"+storeItemLabel(c.item)+"» لـ "+c.targetName+" 🎁","Gifted “"+storeItemLabel(c.item)+"” to "+c.targetName+" 🎁"));
+      STORE.msg=T("تم إهداء «"+storeItemLabel(c.item)+"» لـ "+c.targetName+" 🎁","Gifted “"+storeItemLabel(c.item)+"” to "+c.targetName+" 🎁");
+      storeToast(STORE.msg);
     }else{
-      if(typeof toast==="function")toast(T("تم شراء «"+storeItemLabel(c.item)+"» بنجاح","Bought “"+storeItemLabel(c.item)+"” successfully"));
+      STORE.msg=T("تم شراء «"+storeItemLabel(c.item)+"» بنجاح ✓","Bought “"+storeItemLabel(c.item)+"” successfully ✓");
+      storeToast(STORE.msg);
     }
     refreshGemUI();
     await storeRefreshPurchases();
@@ -13525,6 +13557,7 @@ async function storeDoBuy(){
   }
   STORE.busy=false;
   try{renderStore();}catch(e){}
+  if(STORE.msg)storeReveal("storeMsg");
 }
 /* ---------- THE VAULT («خزنتي»): equip frames / titles / themes ---------- */
 async function equipCosmetic(kind,value){
@@ -13622,6 +13655,136 @@ try{applyAccentTheme(ownThemeKey());}catch(e){}
 try{syncTitleChips();}catch(e){}
 try{applyLang(LANG);}catch(e){}
 </script>
+<style>
+/* ===== ELEVATION — SITE-WIDE DESIGN SYSTEM (final polish layer) =====
+   One token set consumed by every screen, appended last so it refines —
+   never replaces — the systems above it. Presentation only: no markup, no
+   text, no behavior changes. Tokens:
+   · Spacing scale  --sp-1:4 · --sp-2:8 · --sp-3:12 · --sp-4:16 · --sp-5:20
+     · --sp-6:24 · --sp-8:32 (px) — screen padding, card gaps, section gaps
+     and inner card padding all resolve to steps of this scale.
+   · Radius scale   --r-sm:10 · --r-md:14 · --r-lg:18 · --r-xl:22 (px),
+     pill stays 999px; the legacy --radius moves 14 → 16 so every surface
+     that already consumes it (cards, level cards, mode cards) rounds as one.
+   · Shadows        --sh-1 (resting rows/badges), --sh-2 = --shadow (cards),
+     --sh-3 (popups/raised) — two-layer soft shadows, deeper in dark mode,
+     plus --card-hi, a 1px top highlight that gives cards their depth edge.
+   · Type           the established scale stands (screen 1.5rem/800 ·
+     section 1.18rem/800 · card 1.02rem · body 1rem · small .85rem) with
+     tabular numerals extended to every remaining numeric surface.
+   · Controls       one height rhythm (primary 48px, small 40px, fields
+     12px radius), one focus ring (--focus-ring, which follows the equipped
+     store theme through --acc-glow), one press response (1px settle +
+     slight scale on cards), transform/opacity only, reduced-motion safe.
+   The default (no-theme) app keeps its exact colors and identity — only
+   depth, rhythm and finish move. Equipped data-accent themes compose
+   unchanged: every rule below reads the theme variables, none hard-codes
+   an accent color except the default teal focus ring, which data-accent
+   overrides through --focus-ring. */
+:root{
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;
+  --r-sm:10px;--r-md:14px;--r-lg:18px;--r-xl:22px;--radius:16px;
+  --sh-1:0 1px 2px rgba(13,34,43,.05),0 3px 8px rgba(13,34,43,.05);
+  --sh-2:0 1px 3px rgba(13,34,43,.06),0 8px 20px rgba(13,34,43,.08);
+  --sh-3:0 4px 10px rgba(13,34,43,.08),0 18px 40px rgba(13,34,43,.14);
+  --shadow:0 1px 3px rgba(13,34,43,.06),0 8px 20px rgba(13,34,43,.08);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.55);
+  --nav-sh:0 -6px 20px rgba(13,34,43,.06);
+  --focus-ring:rgba(11,118,110,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --sh-1:0 1px 2px rgba(0,0,0,.30),0 3px 8px rgba(0,0,0,.26);
+    --sh-2:0 1px 3px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.32);
+    --sh-3:0 4px 12px rgba(0,0,0,.42),0 20px 44px rgba(0,0,0,.48);
+    --shadow:0 1px 3px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.32);
+    --card-hi:inset 0 1px 0 rgba(255,255,255,.05);
+    --nav-sh:0 -6px 20px rgba(0,0,0,.35);
+    --focus-ring:rgba(45,212,191,.28);
+  }
+}
+html[data-theme="dark"]{
+  --sh-1:0 1px 2px rgba(0,0,0,.30),0 3px 8px rgba(0,0,0,.26);
+  --sh-2:0 1px 3px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.32);
+  --sh-3:0 4px 12px rgba(0,0,0,.42),0 20px 44px rgba(0,0,0,.48);
+  --shadow:0 1px 3px rgba(0,0,0,.35),0 8px 22px rgba(0,0,0,.32);
+  --card-hi:inset 0 1px 0 rgba(255,255,255,.05);
+  --nav-sh:0 -6px 20px rgba(0,0,0,.35);
+  --focus-ring:rgba(45,212,191,.28);
+}
+@media (prefers-color-scheme: dark){
+  html[data-theme="light"]{
+    --sh-1:0 1px 2px rgba(13,34,43,.05),0 3px 8px rgba(13,34,43,.05);
+    --sh-2:0 1px 3px rgba(13,34,43,.06),0 8px 20px rgba(13,34,43,.08);
+    --sh-3:0 4px 10px rgba(13,34,43,.08),0 18px 40px rgba(13,34,43,.14);
+    --shadow:0 1px 3px rgba(13,34,43,.06),0 8px 20px rgba(13,34,43,.08);
+    --card-hi:inset 0 1px 0 rgba(255,255,255,.55);
+    --nav-sh:0 -6px 20px rgba(13,34,43,.06);
+    --focus-ring:rgba(11,118,110,.22);
+  }
+}
+html[data-accent]{--focus-ring:var(--acc-glow)}
+/* ---- spacing & rhythm: one heartbeat for every screen ---- */
+.wrap{padding:var(--sp-5) var(--sp-4) var(--sp-3)}
+.card{margin-bottom:var(--sp-4)}
+.quick,.statgrid,.lvlcards,.duelmodes,.storegrid{gap:var(--sp-3)}
+.filters{gap:var(--sp-2);margin-bottom:var(--sp-3)}
+.wrap>h2,.secttl{margin:var(--sp-6) 0 var(--sp-3)}
+/* ---- surfaces: one card language, gentle depth hierarchy ---- */
+.card{border-radius:var(--r-lg);box-shadow:var(--card-hi),var(--sh-2)}
+.lvlcard,.modecard{border-radius:var(--r-lg)}
+details.th{border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.rankrow{border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.quizq,.qzcard,.qzqb{border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.storecard{border-radius:var(--r-lg)}
+.mission,.notice,.givens,.xpsum,.feedback,.pv,.thfig,.thimg,.formula{border-radius:var(--r-md)}
+canvas.sim{border-radius:var(--r-md)}
+.stat{border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px}
+.expnum,.pod,.vs .side{border-radius:var(--r-md)}
+.vsside{border-radius:var(--r-lg)}
+.medal{box-shadow:var(--sh-1)}
+.gembal{box-shadow:var(--sh-1)}
+.czcode{border-radius:var(--r-md)}
+.giftpop{border-radius:var(--r-xl);box-shadow:var(--sh-3)}
+/* ---- controls: one height, one radius, one press, one focus ---- */
+.btn{border-radius:var(--r-md);min-height:48px;padding:11px 18px}
+.btn.sm{min-height:40px}
+.btn:active{opacity:.96}
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  .btn.primary:hover{box-shadow:0 6px 18px rgba(11,118,110,.32)}
+  .lvlcard:hover,.modecard:hover{box-shadow:var(--card-hi),var(--sh-3)}
+}
+.lvlcard:active,.modecard:active{transform:translateY(1px) scale(.995)}
+.fld{border-radius:12px}
+.fld:focus{box-shadow:0 0 0 3px var(--focus-ring)}
+.search{border-radius:12px}
+.search:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px var(--focus-ring)}
+.chip{padding:3px 11px}
+.fchip{display:inline-flex;align-items:center;justify-content:center;min-height:40px}
+.gatebtn{min-height:44px;border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center}
+.switch{border-radius:var(--r-md);min-height:44px}
+.segopt,.opt,.qzopt,.authtab{border-radius:var(--r-md)}
+.framechip{min-height:36px}
+.backbtn{border-radius:var(--r-md);box-shadow:var(--sh-1)}
+.backbtn:active{transform:scale(.94)}
+input[type=range]:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+::placeholder{color:var(--muted);opacity:.75}
+/* ---- bottom nav: a soft shadow lifts it off the page (never sticky —
+   it stays fixed to the viewport bottom exactly as before) ---- */
+.bnav{box-shadow:var(--nav-sh)}
+.bnav button{transition:color .15s ease}
+.bnav button.on{font-weight:700}
+/* ---- screen changes: a short fade-and-rise, transform/opacity only ---- */
+.screen.on{animation:scrIn .24s ease both}
+@keyframes scrIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* ---- numbers: tabular figures on every remaining numeric surface ---- */
+.btn,.storeprice,.czcode,.gembal,.vsprize span{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion: reduce){
+  .screen.on{animation:none}
+  .bnav button{transition:none}
+  .lvlcard:active,.modecard:active,.backbtn:active{transform:none}
+}
+</style>
 </body>
 </html>
 
