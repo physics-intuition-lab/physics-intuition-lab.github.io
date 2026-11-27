@@ -560,6 +560,11 @@ html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9a
 .formula{direction:ltr;text-align:center;background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:12px 10px;margin:10px 0;font-size:1.12rem;overflow-x:auto}
 .formula .katex{font-size:1.05em}
 .formula .katex-display{margin:0;padding:2px 0}
+/* inline math runs inside prose: direction-isolated LTR islands (fmtP) so a
+   plain-text formula in RTL text keeps its mathematical order; .nw runs are
+   short enough to never wrap, longer runs break only outside parentheses */
+.im{direction:ltr;unicode-bidi:isolate}
+.im.nw{white-space:nowrap}
 .owrow{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
 .owrow:last-child{border-bottom:none}
 .thsum{margin:6px 0}
@@ -2302,8 +2307,8 @@ function renderHome(){
   $("#continueBtn").onclick=()=>openExp(last.n);
   const dc=dailyChallenge(),daily=dc.exp;
   const dailyDone=S.dailyDay===localDayNum();
-  $("#dailyText").textContent=T("تجربة ","Experiment ")+AR(daily.n)+" — "+(LANG==="en"?(EN_T[daily.n]||daily.t):daily.t)+" ("+LVL[daily.lvl]+"). "
-    +T("معدِّل اليوم: ","Today's modifier: ")+dailyModName(dc.mod)+" — "+dailyModDesc(dc.mod)
+  $("#dailyText").textContent=T("تجربة ","Experiment ")+AR(daily.n)+"\u00A0— "+(LANG==="en"?(EN_T[daily.n]||daily.t):daily.t)+" ("+LVL[daily.lvl]+"). "
+    +T("معدِّل اليوم: ","Today's modifier: ")+dailyModName(dc.mod)+"\u00A0— "+dailyModDesc(dc.mod)
     +(dailyDone?T(" أنجزت تحدي اليوم ✓ — ارجع بكرة لتحدٍّ جديد."," You completed today's challenge ✓ — come back tomorrow for a new one."):T(" العبها النهاردة واكسب XP إضافي."," Play it today and earn bonus XP."));
   $("#dailyBtn").onclick=()=>openExp(daily.n);
   $("#homeLevels").innerHTML=safeMap([0,1,2],l=>{
@@ -2312,7 +2317,7 @@ function renderHome(){
     const names=LANG==="en"?["Basics: heat & properties of matter + electricity & magnetism","Deeper: electronics, thin films, atomic & nuclear","Rare & advanced: quantum, nano & accelerators"]:["الأساسيات: حرارة وخواص مادة + كهربية ومغناطيسية","تعمّق: إلكترونيات، أغشية رقيقة، ذرية ونووية","نادر ومتقدم: كمومية ونانو ومسرّعات"];
     return `<button class="lvlcard" data-lvl="${l}"><span class="n chip l${l}" style="border:none">${AR(tot)}</span>
       <span class="grow"><b>${LVL[l]}</b> — ${names[l]}<span class="bar"><i style="width:${tot?dn/tot*100:0}%"></i></span>
-      <span class="small">${T("أنجزت","Completed")} ${AR(dn)} ${T("من","of")} ${AR(tot)}</span></span><span>‹</span></button>`;
+      <span class="small">${T("أنجزت","Completed")} ${AR(dn)} ${T("من","of")} ${AR(tot)}</span></span><span>${LANG==="en"?"›":"‹"}</span></button>`;
   }).join("");
   $$("#homeLevels .lvlcard").forEach(b=>b.onclick=()=>{setLvlFilter(+b.dataset.lvl);showScreen("scr-exps");});
   try{renderStreakCard();}catch(e){}
@@ -5290,10 +5295,105 @@ function figSVG(n){
   }
   return `<figure class="thfig"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${LANG==="en"?"Illustrative chart":"رسم بياني توضيحي"}">${inner}</svg><figcaption>${LANG==="en"?(f.capEn||f.cap):f.cap}</figcaption></figure>`;
 }
+/* fmtP: wrap inline math runs in direction-isolated LTR spans so plain-text
+   formulas inside RTL prose render in correct mathematical order and never
+   split inside parentheses/fractions. */
+function fmtP(t){
+  if(typeof t!=="string"||!t)return t||"";
+  const STRONG=/[0-9\u0370-\u03FF\u2070-\u209F\u00B2\u00B3\u00BD\u00BC\u00BE\u2150-\u215E=+*\u00D7\u00F7\/_%^~\u2248\u2260\u2264\u2265<>\u221A\u221E\u221D\u00B1\u2295\u2297\u00B0\u00B7\u22C5\u2212\u2013\u2202\u2207\u222B\u2211\u220F\u2032\u2033\u27E8\u27E9\u210F]/;
+  const STOP=new Set(("the and for are was were has have had not but its it is in on of to an by at or as be so no do if up per two one all any can may out you now way law see set get put end too own old new far low sum with from that this than then when what each both same only over such most more less very just also").split(" "));
+  const FUNC=new Set(("sin cos tan log ln exp lim min max mod sinh cosh tanh sec csc cot").split(" "));
+  const PUN="()[]{},.;:!?\"";
+  const bal=s=>{let b=0;for(const c of s){if(c==="("||c==="[")b++;else if(c===")"||c==="]")b--;}return b;};
+  const parts=t.split(/(\s+)/);
+  const cls=parts.map((tok,i)=>{
+    if(i%2===1||!tok)return null; /* separator */
+    if(/[\u0620-\u064A\u066E-\u06D3]/.test(tok))return ""; /* token with Arabic letters: prose (Arabic punctuation alone does not make it prose) */
+    let core=tok;
+    while(core&&PUN.includes(core[0]))core=core.slice(1);
+    while(core&&PUN.includes(core[core.length-1]))core=core.slice(0,-1);
+    if(STRONG.test(tok))return "S";
+    if(/^[A-Za-z\u0370-\u03FF]$/.test(core))return "W"; /* single-letter variable */
+    if(FUNC.has(core))return "W";
+    if(/^[A-Za-z][A-Za-z0-9]{1,3}$/.test(core)&&!STOP.has(core.toLowerCase()))return "W"; /* short identifier/unit */
+    if(core===""&&/^[()\[\]{}]+$/.test(tok))return "W"; /* bare brackets */
+    return "";
+  });
+  let out="",i=0;
+  while(i<parts.length){
+    if(cls[i]==="S"||cls[i]==="W"){
+      let j=i,hasS=false,depth=0,joined=0,runLen=0;const toks=[];
+      while(j<parts.length){
+        const c=cls[j];
+        if(c==="S"||c==="W"){
+          if(c==="S")hasS=true;toks.push(j);depth+=bal(parts[j]);runLen+=parts[j].length+1;j+=2;continue;
+        }
+        /* inside a bracket the run itself opened, following tokens — Arabic
+           words included — belong to the same formula (e.g. a unit or a
+           subscript word inside parentheses): keep them inside the isolate
+           so the bracketed factor is never split across the RTL flow */
+        if(depth>0&&joined<6&&runLen<=80&&parts[j]){
+          toks.push(j);depth+=bal(parts[j]);runLen+=parts[j].length+1;joined++;j+=2;continue;
+        }
+        break;
+      }
+      if(hasS){
+        /* trim weak edge tokens (stray prose words/units) while the remaining
+           run keeps balanced brackets */
+        while(toks.length>1&&cls[toks[0]]==="W"){
+          const rest=parts.slice(toks[1],toks[toks.length-1]+1).join("");
+          if(bal(rest)!==0)break;
+          out+=parts[toks[0]]+parts[toks[0]+1];toks.shift();
+        }
+        while(toks.length>1&&cls[toks[toks.length-1]]==="W"){
+          const rest=parts.slice(toks[0],toks[toks.length-2]+1).join("");
+          if(bal(rest)!==0)break;
+          toks.pop();
+        }
+        let run=parts.slice(toks[0],toks[toks.length-1]+1).join("");
+        /* a closing bracket whose opener sits in the surrounding prose (an
+           Arabic-led parenthesis) is not part of the formula: split the run
+           where its bracket balance would go negative, so every emitted span
+           is bracket-balanced */
+        let tail="",bd=0,cut=-1;
+        for(let k=0;k<run.length;k++){const ch=run[k];if(ch==="("||ch==="[")bd++;else if(ch===")"||ch==="]"){bd--;if(bd<0){cut=k;break;}}}
+        if(cut>0){tail=run.slice(cut);run=run.slice(0,cut).replace(/\s+$/,"");}
+        run=nbspParens(run);
+        out+="<span class=\"im"+(run.length<=30?" nw":"")+"\" dir=\"ltr\">"+run+"</span>"+tail;
+        i=toks[toks.length-1]+1;continue;
+      }
+      out+=parts[i];i++;continue;
+    }
+    out+=parts[i];i++;
+  }
+  return out;
+}
+function nbspParens(run){
+  /* spaces inside a paren/bracket group become NBSP when the group is short
+     (<=26 chars) so a formula never breaks mid-parenthesis; longer groups keep
+     their breakable spaces */
+  let out="",depth=0,groupStart=-1,spaces=[];
+  const flush=(end)=>{
+    if(groupStart>=0&&end-groupStart<=26){for(const p of spaces)out=out.slice(0,p)+"\u00A0"+out.slice(p+1);}
+    spaces=[];groupStart=-1;
+  };
+  for(let k=0;k<run.length;k++){
+    const c=run[k];
+    if(c==="("||c==="["){if(depth===0){groupStart=out.length;}depth++;}
+    else if(c===")"||c==="]"){depth--;if(depth===0){out+=c;flush(out.length);continue;}}
+    if(c===" "&&depth>0)spaces.push(out.length);
+    out+=c;
+  }
+  return out;
+}
+function fmtHTML(h){
+  if(typeof h!=="string")return h||"";
+  return h.split(/(<[^>]*>)/).map((seg,i)=>i%2===1?seg:fmtP(seg)).join("");
+}
 function theoryBlock(e,forPrint){
   const th=THEORY[e.n];if(!th)return "";
-  if(forPrint)return `<p>${th.s}</p>${th.der?`<p><b>${T("اشتقاق القانون ومنطقه:","Derivation and logic of the law:")}</b> ${th.der}</p>`:""}<p><b>${T("القانون:","The law:")}</b> ${th.fp}</p>${figSVG(e.n)}<p>${th.d}</p>${th.exp?`<p><b>${T("المتوقع في التجربة:","Expected in the experiment:")}</b> ${th.exp}</p>`:""}`;
-  return `<div class="thlaw" style="margin-top:0">${T("التعريف والفكرة بدقة:","Definition and core idea:")}</div><p class="thsum">${th.s}</p>${th.der?`<div class="thlaw">${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</div><p class="thsum">${th.der}</p>`:""}<div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}<div class="thlaw">${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</div><p class="small" style="color:var(--ink)">${th.d}</p>${th.exp?`<div class="thlaw">${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</div><p class="thsum">${th.exp}</p>`:""}`;
+  if(forPrint)return `<p>${fmtP(th.s)}</p>${th.der?`<p><b>${T("اشتقاق القانون ومنطقه:","Derivation and logic of the law:")}</b> ${fmtP(th.der)}</p>`:""}<p><b>${T("القانون:","The law:")}</b> ${fmtP(th.fp)}</p>${figSVG(e.n)}<p>${fmtP(th.d)}</p>${th.exp?`<p><b>${T("المتوقع في التجربة:","Expected in the experiment:")}</b> ${fmtP(th.exp)}</p>`:""}`;
+  return `<div class="thlaw" style="margin-top:0">${T("التعريف والفكرة بدقة:","Definition and core idea:")}</div><p class="thsum">${fmtP(th.s)}</p>${th.der?`<div class="thlaw">${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</div><p class="thsum">${fmtP(th.der)}</p>`:""}<div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}<div class="thlaw">${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</div><p class="small" style="color:var(--ink)">${fmtP(th.d)}</p>${th.exp?`<div class="thlaw">${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</div><p class="thsum">${fmtP(th.exp)}</p>`:""}`;
 }
 const TOPICS_EN={
 "القياس والتقدير بالعين":"Measurement and estimation by eye",
@@ -5700,6 +5800,7 @@ function applyLang(l){
   _al("expSearch","بحث في التجارب","Search experiments");
   _al("thSearch","بحث في النظرية","Search theory");
   _al("expBack","رجوع","Back");
+  const _eb=document.getElementById("expBack");if(_eb)_eb.textContent=en?"\u2190":"\u2192"; /* back arrow mirrors text direction: LTR back = left, RTL back = right */
   _al("expRing","تقدمك في هذه التجربة","Your progress in this experiment");
   _al("myLinkOut","رابط الدعوة الشخصي","Your personal invite link");
   applyTheme(document.documentElement.dataset.theme||"light");
@@ -5932,8 +6033,8 @@ theoryBlock=function(e,forPrint){
   const s=te?te.s:th.s,der=te?te.der:th.der,d=te?te.d:th.d,exp=te?te.exp:th.exp,ex=te?te.ex:th.ex;
   const img=THEORY_IMG[e.n];
   const imgHTML=img?`<figure class="thimg"><img src="${img.src}" alt="${en?img.capEn:img.cap}" loading="lazy" onerror="var f=this.closest('figure');if(f)f.style.display='none'"><figcaption>${en?img.capEn:img.cap} <span dir="ltr">(${en?"Source":"المصدر"}: <a href="${img.url}" target="_blank" rel="noopener">${img.credit}</a>)</span></figcaption></figure>`:"";
-  if(forPrint)return `<h3>${T("التعريف والفكرة بدقة:","Definition and core idea:")}</h3><p>${s}</p>${der?`<h3>${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</h3><p>${der}</p>`:""}<h3>${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</h3><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<h3>${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</h3><p>${d}</p>${ex?`<h3>${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</h3><p>${ex}</p>`:""}${exp?`<h3>${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</h3><p>${exp}</p>`:""}`;
-  return `<div class="thlaw" style="margin-top:0">${T("التعريف والفكرة بدقة:","Definition and core idea:")}</div><p class="thsum">${s}</p>${der?`<div class="thlaw">${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</div><p class="thsum">${der}</p>`:""}<div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<div class="thlaw">${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</div><p class="small" style="color:var(--ink)">${d}</p>${ex?`<div class="thlaw">${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</div><p class="thsum">${ex}</p>`:""}${exp?`<div class="thlaw">${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</div><p class="thsum">${exp}</p>`:""}`;
+  if(forPrint)return `<h3>${T("التعريف والفكرة بدقة:","Definition and core idea:")}</h3><p>${fmtP(s)}</p>${der?`<h3>${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</h3><p>${fmtP(der)}</p>`:""}<h3>${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</h3><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<h3>${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</h3><p>${fmtP(d)}</p>${ex?`<h3>${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</h3><p>${fmtP(ex)}</p>`:""}${exp?`<h3>${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</h3><p>${fmtP(exp)}</p>`:""}`;
+  return `<div class="thlaw" style="margin-top:0">${T("التعريف والفكرة بدقة:","Definition and core idea:")}</div><p class="thsum">${fmtP(s)}</p>${der?`<div class="thlaw">${T("من أين يأتي القانون؟ — الاشتقاق والمنطق:","Where does the law come from? — derivation and logic:")}</div><p class="thsum">${fmtP(der)}</p>`:""}<div class="thlaw">${T("القانون بصيغته الرياضية:","The law in mathematical form:")}</div><div class="formula" data-fx="${e.n}"></div>${figSVG(e.n)}${imgHTML}<div class="thlaw">${T("الرموز والوحدات — وافتراضات القانون وحدود تطبيقه:","Symbols and units — assumptions and limits of the law:")}</div><p class="small" style="color:var(--ink)">${fmtP(d)}</p>${ex?`<div class="thlaw">${T("مثال محلول — خطوة بخطوة:","Worked example — step by step:")}</div><p class="thsum">${fmtP(ex)}</p>`:""}${exp?`<div class="thlaw">${T("الربط بهذه التجربة — ماذا تتوقع ولماذا؟","Link to this experiment — what to expect, and why?")}</div><p class="thsum">${fmtP(exp)}</p>`:""}`;
 };
 if(curExp){const tb=document.getElementById("theoryBody");if(tb)tb.innerHTML=theoryBlock(curExp,false);}
 renderTheory(document.getElementById("thSearch")?document.getElementById("thSearch").value.trim():"");
@@ -7431,10 +7532,10 @@ theoryBlock=function(e,forPrint){
   let h=_theoryBlockPlus(e,forPrint);
   const en=LANG==="en";const tp=(en?TH_PLUS_EN:TH_PLUS)[e.n];
   if(tp){
-    if(forPrint)h+=`<h3>${T("مثال محلول:","Worked example:")}</h3><p>${tp.x}</p><h3>${T("تطبيقات وربط جامعي:","Applications and university links:")}</h3><p>${tp.a}</p><h3>${T("أخطاء شائعة يجب تجنبها:","Common mistakes to avoid:")}</h3><p>${tp.m}</p>`;
-    else h+=`<div class="thlaw">${T("مثال محلول:","Worked example:")}</div><p class="thsum">${tp.x}</p><div class="thlaw">${T("تطبيقات وربط جامعي:","Applications and university links:")}</div><p class="thsum">${tp.a}</p><div class="thlaw">${T("أخطاء شائعة يجب تجنبها:","Common mistakes to avoid:")}</div><p class="thsum">${tp.m}</p>`;
+    if(forPrint)h+=`<h3>${T("مثال محلول:","Worked example:")}</h3><p>${fmtP(tp.x)}</p><h3>${T("تطبيقات وربط جامعي:","Applications and university links:")}</h3><p>${fmtP(tp.a)}</p><h3>${T("أخطاء شائعة يجب تجنبها:","Common mistakes to avoid:")}</h3><p>${fmtP(tp.m)}</p>`;
+    else h+=`<div class="thlaw">${T("مثال محلول:","Worked example:")}</div><p class="thsum">${fmtP(tp.x)}</p><div class="thlaw">${T("تطبيقات وربط جامعي:","Applications and university links:")}</div><p class="thsum">${fmtP(tp.a)}</p><div class="thlaw">${T("أخطاء شائعة يجب تجنبها:","Common mistakes to avoid:")}</div><p class="thsum">${fmtP(tp.m)}</p>`;
   }
-  if(e.n===1)h+=en?CONV_HTML.en:CONV_HTML.ar;
+  if(e.n===1)h+=en?fmtHTML(CONV_HTML.en):fmtHTML(CONV_HTML.ar);
   return h;
 };
 if(curExp){const tb=document.getElementById("theoryBody");if(tb)tb.innerHTML=theoryBlock(curExp,false);}
@@ -7464,7 +7565,7 @@ auth_rec_h:["استرجاع كلمة السر","Password recovery"],
 auth_rec_d:["اكتب الإيميل المسجّل بحسابك، وبعده عيّن كلمة سر جديدة.","Enter your registered email, then choose a new password."],
 auth_newpass:["كلمة السر الجديدة","New password"],
 auth_rec_btn:["تعيين كلمة السر الجديدة","Set new password"],
-auth_back_in:["← العودة لتسجيل الدخول","← Back to sign in"],
+auth_back_in:["→ العودة لتسجيل الدخول","← Back to sign in"],
 auth_fullname:["الاسم الكامل","Full name"],
 auth_fullname_ph:["مثال: محمد نادر","e.g. Mohamed Nader"],
 auth_phone:["رقم التليفون","Phone number"],
