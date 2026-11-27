@@ -10755,9 +10755,17 @@ function czZone(){
   set("jcJoin",T("انضم للكورس","Join the course"));
   const list=document.getElementById("homeCourses");
   if(list){
+    /* while the server courses fetch is in flight (or failed), an empty
+       local list means «not loaded yet» — show loading / retry, never a
+       silently blank area that reads as «there are no courses» */
+    const listPending=!CZ_LIST.loaded&&(CZ_LIST.failed||czListPending());
     if(teacher){
       const cs=visibleCourses();
-      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورساتي الخاصة","My private courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,true)).join("")):"";
+      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورساتي الخاصة","My private courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,true)).join(""))
+        :(listPending?(CZ_LIST.failed
+          ?`<div class="card"><p class="small">${T("تعذّر تحميل الكورسات من السيرفر — راجع اتصالك وحاول تاني.","Courses could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="czListRetry" style="margin-top:8px">${T("↻ إعادة تحميل الكورسات","↻ Reload courses")}</button></div>`
+          :`<div class="card"><p class="small">${T("جارٍ تحميل الكورسات من السيرفر…","Loading courses from the server…")}</p></div>`):"");
+      const lrb=document.getElementById("czListRetry");if(lrb)lrb.onclick=()=>czRetryListFetch();
       list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
     }else{
       /* students see every teacher's course as a card in this same area —
@@ -10766,7 +10774,11 @@ function czZone(){
          Courses already joined are not repeated here: they live in the
          «Courses you joined» section below, with their progress. */
       const cs=czAll().filter(c=>!czEnrolled(czKey(c)));
-      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المنظمات","Organization courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,false)).join("")):"";
+      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المنظمات","Organization courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,false)).join(""))
+        :(listPending?(CZ_LIST.failed
+          ?`<div class="card"><p class="small">${T("تعذّر تحميل الكورسات من السيرفر — راجع اتصالك وحاول تاني.","Courses could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="czListRetry" style="margin-top:8px">${T("↻ إعادة تحميل الكورسات","↻ Reload courses")}</button></div>`
+          :`<div class="card"><p class="small">${T("جارٍ تحميل الكورسات من السيرفر…","Loading courses from the server…")}</p></div>`):"");
+      const lrb2=document.getElementById("czListRetry");if(lrb2)lrb2.onclick=()=>czRetryListFetch();
       list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
     }
   }
@@ -10925,6 +10937,18 @@ renderTcMine=function(){
   const m=document.getElementById("tcMine");if(!m)return;
   czEnsureCodes();
   const cs=myCourses();
+  /* loaded-flag discipline: the «no course yet» empty state may render ONLY
+     after the server courses fetch has COMPLETED with zero rows for me.
+     While it is in flight → loading; if it failed → a retry affordance. */
+  if(!cs.length&&(CZ_LIST.failed||czListPending())){
+    if(CZ_LIST.failed){
+      m.innerHTML=`<p class="small">${T("تعذّر تحميل كورساتك من السيرفر — راجع اتصالك وحاول تاني.","Your courses could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="tcMineRetry" style="margin-top:8px">${T("↻ إعادة تحميل الكورسات","↻ Reload courses")}</button>`;
+      const rb=document.getElementById("tcMineRetry");if(rb)rb.onclick=()=>czRetryListFetch();
+    }else{
+      m.innerHTML=`<p class="small">${T("جارٍ تحميل كورساتك من السيرفر…","Loading your courses from the server…")}</p>`;
+    }
+    return;
+  }
   m.innerHTML=cs.length?safeMap(cs,c=>`<div class="owrow"><span class="grow"><b>${escHTML(c.title||"")}</b> <span class="small">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span> ${c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""} ${c.passH?`<span class="chip l1">${T("بكلمة سر","Password")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</span><button class="btn sm" data-tcopen="${c.id}">${T("فتح","Open")}</button><button class="btn sm" data-tcman="${c.id}">${T("إدارة","Manage")}</button><button class="btn sm" data-tcdel="${c.id}">${T("حذف","Delete")}</button></div>`).join("")
     :("<p class=\"small\">"+T("لسه ما أنشأتش أي كورس.","You have not created any course yet.")+"</p>");
   m.querySelectorAll("[data-tcopen]").forEach(b=>{b.onclick=()=>openCourse(+b.dataset.tcopen);});
@@ -11045,6 +11069,30 @@ const _loadCz=loadProgress;
 loadProgress=function(p){_loadCz(p);S.enrolledCourses=(p&&Array.isArray(p.enrolledCourses))?p.enrolledCourses.filter(x=>x&&x.key):[];};
 /* ---------- server extras: students can discover courses by code; enrolments restored ---------- */
 let CZ_EXTRAS_RUN=false;
+/* Courses-list fetch state — the SAME loaded-flag discipline as
+   lsFetch/qzFetch/certEligibility: CZ_LIST.loaded turns true ONLY when the
+   server courses query has COMPLETED (its rows are merged into ACCOUNTS);
+   CZ_LIST.failed marks a completed-but-failed fetch. While a server
+   session's fetch is still in flight (or has failed), list renders must
+   show a loading / retry state — NEVER the «no courses yet» empty state,
+   which is reserved for a completed fetch that returned zero rows. In
+   local/guest mode there is no server fetch at all: lists are complete
+   the moment they render, so the empty state stays honest there. */
+let CZ_LIST={loaded:false,failed:false};
+function czListPending(){try{return (typeof sbServerSession==="function")&&sbServerSession()&&!CZ_LIST.loaded;}catch(e){return false;}}
+/* test hook (harness): the courses-list fetch state, so a cold-render
+   simulation can assert loading-vs-empty discipline directly. */
+window.__czTest={listState:()=>({loaded:CZ_LIST.loaded,failed:CZ_LIST.failed,pending:czListPending()})};
+async function czRetryListFetch(){
+  CZ_LIST.failed=false;CZ_LIST.loaded=false;
+  try{renderTcMine();}catch(e){}
+  try{czZone();}catch(e){}
+  try{await czServerExtras(SESSION.uid,isOwnerSession()?"owner":(isTeacherSession()?"teacher":"student"));}
+  catch(e){CZ_LIST.failed=true;}
+  try{renderTcMine();}catch(e){}
+  try{czZone();}catch(e){}
+  try{if(currentScreen==="scr-course")renderCourseScreen();}catch(e){}
+}
 async function czServerExtras(uid,role){
   if(typeof SB==="undefined"||!SB||typeof sbCall!=="function")return;
   try{
@@ -11054,7 +11102,8 @@ async function czServerExtras(uid,role){
   }catch(e){}
   try{
     const cs=await sbCall(SB.from("courses").select("*").order("created_at",{ascending:true}).limit(200));
-    if(cs.error||!cs.data)return;
+    if(cs.error||!cs.data){CZ_LIST.failed=true;return;}
+    CZ_LIST.loaded=true;CZ_LIST.failed=false;
     let pmap={};
     try{const pr=await sbCall(SB.from("profiles").select("id,display_name,nickname,avatar_url,email").limit(1000));if(!pr.error&&pr.data)pr.data.forEach(p=>{pmap[p.id]=p;});}catch(e){}
     const srvIds=new Set(cs.data.map(r=>String(r.id)));
@@ -11093,7 +11142,7 @@ async function czServerExtras(uid,role){
         if(kept.length!==S.enrolledCourses.length){S.enrolledCourses=kept;try{czPersistEnroll();}catch(e){}}
       }
     }
-  }catch(e){}
+  }catch(e){if(!CZ_LIST.loaded)CZ_LIST.failed=true;}
   /* memberships from the server (course_members): restore MY enrolments even
      on a fresh device, and give teachers/owner the true member count of each
      of their courses. Best-effort — local state already covers this device. */
@@ -11149,6 +11198,7 @@ if(typeof sbLoadExtras==="function"){
     try{await czServerExtras(uid,role);}catch(e){}
     CZ_EXTRAS_RUN=true;
     try{czZone();if(currentScreen==="scr-course")renderCourseScreen();}catch(e){}
+    try{if(typeof renderTcMine==="function")renderTcMine();}catch(e){}
   };
 }
 /* ---------- navigation & language hooks ---------- */
@@ -12818,10 +12868,20 @@ function qzRenderTcPanel(){
   if(QZ_TC_VIEW==="build"){qzRenderBuilder(body,c);return;}
   if(QZ_TC_VIEW==="results"){qzRenderTcResults(body,c);return;}
   body.innerHTML=`<p class="small">${T("جارٍ التحميل من السيرفر…","Loading from the server…")}</p>`;
-  qzFetch(c.sid,false).then(d=>{
+  qzFetch(c.sid,false).then(async d=>{
+    /* loaded-flag discipline: never render the «no quizzes yet» list from
+       an in-flight placeholder — force one real fetch first; a failed
+       fetch shows a retry affordance instead of the empty state. */
+    if(!d.loaded){try{d=await qzFetch(c.sid,true);}catch(e){}}
     if(QZ_TC_VIEW!=="list")return;
     const cc=QZ_TC_KEY?czByKey(QZ_TC_KEY):null;
     if(!cc||cc.sid!==c.sid)return;
+    if(!d.loaded){
+      body.innerHTML=`<p class="small">${T("تعذّر تحميل اختبارات الكورس من السيرفر — راجع اتصالك وحاول تاني.","The course quizzes could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="qzTcRetry" style="margin-top:8px">${T("↻ إعادة تحميل الاختبارات","↻ Reload quizzes")}</button>`;
+      const rb=document.getElementById("qzTcRetry");
+      if(rb)rb.onclick=()=>{delete QZ_DATA[c.sid];qzRenderTcPanel();};
+      return;
+    }
     qzRenderTcList(body,c,d);
   }).catch(()=>{});
 }
@@ -13006,9 +13066,20 @@ function qzRenderCourseSection(){
     return;
   }
   sec.innerHTML=`<h2 style="margin-top:0">${T("اختبارات الكورس","Course quizzes")}</h2><p class="small">${T("جارٍ التحميل من السيرفر…","Loading from the server…")}</p>`;
-  qzFetch(c.sid,false).then(d=>{
+  qzFetch(c.sid,false).then(async d=>{
+    /* loaded-flag discipline: an in-flight placeholder (quizzes:[] ,
+       loaded:false) must never render as «no quizzes added yet» — force
+       one real fetch, and if the data still is not loaded show only a
+       failure + retry state. */
+    if(!d.loaded){try{d=await qzFetch(c.sid,true);}catch(e){}}
     const cur=document.getElementById("csQuizzes");
     if(!cur||CZ_CUR!==czKey(c)||QZ_TAKE)return;
+    if(!d.loaded){
+      cur.innerHTML=`<h2 style="margin-top:0">${T("اختبارات الكورس","Course quizzes")}</h2><p class="small" style="margin-top:6px">${T("تعذّر تحميل اختبارات الكورس من السيرفر — راجع اتصالك وحاول تاني.","The course quizzes could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="qzSecRetry" style="margin-top:8px">${T("↻ إعادة تحميل الاختبارات","↻ Reload quizzes")}</button>`;
+      const rb=document.getElementById("qzSecRetry");
+      if(rb)rb.onclick=()=>{delete QZ_DATA[c.sid];qzRenderCourseSection();};
+      return;
+    }
     if(mine){
       cur.innerHTML=`<h2 style="margin-top:0">${T("اختبارات الكورس","Course quizzes")}</h2>
         <p class="small">${T("اختباراتك في الكورس ده ونتائج طلابك — التفاصيل الكاملة وإنشاء اختبار جديد من «مساحة المعلم».","Your quizzes in this course and your students' results — full details and new-quiz creation live in the Teacher Space.")}</p>`
@@ -13883,6 +13954,11 @@ function lsOpenPanel(key){
   LS_TC_KEY=key;LS_EDIT_ID=null;LS_DEL_ARM=null;LS_KIND="video";
   const c=key?czByKey(key):null;
   if(c&&c.sid)delete LS_DATA[c.sid];
+  /* course switch: clear the student-progress panel's context
+     SYNCHRONOUSLY — the previous course's progress rows must never sit
+     under the new course's heading while its data is still loading. */
+  const pb0=document.getElementById("tcProgBody");
+  if(pb0)pb0.innerHTML=`<p class="small">${T("جارٍ تحميل تقدم الطلاب من السيرفر…","Loading student progress from the server…")}</p>`;
   const card=document.getElementById("tcLessonCard");
   if(card)card.style.display="block";
   lsRenderPanel();
@@ -13898,6 +13974,11 @@ function lsRenderPanel(){
   const c=LS_TC_KEY?czByKey(LS_TC_KEY):null;
   setT("lsTcCourse",c?((LANG==="en"?"Course: ":"كورس: ")+(c.title||"")):"");
   const pb=document.getElementById("tcProgBody");
+  /* same synchronous context reset on every panel render (language switch,
+     post-edit refresh…): the progress table belongs to THIS course only —
+     until lsRenderProgress fills it, it shows this course's loading state,
+     never the rows of whichever course was open before. */
+  if(pb&&c&&c.sid&&lsOnline())pb.innerHTML=`<p class="small">${T("جارٍ تحميل تقدم الطلاب من السيرفر…","Loading student progress from the server…")}</p>`;
   if(!lsOnline()){
     body.innerHTML=`<p class="small">${T("محاضرات الكورسات المتكاملة ميزة أونلاين — محتاجة حسابًا مسجلًا متصلًا بالسيرفر، عشان المحاضرات وتقدم طلابك يتحفظوا على السيرفر.","Integrated-course lectures are an online feature — they need a registered account connected to the server, so the lectures and your students' progress are stored on the server.")}</p>`;
     if(pb)pb.innerHTML="";
@@ -13912,6 +13993,16 @@ function lsRenderPanel(){
   lsFetch(c.sid,true).then(d=>{
     const cc=LS_TC_KEY?czByKey(LS_TC_KEY):null;
     if(!cc||cc.sid!==c.sid)return;
+    /* loaded-flag discipline: a failed lessons fetch (loaded:false) must
+       not render the builder's «no lectures yet» empty state — show a
+       retry affordance, and keep the progress panel in its loading state
+       for this course instead of filling it from a failed fetch. */
+    if(!d.loaded){
+      body.innerHTML=`<p class="small">${T("تعذّر تحميل محاضرات الكورس من السيرفر — راجع اتصالك وحاول تاني.","The course lectures could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="lsTcRetry" style="margin-top:8px">${T("↻ إعادة تحميل المحاضرات","↻ Reload lectures")}</button>`;
+      const rb=document.getElementById("lsTcRetry");
+      if(rb)rb.onclick=()=>lsRenderPanel();
+      return;
+    }
     lsRenderBuilder(body,c,d.lessons);
     lsRenderProgress(c);
   }).catch(()=>{});
@@ -14087,9 +14178,23 @@ async function lsFillCustomCourse(c){
     if(main0)main0.innerHTML=`<p class="small">${T("هذا الكورس غير محفوظ على السيرفر بعد — محاضراته وتقدمك بيتحفظوا على السيرفر، فاستنى لما يتزامن وافتحه من جديد.","This course is not saved on the server yet — its lectures and your progress live on the server, so wait until it syncs and open it again.")}</p>`;
     return;
   }
-  const d=await lsFetch(c.sid,false);
+  let d=await lsFetch(c.sid,false);
+  /* loaded-flag discipline (same as certRenderSection): lsFetch can hand
+     back its in-flight placeholder (lessons:[] , loaded:false) — trusting
+     it once rendered a false «0 of 0 lectures — 0%» header and a false
+     «no lectures added yet» text on a course that HAS lectures. Force one
+     real fetch; if the data STILL is not loaded, render only a loading /
+     retry state — progress numbers and the empty text wait for a
+     completed fetch. */
+  if(!d.loaded)d=await lsFetch(c.sid,true);
   const main=document.getElementById("csCustomMain");
   if(!main||CZ_CUR!==czKey(c)||LS_VIEW||QZ_TAKE||CERT_VIEW)return;
+  if(!d.loaded){
+    main.innerHTML=`<p class="small">${T("تعذّر تحميل محاضرات الكورس من السيرفر — راجع اتصالك وحاول تاني.","The course lectures could not be loaded from the server — check your connection and try again.")}</p><button class="btn sm" id="csLsRetry" style="margin-top:8px">${T("↻ إعادة تحميل المحاضرات","↻ Reload lectures")}</button>`;
+    const rb=document.getElementById("csLsRetry");
+    if(rb)rb.onclick=()=>{delete LS_DATA[c.sid];if(CZ_CUR===czKey(c))lsFillCustomCourse(c);};
+    return;
+  }
   const total=d.lessons.length;
   const doneN=d.lessons.filter(l=>d.prog[l.id]&&d.prog[l.id].completed).length;
   const pct=total?Math.round(doneN/total*100):0;
@@ -14507,7 +14612,16 @@ showScreen=function(id){
   }catch(e){}
 };
 const _rtsLs=renderTeacherSpace;
-renderTeacherSpace=function(openId){_rtsLs(openId);try{orgLabels();}catch(e){}};
+renderTeacherSpace=function(openId){
+  /* cold-render guard: entering the workspace right after a reload — while
+     hydration (profile/role, courses list, server extras) is still in
+     flight — must NEVER throw out of this render. The chain below reads
+     session/account state that may simply not exist yet; any failure is
+     contained here and logged, the static workspace chrome stays up, and
+     the post-hydration re-render fills the data in. */
+  try{_rtsLs(openId);}catch(e){try{console.error("[teacher-space] render failed (contained):",e);}catch(_){}}
+  try{orgLabels();}catch(e){}
+};
 const _alLs=applyLang;
 applyLang=function(l){
   _alLs(l);
