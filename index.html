@@ -1232,32 +1232,12 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
       <div class="streakweek" id="streakDays"></div>
     </div>
 
-    <div id="homeTeacher" style="display:none">
-      <div class="card" style="border-color:var(--teal)">
-        <div class="row between"><h2 style="margin:0" id="htTitle">كورسات المعلمين</h2><span class="chip l0" id="htChip">كورسات خاصة</span></div>
-        <p class="small" style="margin-top:6px" id="htDesc">كورسات خاصة بيعدّها معلمك من تجارب المختبر ويرتّبها لك بالترتيب.</p>
-        <button class="btn primary block" id="homeTeacherBtn" style="margin-top:8px">افتح مساحة المعلم</button>
-      </div>
-      <div id="homeCourses"></div>
-      <div class="card" id="joinCard">
-        <h2 style="margin:0" id="jcH">انضم لكورس معلمك</h2>
-        <p class="small" style="margin-top:6px" id="jcDesc">اكتب كود الكورس اللي اداهولك معلمك — ولو الكورس مقفول بكلمة سر اكتبها كمان. الكورس هيظهر لك تحت على طول وتمشي فيه بالترتيب.</p>
-        <label class="fldlbl" for="jcCode" id="jcCodeLbl">كود الكورس</label>
-        <input class="fld" id="jcCode" type="text" dir="ltr" maxlength="12" placeholder="IL-XXXXXX" autocomplete="off">
-        <label class="fldlbl" for="jcPass" id="jcPassLbl">كلمة سر الكورس (لو الكورس مقفول)</label>
-        <input class="fld" id="jcPass" type="password" maxlength="40" autocomplete="off">
-        <button class="btn primary block" id="jcJoin" style="margin-top:10px">انضم للكورس</button>
-        <p class="small" id="jcMsg" style="margin-top:6px"></p>
-      </div>
-      <div id="homeEnrolled"></div>
-    </div>
-
     <h2 data-i18n="home_levels">اختر مستواك</h2>
     <div class="lvlcards" id="homeLevels"></div>
 
     <h2 data-i18n="home_sections">أقسام المختبر</h2>
     <div class="quick">
-      <button class="btn" data-nav="scr-theory" data-i18n="quick_theory">النظرية<br><span class="small">اشرح لي الأول</span></button>
+      <button class="btn" data-nav="scr-exps" data-thpane="1" data-i18n="quick_theory">النظرية<br><span class="small">اشرح لي الأول</span></button>
       <button class="btn" data-nav="scr-duel" data-i18n="quick_duel">تحدي 1 ضد 1<br><span class="small">ضد البوت — تقدير أعمى</span></button>
       <button class="btn" data-nav="scr-exps" data-i18n="quick_exps">كل التجارب<br><span class="small">60 تجربة</span></button>
       <button class="btn" data-nav="scr-rank" data-i18n="quick_rank">ترتيبي ورتبتي<br><span class="small">الأسبوع والرتب</span></button>
@@ -1267,30 +1247,31 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
   </div>
 </section>
 
-<!-- ============ EXPERIMENTS ============ -->
+<!-- ============ EXPERIMENTS (+ THEORY index inside, via the segmented toggle) ============ -->
 <section class="screen" id="scr-exps">
   <div class="wrap">
     <h1 data-i18n="exps_h">التجارب</h1>
-    <p class="small" data-i18n="exps_sub">60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.</p>
-    <input class="search" id="expSearch" type="search" data-i18n-ph="exps_search_ph" placeholder="دوّر باسم تجربة أو معمل…" aria-label="بحث في التجارب">
-    <div class="filters" id="lvlFilters">
-      <button class="fchip on" data-lvl="all" data-i18n="f_all">الكل (60)</button>
-      <button class="fchip" data-lvl="0" data-i18n="f_easy">سهل (25)</button>
-      <button class="fchip" data-lvl="1" data-i18n="f_med">متوسط (25)</button>
-      <button class="fchip" data-lvl="2" data-i18n="f_adv">متقدم (10)</button>
+    <div class="segrow" role="tablist" aria-label="Experiments / Theories">
+      <button type="button" class="segbtn on" id="expTabExps" role="tab">التجارب</button>
+      <button type="button" class="segbtn" id="expTabTh" role="tab">النظريات</button>
     </div>
-    <div id="expList"></div>
-  </div>
-</section>
-
-<!-- ============ THEORY ============ -->
-<section class="screen" id="scr-theory">
-  <div class="wrap">
-    <h1 data-i18n="th_h">النظرية</h1>
-    <p class="small" data-i18n="th_sub">لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.</p>
-    <input class="search" id="thSearch" type="search" data-i18n-ph="th_search_ph" placeholder="دوّر في مواضيع النظرية…" aria-label="بحث في النظرية">
-    <button class="btn primary block noprint" id="printAllBtn" style="margin-bottom:12px" data-i18n="th_print">تنزيل كل النظرية PDF</button>
-    <div id="theoryList"></div>
+    <div id="expsPane">
+      <p class="small" data-i18n="exps_sub">60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.</p>
+      <input class="search" id="expSearch" type="search" data-i18n-ph="exps_search_ph" placeholder="دوّر باسم تجربة أو معمل…" aria-label="بحث في التجارب">
+      <div class="filters" id="lvlFilters">
+        <button class="fchip on" data-lvl="all" data-i18n="f_all">الكل (60)</button>
+        <button class="fchip" data-lvl="0" data-i18n="f_easy">سهل (25)</button>
+        <button class="fchip" data-lvl="1" data-i18n="f_med">متوسط (25)</button>
+        <button class="fchip" data-lvl="2" data-i18n="f_adv">متقدم (10)</button>
+      </div>
+      <div id="expList"></div>
+    </div>
+    <div id="thPane" style="display:none">
+      <p class="small" data-i18n="th_sub">لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.</p>
+      <input class="search" id="thSearch" type="search" data-i18n-ph="th_search_ph" placeholder="دوّر في مواضيع النظرية…" aria-label="بحث في النظرية">
+      <button class="btn primary block noprint" id="printAllBtn" style="margin-bottom:12px" data-i18n="th_print">تنزيل كل النظرية PDF</button>
+      <div id="theoryList"></div>
+    </div>
   </div>
 </section>
 
@@ -1363,7 +1344,7 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
 <section class="screen" id="scr-teacher">
   <div class="wrap">
     <button class="btn sm" data-nav="scr-home" id="tcBack">→ الرئيسية</button>
-    <h1 id="tcH">مساحة المعلم</h1>
+    <h1 id="tcH">مساحة المنظمات</h1>
     <div class="card" id="teacherGate" style="display:none">
       <p id="tcGateTxt">مساحة المعلم متاحة لحسابات المعلمين فقط — دور المعلم يمنحه مالك المنصة من لوحته.</p>
     </div>
@@ -1372,13 +1353,19 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
         <h2 style="margin-top:0" id="tcHowH">إزاي مساحة المعلم بتشتغل؟</h2>
         <ol class="thtopics" id="tcHowList">
           <li>بتعمل كورس خاص: عنوان + تجارب من الـ٦٠ بالترتيب اللي يعجبك، ولو حابب تحط له كلمة سر.</li>
-          <li>الكورس بيظهر في منطقة «كورسات المعلمين» في الصفحة الرئيسية — وبيتولّد له كود انضمام خاص بيه.</li>
+          <li>الكورس بيظهر في قسم «الكورسات» — وبيتولّد له كود انضمام خاص بيه.</li>
           <li>بتبعت الكود (وكلمة السر لو حطيتها) لطلابك بأي طريقة — واتساب، في الفصل، أي وسيلة.</li>
-          <li>كل طالب بيكتب الكود في نفس المنطقة في الرئيسية، فينضم للكورس ويمشي في تجاربه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.</li>
+          <li>كل طالب بيكتب الكود في نفس القسم، فينضم للكورس ويمشي فيه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.</li>
         </ol>
       </div>
       <div class="card">
-        <h2 style="margin-top:0" id="tcNewH">إنشاء كورس مخصص</h2>
+        <h2 style="margin-top:0" id="tcNewH">إنشاء كورس جديد</h2>
+        <p class="small" id="tcChooseLbl">اختر نوع الكورس اللي عايز تبنيه:</p>
+        <div class="duelmodes" style="margin-top:10px">
+          <button type="button" class="modecard" id="tcModePlatform"><b id="tcModePlatformT">🧪 كورس من تجارب المنصة</b><span class="small" id="tcModePlatformD">رتّب تجارب من تجارب المختبر الستين في كورس لطلابك — زي ما هو دلوقتي بالظبط.</span></button>
+          <button type="button" class="modecard" id="tcModeCustom"><b id="tcModeCustomT">🎓 كورس متكامل جديد</b><span class="small" id="tcModeCustomD">كورس باسم منظمتك، بتبنيه محاضرة محاضرة: فيديوهات شرح ونظريات مكتوبة واختبار نهائي وشهادة من المنصة.</span></button>
+        </div>
+        <div id="tcPlatformForm" style="display:none;margin-top:12px">
         <label class="fldlbl" for="tcTitle" id="tcTitleLbl">عنوان الكورس</label>
         <input class="fld" id="tcTitle" type="text" maxlength="60" placeholder="مثال: مراجعة الكهرباء قبل الامتحان">
         <label class="fldlbl" for="tcPass" id="tcPassLbl">كلمة سر الكورس (اختياري)</label>
@@ -1389,6 +1376,20 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
         <div id="tcPick" style="max-height:300px;overflow-y:auto"></div>
         <button class="btn primary block" id="tcCreate" style="margin-top:12px">إنشاء الكورس</button>
         <p class="small" id="tcMsg" style="margin-top:6px"></p>
+        </div>
+        <div id="tcCustomForm" style="display:none;margin-top:12px">
+        <label class="fldlbl" for="tcOrg" id="tcOrgLbl">اسم المنظمة</label>
+        <input class="fld" id="tcOrg" type="text" maxlength="80" placeholder="مثال: أكاديمية النور لتدريس الفيزياء">
+        <label class="fldlbl" for="tcCTitle" id="tcCTitleLbl">عنوان الكورس</label>
+        <input class="fld" id="tcCTitle" type="text" maxlength="80" placeholder="مثال: فيزياء الصف الثالث الثانوي — الترم الأول">
+        <label class="fldlbl" for="tcCDesc" id="tcCDescLbl">وصف الكورس (اختياري)</label>
+        <textarea class="fld" id="tcCDesc" rows="3" maxlength="600" placeholder="الكورس ده هيعلّم الطالب إيه؟ ومين الطلاب المستهدفين؟"></textarea>
+        <label class="fldlbl" for="tcCPass" id="tcCPassLbl">كلمة سر الكورس (اختياري)</label>
+        <input class="fld" id="tcCPass" type="password" maxlength="40" autocomplete="off" placeholder="اتركها فاضية لو الكورس بالكود بس">
+        <p class="small" style="margin-top:4px" id="tcCPassHint">بعد إنشاء الكورس هيتفتح لك منشئ المحاضرات على طول: ضيف محاضرات فيديو ونظريات مكتوبة بالترتيب، واعمل اختبار نهاية الكورس من «اختبارات الكورس».</p>
+        <button class="btn primary block" id="tcCCreate" style="margin-top:12px">إنشاء الكورس المتكامل</button>
+        <p class="small" id="tcCMsg" style="margin-top:6px"></p>
+        </div>
       </div>
       <div class="card">
         <h2 style="margin-top:0" id="tcMineH">كورساتي</h2>
@@ -1414,6 +1415,14 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
         <p class="small" style="margin-top:4px" id="qzTcIntro">هنا اختبارات هذا الكورس ونتائج طلابك: أنشئ اختبارًا (أو اختبارًا نهائيًا) بأسئلة اختيار من متعدد، وطلاب الكورس هيحلّوه من صفحة الكورس، ونتائجهم هتوصلك هنا من السيرفر.</p>
         <div id="tcQuizBody" style="margin-top:10px"></div>
       </div>
+      <div class="card" id="tcLessonCard" style="display:none">
+        <div class="row between"><h2 style="margin-top:0" id="lsTcH">محاضرات الكورس</h2><button class="btn sm" id="lsTcClose">إغلاق</button></div>
+        <p class="small" id="lsTcCourse"></p>
+        <p class="small" style="margin-top:4px" id="lsTcIntro">ابنِ الكورس محاضرة محاضرة: محاضرة فيديو برابط يوتيوب أو ملف MP4 مباشر، أو محاضرة نظرية مكتوبة. رتّب المحاضرات بالأسهم، وتابع تقدم طلابك من الجدول اللي تحت.</p>
+        <div id="tcLessonBody" style="margin-top:10px"></div>
+        <h3 style="margin-top:18px" id="lsProgH">تقدم الطلاب في الكورس</h3>
+        <div id="tcProgBody" style="margin-top:8px"></div>
+      </div>
       <div class="card">
         <h2 style="margin-top:0" id="trH">طلب تجربة جديدة</h2>
         <label class="fldlbl" for="trTopic" id="trTopicLbl">موضوع التجربة المطلوبة</label>
@@ -1431,6 +1440,37 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
         <div id="trMine" style="margin-top:8px"></div>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ============ COURSES HOME (organizations' courses zone) ============ -->
+<section class="screen" id="scr-courses">
+  <div class="wrap">
+    <h1 id="coursesH">الكورسات</h1>
+    <div class="card" id="coursesGuestNote" style="display:none">
+      <p id="coursesGuestTxt">الكورسات وشهاداتها محتاجة حسابًا مسجلًا — الزائر ما بيتحفظلوش تقدم. سجّل دخولك أو أنشئ حسابًا عشان تنضم لكورسات المنظمات وتكمل محاضراتها وتستلم شهادتك.</p>
+      <button class="btn primary block" data-nav="scr-login" id="coursesGuestBtn" style="margin-top:10px">تسجيل الدخول</button>
+    </div>
+    <div id="homeTeacher" style="display:none">
+      <div class="card" style="border-color:var(--teal)">
+        <div class="row between"><h2 style="margin:0" id="htTitle">كورسات المنظمات</h2><span class="chip l0" id="htChip">كورسات خاصة</span></div>
+        <p class="small" style="margin-top:6px" id="htDesc">كورسات خاصة بيعدّها معلمك من تجارب المختبر ويرتّبها لك بالترتيب.</p>
+        <button class="btn primary block" id="homeTeacherBtn" style="margin-top:8px">افتح مساحة المنظمات</button>
+      </div>
+      <div id="homeCourses"></div>
+      <div class="card" id="joinCard">
+        <h2 style="margin:0" id="jcH">انضم لكورس معلمك</h2>
+        <p class="small" style="margin-top:6px" id="jcDesc">اكتب كود الكورس اللي اداهولك معلمك — ولو الكورس مقفول بكلمة سر اكتبها كمان. الكورس هيظهر لك تحت على طول وتمشي فيه بالترتيب.</p>
+        <label class="fldlbl" for="jcCode" id="jcCodeLbl">كود الكورس</label>
+        <input class="fld" id="jcCode" type="text" dir="ltr" maxlength="12" placeholder="IL-XXXXXX" autocomplete="off">
+        <label class="fldlbl" for="jcPass" id="jcPassLbl">كلمة سر الكورس (لو الكورس مقفول)</label>
+        <input class="fld" id="jcPass" type="password" maxlength="40" autocomplete="off">
+        <button class="btn primary block" id="jcJoin" style="margin-top:10px">انضم للكورس</button>
+        <p class="small" id="jcMsg" style="margin-top:6px"></p>
+      </div>
+      <div id="homeEnrolled"></div>
+    </div>
+    <div id="myCerts"></div>
   </div>
 </section>
 
@@ -1782,10 +1822,9 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
 <nav class="bnav noprint">
   <button data-nav="scr-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a2 2 0 0 1-2 2h-4v-7h-6v7H5a2 2 0 0 1-2-2z"/></svg><span data-i18n="nav_home">الرئيسية</span></button>
   <button data-nav="scr-exps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3h6M10 3v6L4.5 19a2 2 0 0 0 1.8 3h11.4a2 2 0 0 0 1.8-3L14 9V3"/></svg><span data-i18n="nav_exps">التجارب</span></button>
-  <button data-nav="scr-theory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/></svg><span data-i18n="nav_theory">النظرية</span></button>
-  <button data-nav="scr-duel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="3"/><circle cx="17" cy="7" r="3"/><path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M14 21v-2a4 4 0 0 1 3-3.9"/></svg><span data-i18n="nav_duel">تحدي 1v1</span></button>
-  <button data-nav="scr-rank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2 1.5 3.5 4 3.5M17 6h3a1 1 0 0 1 1 1c0 2-1.5 3.5-4 3.5"/></svg><span data-i18n="nav_rank">ترتيبي</span></button>
-  <button data-nav="scr-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="nav_set">الإعدادات</span></button>
+  <button data-nav="scr-courses"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M10 8.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/><path d="M8 21h8"/></svg><span data-i18n="nav_courses">الكورسات</span></button>
+  <button data-nav="scr-rank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1c0 2 1.5 3.5 4 3.5M17 6h3a1 1 0 0 1 1 1c0 2-1.5 3.5-4 3.5"/></svg><span data-i18n="nav_rank">الترتيب</span></button>
+  <button data-nav="scr-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.9 2.9l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.9-2.9l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.9-2.9l.1.1a1.7 1.7 0 0 0 1.9.3h0a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h0a1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.9 2.9l-.1.1a1.7 1.7 0 0 0-.3 1.9v0a1.7 1.7 0 0 0 1.5 1h.2a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-i18n="nav_account">حسابي</span></button>
 </nav>
 
 <script>
@@ -1879,7 +1918,7 @@ const TYPE_EN={"units": "Visual estimation + units", "heat": "Interactive heat s
 const EN_T={"1": "Units & Dimensions: The Visual Estimation Lab", "2": "The Concept of Heat and Heat Transfer", "3": "Specific Heat Capacity", "4": "Thermal Conduction", "5": "Thermal Expansion", "6": "Density: Mass and Volume", "7": "Surface Tension", "8": "Viscosity", "9": "Pressure in Liquids", "10": "Boyle's Law for Gases", "11": "Ohm's Law", "12": "Series and Parallel Connections", "13": "The Magnetic Field Around a Wire", "14": "The Electromagnet", "15": "Electromagnetic Induction", "16": "Charging and Discharging a Capacitor", "17": "Kirchhoff's Laws (Simplified)", "18": "Electric Field Lines", "19": "Electric Power", "20": "The Simple Electric Motor", "21": "The Simple Pendulum", "22": "Free Fall", "23": "Friction", "24": "Buoyancy: Archimedes' Principle", "25": "Waves and Sound", "26": "Alternating Current and Reactance", "27": "Resonance in RLC Circuits", "28": "The Transformer", "29": "The Diode and Semiconductors", "30": "The Integrated Digital Lab", "31": "Thin Films: Light Interference", "32": "Measuring Film Thickness from Interference Colours", "33": "The Photoelectric Effect", "34": "The Electron Charge-to-Mass Ratio e/m", "35": "The Franck–Hertz Experiment", "36": "The Rutherford Experiment: The Thin Gold Foil", "37": "The Bohr Model and Line Spectra", "38": "The Transistor as Switch and Amplifier", "39": "Sensors and the Light-Dependent Resistor (LDR)", "40": "Electromagnetic Waves and Polarisation", "41": "The Geiger Counter: Counting Radiation", "42": "Half-Life and Radioactive Decay", "43": "Nuclear Binding Energy", "44": "Alpha, Beta and Gamma Radiation and Penetration", "45": "Diffraction of Light: The Double Slit", "46": "The Diffraction Spectrometer and Wavelength Measurement", "47": "The Laser and Optical Coherence", "48": "Optical Fibres and Total Internal Reflection", "49": "The Earth's Magnetic Field", "50": "The Galvanometer: Measuring Tiny Currents", "51": "X-Ray Diffraction (XRD)", "52": "Radiocarbon Dating", "53": "Single-Photon Self-Interference", "54": "Electron Diffraction", "55": "The Compton Effect", "56": "Superconductivity and the Meissner Effect", "57": "The Scanning Tunnelling Microscope (STM)", "58": "Nanotechnology: Properties at the Nanoscale", "59": "Particle Accelerators", "60": "Quantum Entanglement"};
 const EN_G={"1": "A five-round estimation lab: judge length, mass, volume, temperature and time by eye — with no measuring instrument shown before you predict — plus conversion rounds between the SI, CGS and imperial systems.", "2": "Watch heat travel through a solid body and follow the temperature distribution with your eyes before it is measured.", "3": "Compare two materials heated with the same energy and predict which one ends up hotter.", "4": "Compare the speed of heat conduction in two different metals and predict which conducts faster.", "5": "Predict how much a heated metal rod expands — its original end is marked, and the expansion appears before you with no ruler.", "6": "Predict the density of a mystery cube from its appearance and how deep it will sink in water.", "7": "Predict the largest number of water drops that can sit on a coin before it overflows.", "8": "Watch a small sphere sink in a viscous liquid and predict where it will be after a given time.", "9": "Predict how far water will jet from a hole in a tank, based on the hole's depth.", "10": "Compress a trapped gas to half its volume and predict its new pressure.", "11": "Predict the current in a circuit before the ammeter shows you the number.", "12": "Compare the brightness of two lamps in two different connections and predict the total current.", "13": "See a compass needle beside a current-carrying wire and predict the direction and size of its deflection.", "14": "Predict how many paper clips an electromagnet can lift after its turns are increased.", "15": "Move a magnet inside a coil and predict when the galvanometer deflects most.", "16": "Follow a capacitor charging and predict its voltage after a given time.", "17": "A current splits into two branches — predict the current in the second branch.", "18": "Predict the shape of the field lines between two charges and the position of the zero-field point.", "19": "Compare the consumption of two appliances and predict which costs more on the electricity bill.", "20": "Predict the rotation direction of a coil in a magnetic field when the current reverses.", "21": "Predict the period of a pendulum from the visible length of its string.", "22": "Drop a ball from a visible height and predict when it will reach the ground.", "23": "Predict which surface will stop a sliding box fastest.", "24": "Predict how much of its height a piece of wood will sink below the surface as it floats on water and settles.", "25": "See a vibrating string and predict the frequency of its note from its visible length and tension.", "26": "Compare the reactance of a coil and a capacitor at two frequencies and predict the circuit's behaviour.", "27": "Predict the resonance frequency at which the current is maximum.", "28": "Predict the output voltage of a transformer from its turns ratio.", "29": "Predict the behaviour of a diode under forward and reverse bias.", "30": "Build circuits from AND, OR, NOT, XOR and NAND gates, wire inputs to outputs, and watch the truth table build live — up to a complete application: the half adder.", "31": "See the colours of a soap film and predict the film thickness from its colour.", "32": "From the order of colours on an oil patch, predict the interference order and the film thickness.", "33": "Shine light of different frequencies on a metal and predict: will electrons be emitted, and with what energy?", "34": "Watch an electron beam bend in a magnetic field and predict the radius of its path.", "35": "Follow the current–voltage curve and predict the position of the first drop in current.", "36": "Fire alpha particles at a very thin gold foil and predict the fraction deflected through large angles.", "37": "See the hydrogen emission spectrum and predict the colour of a specific line.", "38": "Predict the collector current from a small base current and the gain factor.", "39": "Predict the resistance of an LDR under medium lighting.", "40": "Rotate a polarising filter in front of polarised light and predict the transmitted intensity.", "41": "Hear and see Geiger counter pulses beside a radioactive sample and predict the count in 10 seconds.", "42": "Follow a sample decaying and predict the amount remaining after a given time.", "43": "Compare the stability of two nuclei and predict which is more stable.", "44": "Predict which radiation will pass through different barriers.", "45": "See a double-slit interference pattern and predict the positions of the bright fringes.", "46": "From the diffraction angle of a colour, predict its wavelength.", "47": "Compare a laser beam with an ordinary lamp and predict how their spreading differs.", "48": "Predict the fate of a ray inside an optical fibre at different angles.", "49": "Predict the dip angle of a free magnetic needle at a place on Earth.", "50": "Predict the deflection of a sensitive galvanometer needle for a very small current.", "51": "From an X-ray diffraction pattern of a crystal, predict the Bragg angle of the first order.", "52": "Predict the age of an ancient wooden artefact from its remaining carbon-14 fraction.", "53": "Photons are sent one by one and accumulate until the interference pattern appears — predict the shape of the final pattern.", "54": "See electron diffraction rings from a crystal and predict the de Broglie wavelength.", "55": "An X-ray photon collides with an electron — predict the size of the wavelength shift.", "56": "See a magnet float above a cooled superconductor and predict the field behaviour inside it.", "57": "Predict the height of a single atom on a surface from the tunnelling current.", "58": "Compare the behaviour of gold nanoparticles with ordinary gold and predict their colour.", "59": "Predict the path radius of a very fast proton in a ring accelerator magnet.", "60": "Measure one photon of an entangled pair and predict the measurement result of its distant twin."};
 const EN_D={"1": "Closest estimate across different quantities (length/mass/volume/temperature/time) and the correct conversion between systems.", "2": "Position of the heat front inside the rod after a given time.", "3": "Choosing the material that ends up hotter after heating.", "4": "Ranking materials by how fast heat reaches the far end.", "5": "Position of the rod's end after heating — visual estimation with no ruler.", "6": "The sinking depth of the cube in water.", "7": "Choosing the closest number of water drops on the coin.", "8": "Position of the sphere after a given time inside the tube.", "9": "The distance reached by the water jet from the hole.", "10": "Choosing the new pressure after compressing the volume.", "11": "The ammeter reading before it is revealed.", "12": "The ammeter reading in the parallel connection.", "13": "Direction and size of the compass needle's deflection.", "14": "Choosing the closest number of clips after doubling the turns.", "15": "Choosing the case with the largest induced current.", "16": "The capacitor voltage after a known charging time (relative to the RC time constant).", "17": "Choosing the current in the second branch.", "18": "Position of the zero-field point on the line between the charges.", "19": "Choosing the appliance with the higher running cost.", "20": "The rotation direction after reversing the current.", "21": "The period of one full oscillation of the pendulum.", "22": "The time for the ball to reach the ground.", "23": "Choosing the surface that stops the box fastest.", "24": "The submerged fraction of the floating wood piece's height.", "25": "The fundamental frequency of the string.", "26": "Choosing how reactance behaves with frequency.", "27": "The resonance frequency on the frequency axis.", "28": "Choosing the correct output voltage.", "29": "Choosing the case in which current flows.", "30": "Predicting the circuit output for given inputs before the result is revealed.", "31": "Position of the first colour band on the wavelength strip.", "32": "Position of the second-order interference colour.", "33": "Whether emission occurs, and the maximum electron energy.", "34": "The radius of the electron beam's circular path.", "35": "Choosing the voltage of the first current drop.", "36": "The fraction of particles deflected by more than 90 degrees.", "37": "Choosing the colour of the spectral line.", "38": "Choosing the correct collector current.", "39": "The LDR resistance under the shown lighting.", "40": "Choosing the light intensity at 45 degrees.", "41": "The number of counts recorded in the counting time.", "42": "The fraction of the sample remaining after the shown time.", "43": "Choosing the most stable nucleus.", "44": "Choosing the radiation able to cross the barrier.", "45": "Position of the second-order bright fringe.", "46": "Position of the spectral line on the wavelength scale.", "47": "Choosing the property that distinguishes the laser.", "48": "Choosing the fate of the ray at a large angle.", "49": "The needle's dip angle from the horizontal.", "50": "The needle deflection as a percentage of full scale.", "51": "The Bragg angle of the first diffraction peak.", "52": "The sample's age from its remaining carbon fraction.", "53": "Position of the first side peak in the accumulated interference pattern.", "54": "Position of the first diffraction ring.", "55": "The wavelength shift after scattering at a known angle.", "56": "Choosing the magnetic field behaviour inside the superconductor.", "57": "The height of the atomic bump on the scan line.", "58": "Choosing the colour of the gold nanoparticle solution.", "59": "The radius of curvature of the proton's path.", "60": "Choosing the measurement result of the twin photon."};
-const I18N={"info_fab": ["عن الموقع", "About"], "nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["ترتيبي", "My Rank"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد التجربة الحقيقي من غير لوحة معطيات: تقدير بعينك من المشهد بس.", "<b>5 rounds</b> from the level you choose — each round is the experiment's real scene with no givens panel: estimation by eye from the scene only."], "duel_li2": ["كل جولة على مرحلتين: الأول <b>اقرأ السؤال وشوف المشهد على مهلك من غير أي مؤقّت شغّال</b>، ولما تجهز اضغط «قرأت السؤال — ابدأ التحدي» — من اللحظة دي المؤقّت يبدأ ولك <b>60 ثانية</b> تحط توقعك وتأكّده قبل ما الوقت يخلص.", "Each round has two phases: first <b>read the question and study the scene at your own pace with no timer running</b>, and when you are ready press “I've read it — Start” — from that moment the timer starts and you have <b>60 seconds</b> to place and confirm your prediction before time runs out."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.", "Daily login streak: sign in every day for escalating XP (<b>10, 15, 20, 25, 30, 40</b>) on days 1–6 and <b>50 gems</b> on day 7 — miss a full day and the counter restarts."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
+const I18N={"info_fab": ["عن الموقع", "About"], "nav_home": ["الرئيسية", "Home"], "nav_exps": ["التجارب", "Experiments"], "nav_theory": ["النظرية", "Theory"], "nav_duel": ["تحدي 1v1", "1v1 Duel"], "nav_rank": ["الترتيب", "Standings"], "nav_courses": ["الكورسات", "Courses"], "nav_account": ["حسابي", "My account"], "nav_set": ["الإعدادات", "Settings"], "home_h1": ["أهلاً محمد، جاهز تقوّي حدسك؟", "Welcome, Mohamed — ready to sharpen your intuition?"], "home_sub": ["توقّع الأول بعينك، وبعدين شغّل المحاكاة وشوف حدسك كان قريب قد إيه.", "Predict first with your eyes, then run the simulation and see how close your intuition was."], "home_acc": ["دقة الحدس", "Intuition accuracy"], "home_played": ["تجربة لعبتها", "Experiments played"], "home_done": ["تجارب منجزة", "Experiments completed"], "home_cont": ["كمّل من حيث وقفت", "Continue where you left off"], "home_cont_btn": ["افتح التجربة", "Open experiment"], "home_daily": ["تحدي اليوم", "Daily challenge"], "home_daily_chip": ["+XP إضافي", "+Bonus XP"], "home_daily_btn": ["العب تحدي اليوم", "Play today's challenge"], "home_levels": ["اختر مستواك", "Choose your level"], "home_sections": ["أقسام المختبر", "Lab sections"], "quick_theory": ["النظرية<br><span class=\"small\">اشرح لي الأول</span>", "Theory<br><span class=\"small\">Explain it first</span>"], "quick_duel": ["تحدي 1 ضد 1<br><span class=\"small\">ضد البوت — تقدير أعمى</span>", "1v1 Duel<br><span class=\"small\">Vs the bot — blind estimation</span>"], "quick_exps": ["كل التجارب<br><span class=\"small\">60 تجربة</span>", "All experiments<br><span class=\"small\">60 experiments</span>"], "quick_rank": ["ترتيبي ورتبتي<br><span class=\"small\">الأسبوع والرتب</span>", "My rank<br><span class=\"small\">Week & tiers</span>"], "home_settings_btn": ["الإعدادات — المظهر واللغة", "Settings — theme & language"], "exps_h": ["التجارب", "Experiments"], "exps_sub": ["60 تجربة — كل واحدة بتفتح على خطوتين: الأول الهدف والنظرية كاملة، وبعدين المعمل التفاعلي في شاشة لوحده.", "60 experiments — each opens in two steps: first the goal and the complete theory, then the interactive lab on its own screen."], "exps_search_ph": ["دوّر باسم تجربة أو معمل…", "Search by experiment or lab…"], "f_all": ["الكل (60)", "All (60)"], "f_easy": ["سهل (25)", "Easy (25)"], "f_med": ["متوسط (25)", "Medium (25)"], "f_adv": ["متقدم (10)", "Advanced (10)"], "th_h": ["النظرية", "Theory"], "th_sub": ["لكل تجربة: شرح الفكرة بكلام بسيط، والقانون مكتوب بصيغته الرياضية الصحيحة، وشرح رموزه وامتى يفشل. اقرأ النظرية الأول وبعدين ادخل طبّقها بعينك في المختبر — أو نزّل الكل في ملف PDF واحد واقرأه في البيت من غير نت.", "For every experiment: the idea explained clearly, the law written in its correct mathematical form, its symbols explained, and when it breaks down. Read the theory first, then apply it with your eyes in the lab — or download everything as one PDF file and read it at home offline."], "th_search_ph": ["دوّر في مواضيع النظرية…", "Search theory topics…"], "th_print": ["تنزيل كل النظرية PDF", "Download all theory (PDF)"], "duel_h": ["تحدي 1 ضد 1", "1v1 Duel"], "duel_rules_h": ["قبل ما تبدأ — قوانين الماتش", "Before you start — match rules"], "duel_intro": ["أنت <b style=\"color:var(--blue)\">الأزرق</b>، والبوت <b style=\"color:var(--red)\">الأحمر</b>.", "You are <b style=\"color:var(--blue)\">blue</b>, and the bot is <b style=\"color:var(--red)\">red</b>."], "duel_li1": ["<b>5 جولات</b> من تجارب المستوى اللي هتختاره — وكل جولة مشهد التجربة الحقيقي من غير لوحة معطيات: تقدير بعينك من المشهد بس.", "<b>5 rounds</b> from the level you choose — each round is the experiment's real scene with no givens panel: estimation by eye from the scene only."], "duel_li2": ["كل جولة على مرحلتين: الأول <b>اقرأ السؤال وشوف المشهد على مهلك من غير أي مؤقّت شغّال</b>، ولما تجهز اضغط «قرأت السؤال — ابدأ التحدي» — من اللحظة دي المؤقّت يبدأ ولك <b>60 ثانية</b> تحط توقعك وتأكّده قبل ما الوقت يخلص.", "Each round has two phases: first <b>read the question and study the scene at your own pace with no timer running</b>, and when you are ready press “I've read it — Start” — from that moment the timer starts and you have <b>60 seconds</b> to place and confirm your prediction before time runs out."], "duel_li3": ["نقاط الجولة: <b>90٪ على قرب توقعك من الصح و10٪ بس على سرعتك</b> — والقرب بيتحسب بنفس السماحية الموحّدة في كل التجارب مهما اختلف مقياسها، ولازم تحط علامة أصلًا عشان تاخد أي نقطة.", "Round points: <b>90% for how close your prediction is and only 10% for speed</b> — closeness is scored with the same unified tolerance on every experiment whatever its scale, and you must place a mark to earn any points at all."], "duel_li4": ["شريط التوازن اللي في النص بيميل لحظيًا ناحية الكسبان مع كل جولة، واللي مجموع نقاطه أعلى بعد الجولة الخامسة يكسب الماتش.", "The balance bar in the middle tilts live toward whoever is winning after each round; the higher total after round five wins the match."], "duel_li5": ["الـXP: الفوز بالماتش <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "XP: winning the match earns <b>60 XP</b>; losing earns <b>15 XP</b> for taking part."], "duel_lvl_h": ["اختر مستوى التحدي", "Choose the challenge level"], "d_easy": ["سهل", "Easy"], "d_med": ["متوسط", "Medium"], "d_adv": ["متقدم", "Advanced"], "duel_start": ["ابدأ التحدي", "Start the duel"], "duel_you": ["أنت", "You"], "duel_vs": ["ضد", "VS"], "duel_bot": ["البوت", "Bot"], "duel_rg_lbl": ["اسحب على الرسم أو هنا لوضع علامتك", "Drag on the scene or here to place your mark"], "duel_confirm": ["أكّد التوقع", "Confirm prediction"], "duel_next": ["الجولة التالية", "Next round"], "rank_h": ["ترتيبي ورتبتي", "My Rank & Standing"], "rank_xp": ["نقاط XP", "XP points"], "rank_cur": ["رتبتك الحالية", "Your current tier"], "rank_played": ["محاولة لعبتها", "Attempts played"], "rank_prog_h": ["تقدّمك في كل مستوى", "Your progress in each level"], "rank_ladder_h": ["سلّم الرتب", "Tier ladder"], "rank_ladder_p": ["اجمع XP من التجارب والتحديات واطلع من البرونزي لحد الأسطوري — الرتب مصممة كرحلة طويلة بشغل حقيقي.", "Earn XP from experiments and challenges and climb from Bronze to Legendary — the tiers are designed as a long journey of real work."], "rank_how_h": ["إزاي تكسب XP؟", "How do you earn XP?"], "rank_how1": ["قراءة النظرية كاملة وفتح المعمل التفاعلي: <b>10 XP</b> — مرة واحدة لكل تجربة.", "Reading the full theory and opening the interactive lab: <b>10 XP</b> — once per experiment."], "rank_how2": ["إكمال تجربة تدريبية: <b>20–50 XP</b> حسب دقة توقعك (نتيجتك ÷ 2، بحد أدنى 20 عند الإكمال).", "Completing a training experiment: <b>20–50 XP</b> by prediction accuracy (your score ÷ 2, minimum 20 on completion)."], "rank_how3": ["إعادة نفس التجربة: <b>5 XP</b> أساسية + <b>مكافأة تحسين</b> لو كسرت رقمك الشخصي الأفضل فيها (فرق الـXP المستحق عن أفضل نتيجة سابقة) — العب وجرّب بحرية.", "Replaying the same experiment: <b>5 XP</b> base + an <b>improvement bonus</b> if you beat your personal best in it (the difference in entitled completion XP over your previous best) — play and retry freely."], "rank_how4": ["تحدي اليوم: <b>100 XP</b> عند الإكمال + <b>50 XP</b> إضافية لو دقتك فوق 80٪.", "Daily challenge: <b>100 XP</b> on completion + <b>50 XP</b> extra if your accuracy is above 80%."], "rank_how5": ["تحدي 1 ضد 1 ضد البوت: الفوز <b>60 XP</b>، والخسارة <b>15 XP</b> مشاركة.", "1v1 duel against the bot: winning earns <b>60 XP</b>, losing earns <b>15 XP</b> for taking part."], "rank_how6": ["تسجيل الدخول المتتالي: ادخل كل يوم واكسب XP متصاعدًا (<b>10، 15، 20، 25، 30، 40</b>) في الأيام ١–٦، وفي اليوم السابع <b>50 جيم</b> — ولو غبت يومًا كاملًا يبدأ العدّاد من الأول.", "Daily login streak: sign in every day for escalating XP (<b>10, 15, 20, 25, 30, 40</b>) on days 1–6 and <b>50 gems</b> on day 7 — miss a full day and the counter restarts."], "rank_week_h": ["لوحة الأسبوع", "Weekly board"], "rank_week_p": ["ترتيب هذا الأسبوع بين لاعبي مستواك الحالي — اجمع XP من التجارب والتحديات واصعد في الترتيب قبل نهاية الأسبوع.", "This week's standings among players at your current level — earn XP from experiments and challenges and climb the board before the week ends."], "exp_step1": ["١ — الهدف والنظرية", "1 — Goal & Theory"], "exp_step2": ["٢ — المعمل التفاعلي", "2 — Interactive Lab"], "exp_goal_h": ["هدف التجربة", "Experiment goal"], "exp_duel_lbl": ["نقطة تحدي 1 ضد 1:", "1v1 duel point:"], "exp_theory_h": ["النظرية", "Theory"], "exp_topics_lbl": ["مواضيع النظرية في هذه التجربة:", "Theory topics in this experiment:"], "exp_print_btn": ["نزّل نظرية هذه التجربة PDF", "Download this experiment's theory (PDF)"], "exp_enter": ["فهمت النظرية — ادخل المعمل التفاعلي", "I understand the theory — enter the interactive lab"], "exp_note": ["المعمل خطوة لوحده بعد النظرية: توقّع، شغّل، وشوف النتيجة.", "The lab is a separate step after the theory: predict, run, and see the result."], "exp_back_th": ["→ ارجع للهدف والنظرية", "← Back to goal & theory"], "ph1": ["١ — توقّع", "1 — Predict"], "ph2": ["٢ — شغّل", "2 — Run"], "ph3": ["٣ — النتيجة", "3 — Result"], "set_h": ["الإعدادات", "Settings"], "set_theme": ["المظهر", "Appearance"], "set_theme_d": ["اختر المظهر اللي يريح عينك أثناء المذاكرة واللعب — فاتح أو داكن.", "Choose the appearance that rests your eyes while studying and playing — light or dark."], "set_light": ["فاتح", "Light"], "set_dark": ["داكن", "Dark"], "set_lang": ["اللغة", "Language"], "set_lang_d": ["لغة واجهة التطبيق وقوائم التجارب وأهدافها.", "The language of the app interface, the experiment lists and their goals."], "set_lang_note": ["النسخة الإنجليزية بلغة أكاديمية بسيطة وواضحة، وتشمل كل شيء: الواجهة والقوائم والأهداف ونصوص النظرية العميقة بكل اشتقاقاتها وأسئلة المعامل ونتائجها — تبديل اللغة يقلب المحتوى كاملاً.", "The English version uses simple, clear academic language and covers everything: the interface, lists, goals, the deep theory texts with all their derivations, and the lab questions and results — switching the language flips the entire content."]};
 </script>
 
 <script>
@@ -8987,10 +9026,10 @@ function renderTeacherHome(){
   box.style.display=show?"block":"none";
   if(!show)return;
   const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
-  set("htTitle",T("مساحة المعلم","Teacher space"));
+  set("htTitle",T("كورسات المنظمات","Organization courses"));
   set("htChip",isOwnerSession()&&!isTeacherSession()?T("للمالك والمعلمين","Owner & teachers"):T("للمعلم","For the teacher"));
   set("htDesc",T("ابنِ كورسات مخصصة من تجارب المختبر لطلابك، واطلب تجارب جديدة من المالك.","Build custom courses from the lab's experiments for your students, and request new experiments from the owner."));
-  set("homeTeacherBtn",T("افتح مساحة المعلم","Open the teacher space"));
+  set("homeTeacherBtn",T("افتح مساحة المنظمات","Open the organizations workspace"));
   const list=document.getElementById("homeCourses");if(!list)return;
   const cs=visibleCourses();
   list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات مخصصة","Custom courses")+"</h2>"+cs.map(c=>`<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</span></div><p class="small" style="margin-top:4px">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")}</p><button class="btn block" data-course="${c.id}" style="margin-top:8px">${T("افتح الكورس","Open the course")}</button></div>`).join("")):"";
@@ -9003,9 +9042,9 @@ function renderTeacherSpace(openId){
   if(body)body.style.display=ok?"block":"none";
   if(!ok)return;
   const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
-  set("tcH",T("مساحة المعلم","Teacher space"));
+  set("tcH",T("مساحة المنظمات","Organizations workspace"));
   set("tcBack",T("→ الرئيسية","← Home"));
-  set("tcNewH",T("إنشاء كورس مخصص","Create a custom course"));
+  set("tcNewH",T("إنشاء كورس جديد","Create a new course"));
   set("tcTitleLbl",T("عنوان الكورس","Course title"));
   set("tcPickLbl",T("اختر تجارب الكورس من الـ60 — اضغط «إضافة» لكل تجربة، والترتيب اللي تختار بيه هو ترتيب الكورس:","Choose the course's experiments from the 60 — tap Add for each one; the order you pick them in is the course order:"));
   set("tcCreate",T("إنشاء الكورس","Create the course"));
@@ -9620,7 +9659,7 @@ async function sbLoadExtras(uid,role){
         if(!tEmail)return;
         if(!ACCOUNTS[tEmail])ACCOUNTS[tEmail]={name:(tp&&tp.display_name)||tEmail,nameEn:(tp&&tp.display_name)||tEmail,email:tEmail,phone:"",dob:"",role:(tp&&tp.role)||"student",progress:freshProgress(),courses:[],_uid:c.teacher_id,_server:true};
         if(!Array.isArray(ACCOUNTS[tEmail].courses))ACCOUNTS[tEmail].courses=[];
-        ACCOUNTS[tEmail].courses.push({id:++seq,sid:c.id,title:c.title,exps:Array.isArray(c.exp_ids)?c.exp_ids:[],by:tEmail,byName:(tp&&tp.display_name)||ACCOUNTS[tEmail].name||tEmail});
+        ACCOUNTS[tEmail].courses.push({id:++seq,sid:c.id,title:c.title,exps:Array.isArray(c.exp_ids)?c.exp_ids:[],by:tEmail,byName:(tp&&tp.display_name)||ACCOUNTS[tEmail].name||tEmail,type:c.course_type||"platform",org:c.org_name||"",desc:c.description||""});
       });
     }
   }catch(e){}
@@ -10669,7 +10708,7 @@ function czPersistEnroll(){
 function czSyncServerFields(c){
   try{
     if(!c||!c.sid||typeof sbServerSession!=="function"||!sbServerSession()||typeof SB==="undefined"||!SB)return;
-    SB.from("courses").update({join_code:c.code||null,pass_hash:c.passH||null,pass_salt:c.passSalt||null}).eq("id",c.sid).then(()=>{},()=>{});
+    SB.from("courses").update({join_code:c.code||null,pass_hash:c.passH||null,pass_salt:c.passSalt||null,course_type:c.type||"platform",org_name:c.org||null,description:c.desc||null}).eq("id",c.sid).then(()=>{},()=>{});
   }catch(e){}
 }
 function czStudentsOf(c){
@@ -10688,7 +10727,10 @@ function czStudentsOf(c){
 function czCourseCard(c,showCode){
   const tot=(c.exps||[]).length;
   const joined=czEnrolled(czKey(c));
-  return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR(tot)} ${T("تجربة","experiments")}</span></div><p class="small" style="margin-top:4px">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")}</p><div class="row" style="margin-top:6px;gap:6px;flex-wrap:wrap">${c.passH?`<span class="chip l1">🔒 ${T("مقفول بكلمة سر","Password-locked")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}${joined?`<span class="chip l0">✓ ${T("منضم","Joined")}</span>`:""}${showCode&&c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""}</div><button class="btn block" data-course="${escHTML(czKey(c))}" style="margin-top:8px">${joined?T("افتح الكورس — كمّل من حيث وقفت","Open the course — continue where you left off"):T("افتح الكورس","Open the course")}</button></div>`;
+  const custom=c.type==="custom";
+  const chip=custom?`<span class="chip l1">${T("كورس متكامل","Integrated course")}</span>`:`<span class="chip l0">${AR(tot)} ${T("تجربة","experiments")}</span>`;
+  const byline=custom&&c.org?`${T("تقديم:","Presented by:")} ${escHTML(c.org)}`:`${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")}`;
+  return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b>${chip}</div><p class="small" style="margin-top:4px">${byline}</p><div class="row" style="margin-top:6px;gap:6px;flex-wrap:wrap">${c.passH?`<span class="chip l1">🔒 ${T("مقفول بكلمة سر","Password-locked")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}${joined?`<span class="chip l0">✓ ${T("منضم","Joined")}</span>`:""}${showCode&&c.code?`<span class="chip" dir="ltr">${escHTML(c.code)}</span>`:""}</div><button class="btn block" data-course="${escHTML(czKey(c))}" style="margin-top:8px">${joined?T("افتح الكورس — كمّل من حيث وقفت","Open the course — continue where you left off"):T("افتح الكورس","Open the course")}</button></div>`;
 }
 function czMemberCount(c){const l=czStudentsOf(c).length;return Math.max(l,(c&&c._srvMembers)||0);}
 function czZone(){
@@ -10699,13 +10741,13 @@ function czZone(){
   czEnsureCodes();
   const teacher=canTeacher();
   const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
-  set("htTitle",T("كورسات المعلمين","Teacher courses"));
-  set("htChip",teacher?T("مساحة المعلم","Teacher space"):T("كورسات خاصة","Private courses"));
+  set("htTitle",T("كورسات المنظمات","Organization courses"));
+  set("htChip",teacher?T("مساحة المنظمات","Organizations workspace"):T("كورسات خاصة","Private courses"));
   set("htDesc",teacher
     ?T("هنا كورساتك الخاصة: ابنِ كورسًا مرتّبًا من تجارب المختبر، وابعث كود الانضمام (وكلمة السر لو حطيتها) لطلابك — هينضموا من نفس المنطقة دي ويمشوا في تجارب الكورس بالترتيب اللي اخترته.","Your private courses live here: build an ordered course from the lab's experiments and send the join code (and the password, if you set one) to your students — they join from this very area and follow your experiments in your order.")
     :T("كورسات خاصة بيعدّها معلمك من تجارب المختبر ويرتّبها لك بالترتيب. لو معلمك ادالك كود كورس، انضم بيه من هنا وامشِ في التجارب خطوة بخطوة.","Private courses your teacher builds from the lab's experiments, arranged in order for you. If your teacher gave you a course code, join with it here and walk the experiments step by step."));
   const hb=document.getElementById("homeTeacherBtn");
-  if(hb){hb.style.display=teacher?"":"none";hb.textContent=T("افتح مساحة المعلم","Open the teacher space");}
+  if(hb){hb.style.display=teacher?"":"none";hb.textContent=T("افتح مساحة المنظمات","Open the organizations workspace");}
   set("jcH",T("انضم لكورس معلمك","Join your teacher's course"));
   set("jcDesc",T("اكتب كود الكورس اللي اداهولك معلمك — ولو الكورس مقفول بكلمة سر اكتبها كمان. الكورس هيظهر لك تحت على طول وتمشي فيه بالترتيب.","Enter the course code your teacher gave you — and the course password too if the course is locked with one. The course appears below right away and you follow it in order."));
   set("jcCodeLbl",T("كود الكورس","Course code"));
@@ -10724,7 +10766,7 @@ function czZone(){
          Courses already joined are not repeated here: they live in the
          «Courses you joined» section below, with their progress. */
       const cs=czAll().filter(c=>!czEnrolled(czKey(c)));
-      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المعلمين","Teacher courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,false)).join("")):"";
+      list.innerHTML=cs.length?("<h2 class=\"secttl\">"+T("كورسات المنظمات","Organization courses")+"</h2>"+safeMap(cs,c=>czCourseCard(c,false)).join("")):"";
       list.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
     }
   }
@@ -10735,6 +10777,9 @@ function czZone(){
       const c=czByKey(e.key);
       if(!c)return `<div class="card"><b>${escHTML(e.title||"")}</b><p class="small" style="margin-top:4px">${T("الكورس ده لم يعد متاحًا.","This course is no longer available.")}</p><button class="btn sm" data-czleave="${escHTML(e.key)}" style="margin-top:6px">${T("إزالة من قائمتي","Remove from my list")}</button></div>`;
       const tot=(c.exps||[]).length,dn=czDoneCount(c);
+      if(c.type==="custom"){
+        return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l1">${T("كورس متكامل","Integrated course")}</span></div><p class="small" style="margin-top:4px">${c.org?T("تقديم:","Presented by:")+" "+escHTML(c.org):T("كورس:","Course by:")+" "+escHTML(c.byName||"")}</p><p class="small" style="margin-top:6px">${T("محاضرات فيديو ونظريات مكتوبة — تقدّمك بيبان جوه الكورس نفسه.","Video lectures and written theory lessons — your progress shows inside the course itself.")}</p><div class="row" style="margin-top:10px;gap:8px"><button class="btn primary grow" data-course="${escHTML(czKey(c))}">${T("افتح الكورس","Open the course")}</button><button class="btn sm" data-czleave="${escHTML(e.key)}">${T("مغادرة","Leave")}</button></div></div>`;
+      }
       return `<div class="card"><div class="row between"><b>${escHTML(c.title||"")}</b><span class="chip l0">${AR(dn)} / ${AR(tot)} ${T("منجزة","done")}</span></div><p class="small" style="margin-top:4px">${T("كورس:","Course by:")} ${escHTML(c.byName||"")}</p><div class="czbar" style="margin-top:8px"><i style="width:${tot?Math.round(dn/tot*100):0}%"></i></div><div class="row" style="margin-top:10px;gap:8px"><button class="btn primary grow" data-course="${escHTML(czKey(c))}">${T("افتح الكورس","Open the course")}</button><button class="btn sm" data-czleave="${escHTML(e.key)}">${T("مغادرة","Leave")}</button></div></div>`;
     }).join("")):"";
     en.querySelectorAll("[data-course]").forEach(b=>{b.onclick=()=>openCourse(b.dataset.course);});
@@ -10816,13 +10861,13 @@ function renderCourseScreen(){
   if(!CZ_CUR){try{CZ_CUR=sessionStorage.getItem("il_course_key");}catch(e){}}
   const c=CZ_CUR?czByKey(CZ_CUR):null;
   if(!c){
-    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${T("الكورس مش متاح","Course unavailable")}</h2><p class="small">${T("الكورس ده مش موجود أو اتحذف. ارجع للرئيسية وافتح كورسًا من منطقة «كورسات المعلمين».","This course does not exist or was deleted. Go back Home and open a course from the Teacher courses area.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية","Back to Home")}</button></div>`;
+    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${T("الكورس مش متاح","Course unavailable")}</h2><p class="small">${T("الكورس ده مش موجود أو اتحذف. ارجع وافتح كورسًا من قسم «الكورسات».","This course does not exist or was deleted. Go back and open a course from the Courses section.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية","Back to Home")}</button></div>`;
     const g=document.getElementById("csGoHome");if(g)g.onclick=()=>showScreen("scr-home");
     return;
   }
   const key=czKey(c),mine=czMine(c),owner=isOwnerSession(),enrolled=czEnrolled(key);
   if(!mine&&!owner&&!enrolled){
-    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${escHTML(c.title||"")}</h2><p class="small">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")} — ${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</p><p style="margin-top:10px">${T("الكورس ده خاص بطلاب هذا المعلم. لو أنت من طلابه، انضم بكود الكورس (وكلمة السر لو مقفول) من منطقة «كورسات المعلمين» في الرئيسية، وبعدها هيفتح لك هنا بتجاربه مرتبة خطوة بخطوة.","This course is private to this teacher's students. If you are one of them, join with the course code (and password if locked) from the Teacher courses area on Home — then it opens here with its experiments ordered step by step.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية للانضمام","Back to Home to join")}</button></div>`;
+    body.innerHTML=`<div class="card"><h2 style="margin-top:0">${escHTML(c.title||"")}</h2><p class="small">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")} — ${AR((c.exps||[]).length)} ${T("تجربة","experiments")}</p><p style="margin-top:10px">${T("الكورس ده خاص بطلاب هذه المنظمة. لو أنت من طلابها، انضم بكود الكورس (وكلمة السر لو مقفول) من قسم «الكورسات»، وبعدها هيفتح لك هنا بمحتواه مرتبًا خطوة بخطوة.","This course is private to this organization's students. If you are one of them, join with the course code (and password if locked) from the Courses section — then it opens here with its content ordered step by step.")}</p><button class="btn primary block" id="csGoHome">${T("ارجع للرئيسية للانضمام","Back to Home to join")}</button></div>`;
     const g=document.getElementById("csGoHome");if(g)g.onclick=()=>showScreen("scr-home");
     return;
   }
@@ -10859,14 +10904,14 @@ function czTeacherLabels(){
   const hl=document.getElementById("tcHowList");
   if(hl)hl.innerHTML=[
     T("بتعمل كورس خاص: عنوان + تجارب من الـ٦٠ بالترتيب اللي يعجبك، ولو حابب تحط له كلمة سر.","You build a private course: a title + experiments from the 60 in your order, plus a password if you want one."),
-    T("الكورس بيظهر في منطقة «كورسات المعلمين» في الصفحة الرئيسية — وبيتولّد له كود انضمام خاص بيه.","The course appears in the Teacher courses area on Home — with its own generated join code."),
+    T("الكورس بيظهر في قسم «الكورسات» — وبيتولّد له كود انضمام خاص بيه.","The course appears in the Courses section — with its own generated join code."),
     T("بتبعت الكود (وكلمة السر لو حطيتها) لطلابك بأي طريقة — واتساب، في الفصل، أي وسيلة.","You send the code (and the password, if set) to your students by any channel — WhatsApp, in class, anything."),
-    T("كل طالب بيكتب الكود في نفس المنطقة في الرئيسية، فينضم للكورس ويمشي في تجاربه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.","Each student enters the code in that same Home area, joins the course, and follows its experiments in order, step by step — with progress saved to his account.")
+    T("كل طالب بيكتب الكود في نفس القسم، فينضم للكورس ويمشي فيه بالترتيب خطوة بخطوة، وتقدّمه بيتحفظ في حسابه.","Each student enters the code in that same section, joins the course, and follows it in order, step by step — with progress saved to his account.")
   ].map(t=>`<li>${t}</li>`).join("");
   set("tcPassLbl",T("كلمة سر الكورس (اختياري)","Course password (optional)"));
   const ph=document.getElementById("tcPass");if(ph)ph.placeholder=T("اتركها فاضية لو الكورس بالكود بس","Leave empty for a code-only course");
   const np2=document.getElementById("tcNewPass");if(np2)np2.placeholder=T("كلمة سر جديدة","New password");
-  set("tcPassHint",T("الكورس بيظهر في منطقة «كورسات المعلمين» في الرئيسية. الطالب يكتب كود الانضمام — ولو حطيت كلمة سر هنا، مش هيدخل غير بيها. تقدر تغيّرها أو تشيلها في أي وقت من «إدارة» الكورس تحت.","The course appears in the Teacher courses area on Home. The student enters the join code — and if you set a password here, nobody joins without it. You can change or remove it any time from the course's Manage panel below."));
+  set("tcPassHint",T("الكورس بيظهر في قسم «الكورسات». الطالب يكتب كود الانضمام — ولو حطيت كلمة سر هنا، مش هيدخل غير بيها. تقدر تغيّرها أو تشيلها في أي وقت من «إدارة» الكورس تحت.","The course appears in the Courses section. The student enters the join code — and if you set a password here, nobody joins without it. You can change or remove it any time from the course's Manage panel below."));
   set("tcManH",T("إدارة الكورس","Manage course"));
   set("tcNewPassLbl",T("تعيين / تغيير كلمة السر","Set / change the password"));
   set("tcManSavePass",T("حفظ كلمة السر","Save password"));
@@ -10933,7 +10978,7 @@ function czOpenManage(id){
     if(pw){c.passSalt=c.code;c.passH=czHash(pw+"|"+c.passSalt);}
     myCourses().push(c);
     tcDraft=[];document.getElementById("tcTitle").value="";const pe=document.getElementById("tcPass");if(pe)pe.value="";
-    if(msg)msg.textContent=T("اتعمل الكورس بكود الانضمام ","Course created with join code ")+c.code+T(" — ابعت الكود"," — send the code")+(pw?T(" وكلمة السر"," and the password"):"")+T(" لطلابك، وهيظهر لهم في منطقة «كورسات المعلمين» في الرئيسية ويمشوا فيه بالترتيب."," to your students; it appears for them in the Teacher courses area on Home and they follow it in order.");
+    if(msg)msg.textContent=T("اتعمل الكورس بكود الانضمام ","Course created with join code ")+c.code+T(" — ابعت الكود"," — send the code")+(pw?T(" وكلمة السر"," and the password"):"")+T(" لطلابك، وهيظهر لهم في قسم «الكورسات» ويمشوا فيه بالترتيب."," to your students; it appears for them in the Courses section and they follow it in order.");
     renderTcPick();renderTcSel();renderTcMine();czZone();
     setTimeout(()=>czSyncServerFields(c),2600);
   };
@@ -11031,8 +11076,9 @@ async function czServerExtras(uid,role){
                session merged in earlier, never blend with it. */
         ex.title=row.title;ex.exps=Array.isArray(row.exp_ids)?row.exp_ids:[];
         ex.code=row.join_code||"";ex.passH=row.pass_hash||"";ex.passSalt=row.pass_salt||"";
+        ex.type=row.course_type||"platform";ex.org=row.org_name||"";ex.desc=row.description||"";
         ex.byName=tp.display_name||ex.byName||acct.name||acctKey;return;}
-      acct.courses.push({id:++CZ_SEQ,sid:row.id,title:row.title,exps:Array.isArray(row.exp_ids)?row.exp_ids:[],by:acctKey,byName:tp.display_name||acct.name||acctKey,code:row.join_code||"",passH:row.pass_hash||"",passSalt:row.pass_salt||""});
+      acct.courses.push({id:++CZ_SEQ,sid:row.id,title:row.title,exps:Array.isArray(row.exp_ids)?row.exp_ids:[],by:acctKey,byName:tp.display_name||acct.name||acctKey,code:row.join_code||"",passH:row.pass_hash||"",passSalt:row.pass_salt||"",type:row.course_type||"platform",org:row.org_name||"",desc:row.description||""});
     });
     /* REPLACE, don't merge (same rule as site_config): a server course that
        is ABSENT from this response no longer exists server-side, so it must
@@ -12540,7 +12586,7 @@ function renderInfo(){
       ${czRowPv(2,0,"done")}${czRowPv(11,1,"next")}${czRowPv(12,2,"")}
       <h3 style="margin-top:14px">${T("اختبارات الكورس","Course quizzes")}</h3>
       <div style="border:1px solid var(--line);border-radius:12px;padding:12px">
-        <div class="row between"><b>${T("اختبار: الحرارة والكهربية","Quiz: Heat & Electricity")}</b><span class="chip l1">${T("اختبار نهائي","Final exam")}</span></div>
+        <div class="row between"><b>${T("اختبار: الحرارة والكهربية","Quiz: Heat & Electricity")}</b><span class="chip l1">${T("اختبار نهاية الكورس","End-of-course exam")}</span></div>
         <p class="small" style="margin-top:4px">${AR(5)} ${T("أسئلة اختيار من متعدد","multiple-choice questions")} · ⏱ ${AR(10)} ${T("دقائق","minutes")} · ${T("آخر نتيجة:","Latest result:")} <b>${AR(4)} / ${AR(5)}</b></p>
         <span class="btn primary sm" style="margin-top:6px">${T("ابدأ الاختبار","Start the quiz")}</span>
       </div>
@@ -12585,7 +12631,7 @@ function renderInfo(){
        </ol>`)
   +sec(T("٤ — أقسام الموقع","4 — The site's sections"),
       `<h3>${T("الرئيسية","Home")}</h3>`+homePv+
-      `<p>${T("أول شاشة بعد الدخول: حلقة دقة حدسك، رتبتك ورصيد XP، كام تجربة لعبت وأنجزت من الستين، زر «كمّل من حيث وقفت»، بطاقة تحدي اليوم، شريط الستريك الأسبوعي، وكورسات معلميك لو منضم لها — ومنها بتختار مستواك وتدخل أي قسم.","The first screen after sign-in: your intuition-accuracy ring, your tier and XP balance, how many of the 60 experiments you played and completed, the “Continue where you left off” button, the daily-challenge card, the weekly streak strip, and your teachers' courses if you joined any — and from it you pick your level and enter every section.")}</p>`+dailyPv+
+      `<p>${T("أول شاشة بعد الدخول: حلقة دقة حدسك، رتبتك ورصيد XP، كام تجربة لعبت وأنجزت من الستين، زر «كمّل من حيث وقفت»، بطاقة تحدي اليوم، شريط الستريك الأسبوعي، ومنها بتختار مستواك وتدخل أي قسم — والكورسات ليها قسمها الخاص في شريط التنقل تحت.","The first screen after sign-in: your intuition-accuracy ring, your tier and XP balance, how many of the 60 experiments you played and completed, the “Continue where you left off” button, the daily-challenge card, and the weekly streak strip — and from it you pick your level and enter every section, with courses in their own section in the bottom navigation.")}</p>`+dailyPv+
        `<h3 style="margin-top:14px">${T("التجارب — ٦٠ تجربة في ٣ مستويات","Experiments — 60 experiments in 3 levels")}</h3>`+expsPv+
        `<p>${T("سهل (٢٥): أساسيات الحرارة وخواص المادة والكهربية والمغناطيسية — أولها معمل تقدير بصري كامل للوحدات والأبعاد والتحويل بين أنظمة SI وCGS والإنجليزي. متوسط (٢٥): تعمّق في الكهربية والإلكترونيات والمختبر الرقمي والأغشية الرقيقة والفيزياء الذرية والنووية. متقدم (١٠): موضوعات نادرة — حيود الأشعة السينية، التأريخ بالكربون المشع، تداخل الفوتون الواحد، الموصلية الفائقة، مجهر المسح النفقي، مسرّعات الجسيمات، والتشابك الكمومي. كل تجربة مختلفة تمامًا عن التانية، ولكل واحدة بحث وفلاتر حسب المستوى. وكل المشاهد مرسومة بلغة بصرية واحدة نظيفة — أجهزة مرتّبة وأجزاؤها متسمّية والقيم مطبوعة على الجهاز نفسه — ونماذجها الفيزيائية مدقّقة على ثوابت الكتب الجامعية (الجاذبية، الكثافات، معاملات الانكسار، أنصاف الأعمار، دوال الشغل...)، وقيم كل جولة عشوائية من مدًى واقعي بمقاس المعامل الحقيقية ومتسقة مع اللي مرسوم قدامك بالظبط، بينما القياس والسماحية والدرجات ثابتة زي ما اتصممت.","Easy (25): the basics of heat, properties of matter, electricity and magnetism — starting with a complete visual-estimation lab for units, dimensions and conversions between the SI, CGS and imperial systems. Medium (25): deeper electricity, electronics, the digital lab, thin films, atomic and nuclear physics. Advanced (10): rare topics — X-ray diffraction, radiocarbon dating, single-photon interference, superconductivity, the scanning tunnelling microscope, particle accelerators and quantum entanglement. Every experiment is completely distinct, and the list has search and level filters. Every scene is drawn in one clean visual language — tidy apparatus, labelled parts and the values printed on the apparatus itself — and every physical model is audited against university-textbook constants (gravity, densities, refractive indices, half-lives, work functions…), with each round's values randomized over realistic, real-laboratory ranges and consistent with exactly what is drawn in front of you, while measurement, tolerance and scoring stay exactly as designed.")}</p>
        <h3 style="margin-top:14px">${T("النظرية","Theory")}</h3>`+theoryPv+
@@ -12619,9 +12665,14 @@ function renderInfo(){
         <li>${T("نقاط الجولة: ٩٠٪ على قرب توقعك من الصح و١٠٪ على السرعة — بنفس السماحية الموحّدة على كل التجارب مهما اختلف مقياسها، ولازم تحط توقع أصلًا عشان تاخد أي نقطة.","Round points: 90% for how close your prediction is and 10% for speed — with the same unified tolerance on every experiment whatever its scale, and you must place a prediction to earn any points at all.")}</li>
         <li>${T("شريط التوازن في النص بيميل لحظيًا ناحية الكسبان، والفائز بالماتش بياخد <b>60 XP</b> والخاسر <b>15 XP</b>.","The balance bar in the middle tilts live toward whoever is winning; the match winner earns <b>60 XP</b> and the loser <b>15 XP</b>.")}</li>
        </ul>`)
-  +sec(T("٨ — كورسات المعلمين","8 — Teachers' courses"),
+  +sec(T("٨ — كورسات المنظمات","8 — Organizations' courses"),
       teacherPv+
-      `<p>${T("المعلم يقدر يجمع تجارب من الستين في <b>كورس مرتب</b> خاص بطلابه، ويقفله بكلمة سر لو حابب، وبيدّي طلابه <b>كود انضمام</b>. الطالب بيكتب الكود (وكلمة السر لو الكورس مقفول) في منطقة «كورسات المعلمين» في الرئيسية، فينضم مرة واحدة ويتفتح له <b>مسار مرقّم</b> يمشي فيه بالترتيب — خطوته التالية مميّزة له، وبزر «كمّل من حيث وقفت» بيرجع لمكانه بالظبط. والمعلم بيشوف مين انضم له بالاسم. ويقدر كمان يرفق بالكورس <b>اختبارات اختيار من متعدد</b> — أو <b>اختبارًا نهائيًا</b> — بأسئلة يكتبها بنفسه و<b>مدة زمنية اختيارية</b> يحددها هو؛ الطالب بيحلّ الاختبار جوه الكورس سؤالًا سؤالًا، ونتيجته بتتخزن على السيرفر وبتظهر للمعلم باسم الطالب ودرجته وتاريخها.","A teacher can gather experiments from the 60 into a private, <b>ordered course</b> for their students, optionally locked with a password, and gives the students a <b>join code</b>. The student enters the code (and the password if the course is locked) in the “Teachers' courses” area on Home, joins once, and gets a <b>numbered path</b> to walk in order — with their next step highlighted for them, and “Continue where you left off” returns them to their exact place. The teacher sees who joined, by name. The teacher can also attach <b>multiple-choice quizzes</b> — or a <b>final exam</b> — with questions they write themselves and an <b>optional time limit</b> they set; the student takes the quiz inside the course, one question at a time, and the result is stored on the server and shown to the teacher with the student's name, score and date.")}</p>`)
+      `<p>${T("المنظمات والمعلمون بيبنوا كورساتهم هنا بنوعين:","Organizations and teachers build their courses here in two types:")}</p>
+       <ul class="infolist">
+        <li><b>${T("كورس من تجارب المنصة:","A course from the platform's experiments:")}</b> ${T("المعلم يجمع تجارب من الستين في <b>كورس مرتب</b> خاص بطلابه، ويقفله بكلمة سر لو حابب، وبيدّي طلابه <b>كود انضمام</b>. الطالب بيكتب الكود (وكلمة السر لو الكورس مقفول) في قسم «الكورسات»، فينضم مرة واحدة ويتفتح له <b>مسار مرقّم</b> يمشي فيه بالترتيب — خطوته التالية مميّزة له، وبزر «كمّل من حيث وقفت» بيرجع لمكانه بالظبط. والمعلم بيشوف مين انضم له بالاسم.","The teacher gathers experiments from the 60 into a private, <b>ordered course</b> for their students, optionally locked with a password, and gives the students a <b>join code</b>. The student enters the code (and the password if the course is locked) in the Courses section, joins once, and gets a <b>numbered path</b> to walk in order — with their next step highlighted for them, and “Continue where you left off” returns them to their exact place. The teacher sees who joined, by name.")}</li>
+        <li><b>${T("كورس متكامل جديد:","A new integrated course:")}</b> ${T("المنظمة بتبني كورسها من الصفر باسمها، <b>محاضرة محاضرة</b>: كل محاضرة إما <b>فيديو شرح</b> (رابط يوتيوب أو ملف فيديو مباشر) أو <b>نظرية مكتوبة</b> بيكتبها المعلم نفسه. الطالب بيمشي في مسار المحاضرات بالترتيب، والمشغّل <b>بيتابع تقدم مشاهدته</b> فعليًا — المحاضرة بتتعلم مكتملة لما يشاهد ٩٠٪ منها على الأقل — والمعلم بيشوف من لوحته كل طالب وصل لفين.","The organization builds its course from scratch under its own name, <b>lecture by lecture</b>: each lecture is either a <b>video lesson</b> (a YouTube link or a direct video file) or a <b>written theory lesson</b> the teacher writes. The student walks the lecture path in order, and the player <b>tracks real watch progress</b> — a lecture counts as completed once at least 90% of it has been watched — and the teacher sees, from their panel, exactly how far each student has got.")}</li>
+        <li><b>${T("الاختبارات والشهادة:","Quizzes and the certificate:")}</b> ${T("أي كورس يقدر يترفق بيه <b>اختبارات اختيار من متعدد</b> بأسئلة يكتبها المعلم و<b>مدة زمنية اختيارية</b> يحددها هو — ومنها <b>اختبار نهاية الكورس</b>. الطالب بيحلّ الاختبار جوه الكورس سؤالًا سؤالًا، ونتيجته بتتخزن على السيرفر وبتظهر للمعلم باسم الطالب ودرجته وتاريخها. وفي الكورسات المتكاملة، اللي يخلّص كل المحاضرات وينجح في اختبار نهاية الكورس (٥٠٪ على الأقل) بيستلم <b>شهادة إتمام من المنصة</b> باسمه واسم الكورس والمنظمة ونتيجته وكود تحقق خاص بيها — يقدر يعرضها وينزّلها PDF من قسم «شهاداتي».","Any course can carry <b>multiple-choice quizzes</b> with questions the teacher writes and an <b>optional time limit</b> they set — including an <b>end-of-course exam</b>. The student takes the quiz inside the course, one question at a time, and the result is stored on the server and shown to the teacher with the student's name, score and date. In integrated courses, whoever completes every lecture and passes the end-of-course exam (at least 50%) receives a <b>platform certificate of completion</b> carrying their name, the course and organization names, their score and its own verification code — viewable and downloadable as a PDF from “My certificates”.")}</li>
+       </ul>`)
   +sec(T("٩ — الجيمز والدعوات","9 — Gems and invites"),
       `<ul class="infolist">
         <li>${T("<b>الجيمز</b> عملة الموقع الخاصة: بتكسبها من اليوم السابع في الستريك (50 جيم) ومن دعوات الأصدقاء.","<b>Gems</b> are the site's own currency: you earn them from day 7 of the streak (50 gems) and from inviting friends.")}</li>
@@ -12681,7 +12732,7 @@ let QZ_TC_KEY=null,QZ_TC_VIEW="list",QZ_TC_QUIZID=null,QZ_DEL_ARM=null;
 let QZ_TAKE=null,QZ_TAKE_TIMER=null,QZ_QSEQ=0,QZ_DUR_TOUCHED=false;
 let QZ_DATA={}; /* sid -> {quizzes, results (newest first), profiles, t} */
 function qzOnline(){try{return (typeof sbServerSession==="function")&&sbServerSession()&&(typeof SB!=="undefined")&&!!SB;}catch(e){return false;}}
-function qzFinalBadge(q){return (q&&q.is_final)?` <span class="chip l1">${T("اختبار نهائي","Final exam")}</span>`:"";}
+function qzFinalBadge(q){return (q&&q.is_final)?` <span class="chip l1">${T("اختبار نهاية الكورس","End-of-course exam")}</span>`:"";}
 function qzDurChip(q){return (q&&q.duration_min)?` <span class="chip l0">⏱ ${AR(q.duration_min)} ${T("دقيقة","min")}</span>`:"";}
 function qzQCount(q){return (q&&Array.isArray(q.questions))?q.questions.length:0;}
 async function qzFetch(sid,force){
@@ -12729,7 +12780,7 @@ function qzRenderTcPanel(){
   const setT=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
   setT("qzTcH",T("اختبارات الكورس","Course quizzes"));
   setT("qzTcClose",T("إغلاق","Close"));
-  setT("qzTcIntro",T("هنا اختبارات هذا الكورس ونتائج طلابك: أنشئ اختبارًا (أو اختبارًا نهائيًا) بأسئلة اختيار من متعدد، وطلاب الكورس هيحلّوه من صفحة الكورس، ونتائجهم هتوصلك هنا من السيرفر.","Here are this course's quizzes and your students' results: create a quiz (or a final exam) with multiple-choice questions; your course students take it from the course page, and their results reach you here from the server."));
+  setT("qzTcIntro",T("هنا اختبارات هذا الكورس ونتائج طلابك: أنشئ اختبارًا (أو اختبار نهاية الكورس) بأسئلة اختيار من متعدد، وطلاب الكورس هيحلّوه من صفحة الكورس، ونتائجهم هتوصلك هنا من السيرفر.","Here are this course's quizzes and your students' results: create a quiz (or an end-of-course exam) with multiple-choice questions; your course students take it from the course page, and their results reach you here from the server."));
   const c=QZ_TC_KEY?czByKey(QZ_TC_KEY):null;
   setT("qzTcCourse",c?((LANG==="en"?"Course: ":"كورس: ")+(c.title||"")):"");
   if(!qzOnline()){
@@ -12781,7 +12832,7 @@ function qzRenderBuilder(body,c){
     <button class="btn sm" id="qzBackList">${T("→ كل الاختبارات","← All quizzes")}</button>
     <label class="fldlbl" for="qzBTitle">${T("عنوان الاختبار","Quiz title")}</label>
     <input class="fld" id="qzBTitle" type="text" maxlength="80" placeholder="${T("مثال: اختبار قصير — قوانين كيرشوف","Example: Short quiz — Kirchhoff's laws")}">
-    <label class="qzswitch"><input type="checkbox" id="qzBFinal"><span>${T("اختبار نهائي","Final exam")}</span></label>
+    <label class="qzswitch"><input type="checkbox" id="qzBFinal"><span>${T("اختبار نهاية الكورس","End-of-course exam")}</span></label>
     <label class="fldlbl" for="qzBDur">${T("مدة الاختبار (بالدقائق)","Quiz duration (in minutes)")}</label>
     <input class="fld" id="qzBDur" type="number" min="1" max="600" inputmode="numeric">
     <p class="small" id="qzBDurHint" style="margin-top:4px"></p>
@@ -13639,6 +13690,786 @@ try{applyAccentTheme(ownThemeKey());}catch(e){}
 try{syncTitleChips();}catch(e){}
 try{applyLang(LANG);}catch(e){}
 </script>
+<style>
+/* ===== ORGANIZATIONS PLATFORM: segmented toggle, lesson player, certificate ===== */
+.segrow{display:flex;gap:6px;background:var(--surface2);border:1px solid var(--line);border-radius:999px;padding:4px;margin:12px 0 14px}
+.segbtn{flex:1;border:none;background:transparent;color:var(--muted);font:inherit;font-weight:700;font-size:.98rem;padding:10px 8px;border-radius:999px;cursor:pointer;min-height:44px}
+.segbtn.on{background:var(--teal);color:#fff}
+.lsframe{position:relative;width:100%;aspect-ratio:16/9;background:#0c0c0c;border-radius:12px;overflow:hidden}
+.lsframe iframe,.lsframe video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.lsprog{height:10px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.lsprog i{display:block;height:100%;background:var(--teal);border-radius:99px;transition:width .4s ease}
+.lsrowbtns{display:flex;gap:4px;flex:none;flex-wrap:wrap}
+.certcard{position:relative;border-radius:18px;padding:28px 20px;text-align:center;background:var(--surface);color:var(--ink);overflow:hidden;line-height:1.8}
+.certcard::before{content:"";position:absolute;inset:0;border-radius:18px;padding:3px;background:linear-gradient(135deg,var(--teal),var(--amber));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.certlogo{width:74px;height:74px;object-fit:contain}
+.certname{font-size:1.55rem;font-weight:800;margin:4px 0 2px}
+#pdfStage .certcard{background:#ffffff;color:#141414}
+</style>
+<script>
+"use strict";
+/* ================= ORGANIZATIONS PLATFORM — integrated courses, lessons, certificates =================
+   Extends the teacher-courses system WITHOUT touching the 60 experiments:
+   - A course is either type "platform" (experiments from the 60 — the flow
+     that already existed) or type "custom": an integrated course built
+     lecture by lecture (course_lessons: video via a YouTube/MP4 link, or a
+     written theory lesson), with per-student watch progress
+     (lesson_progress), the existing course quizzes (a final-flagged quiz is
+     the end-of-course exam), and platform certificates (certificates +
+     issue_certificate RPC) once every lesson is complete and the final
+     exam is passed at 50%+.
+   - Navigation tidy: the bottom nav is 5 items; the theory index lives
+     inside the Experiments screen under a segmented toggle; the courses
+     zone lives on its own screen (scr-courses).
+   Everything server-backed goes through the same sbCall/SB layer as the
+   quizzes; in guest/local mode the new sections show the same honest
+   "online account required" notes as the quiz sections — nothing is faked. */
+let LS_TC_KEY=null,LS_EDIT_ID=null,LS_DEL_ARM=null,LS_KIND="video";
+let LS_DATA={};            /* sid -> {lessons, prog:{lessonId:row}, cert, t} */
+let LS_VIEW=null;          /* {lessonId} while a lesson sub-view is open */
+let CERT_VIEW=null;        /* {cert, course|null} while the certificate view is open */
+let LS_VID=null;           /* the live video-watch session, or null */
+let EXPS_PANE="exps";
+function lsOnline(){try{return (typeof sbServerSession==="function")&&sbServerSession()&&(typeof SB!=="undefined")&&!!SB;}catch(e){return false;}}
+function ytIdOf(url){
+  if(!url)return null;
+  const m=String(url).trim().match(/(?:youtube\.com\/watch\?[^#]*v=|youtu\.be\/|youtube\.com\/shorts\/|youtube\.com\/embed\/)([A-Za-z0-9_-]{6,})/);
+  return m?m[1]:null;
+}
+function lsVideoKind(url){
+  if(!url)return null;
+  const s=String(url).trim(),id=ytIdOf(s);
+  if(id)return{type:"yt",id:id};
+  if(/^https?:\/\/\S+\.mp4(\?\S*)?$/i.test(s))return{type:"mp4"};
+  return null;
+}
+async function lsFetch(sid,force){
+  if(!sid)return{lessons:[],prog:{},cert:null,t:Date.now()};
+  const now=Date.now();
+  if(!force&&LS_DATA[sid]&&(now-LS_DATA[sid].t)<20000)return LS_DATA[sid];
+  const d={lessons:[],prog:{},cert:null,t:now};
+  LS_DATA[sid]=d;
+  if(lsOnline()){
+    try{const r=await sbCall(SB.from("course_lessons").select("*").eq("course_id",sid).order("sort",{ascending:true}).limit(500));if(!r.error&&r.data)d.lessons=r.data;}catch(e){}
+    try{
+      const ids=d.lessons.map(l=>l.id);
+      if(ids.length){const r=await sbCall(SB.from("lesson_progress").select("*").in("lesson_id",ids).limit(1000));if(!r.error&&r.data)r.data.forEach(p=>{if(p.user_id===SESSION.uid)d.prog[p.lesson_id]=p;});}
+    }catch(e){}
+    try{const r=await sbCall(SB.from("certificates").select("*").eq("course_id",sid).limit(10));if(!r.error&&r.data){const mine=r.data.find(x=>x.user_id===SESSION.uid);if(mine)d.cert=mine;}}catch(e){}
+  }
+  d.t=Date.now();
+  return d;
+}
+async function lsSaveProgress(lessonId,pct,completed){
+  if(!lsOnline())return false;
+  const row={user_id:SESSION.uid,lesson_id:lessonId,watched_pct:Math.max(0,Math.min(100,Math.floor(pct))),completed:!!completed,updated_at:new Date().toISOString()};
+  try{
+    const r=await sbCall(SB.from("lesson_progress").upsert(row,{onConflict:"user_id,lesson_id"}));
+    if(r&&r.error){console.error("[lesson-progress] upsert failed:",r.error);return false;}
+    return true;
+  }catch(e){console.error("[lesson-progress] upsert failed:",e);return false;}
+}
+/* ---------------- experiments screen: «التجارب | النظريات» segmented toggle ---------------- */
+function setExpsPane(p){
+  EXPS_PANE=p;
+  const e=document.getElementById("expsPane"),t=document.getElementById("thPane");
+  const be=document.getElementById("expTabExps"),bt=document.getElementById("expTabTh");
+  if(e)e.style.display=p==="exps"?"block":"none";
+  if(t)t.style.display=p==="th"?"block":"none";
+  if(be){be.classList.toggle("on",p==="exps");be.textContent=T("التجارب","Experiments");}
+  if(bt){bt.classList.toggle("on",p==="th");bt.textContent=T("النظريات","Theories");}
+}
+/* ---------------- courses screen chrome (heading + guest note) ---------------- */
+function coursesChrome(){
+  const signed=(typeof SESSION!=="undefined")&&(SESSION.mode==="user"||SESSION.mode==="owner");
+  const gn=document.getElementById("coursesGuestNote");if(gn)gn.style.display=signed?"none":"block";
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+  set("coursesH",T("الكورسات","Courses"));
+  set("coursesGuestTxt",T("الكورسات وشهاداتها محتاجة حسابًا مسجلًا — الزائر ما بيتحفظلوش تقدم. سجّل دخولك أو أنشئ حسابًا عشان تنضم لكورسات المنظمات وتكمل محاضراتها وتستلم شهادتك.","Courses and their certificates need a registered account — guest progress is not saved. Sign in or create an account to join organization courses, complete their lectures and receive your certificate."));
+  set("coursesGuestBtn",T("تسجيل الدخول","Sign in"));
+}
+const _czoneLs=czZone;
+czZone=function(){_czoneLs();try{coursesChrome();}catch(e){}};
+/* ---------------- teacher workspace: labels for the chooser + custom form ---------------- */
+function orgLabels(){
+  const set=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+  const sph=(id,txt)=>{const el=document.getElementById(id);if(el)el.placeholder=txt;};
+  set("tcChooseLbl",T("اختر نوع الكورس اللي عايز تبنيه:","Choose the kind of course you want to build:"));
+  set("tcModePlatformT",T("🧪 كورس من تجارب المنصة","🧪 A course from the platform's experiments"));
+  set("tcModePlatformD",T("رتّب تجارب من تجارب المختبر الستين في كورس لطلابك — زي ما هو دلوقتي بالظبط.","Arrange experiments from the lab's 60 in a course for your students — exactly as it works today."));
+  set("tcModeCustomT",T("🎓 كورس متكامل جديد","🎓 A new integrated course"));
+  set("tcModeCustomD",T("كورس باسم منظمتك، بتبنيه محاضرة محاضرة: فيديوهات شرح ونظريات مكتوبة واختبار نهاية الكورس وشهادة من المنصة.","A course under your organization's name, built lecture by lecture: video lessons, written theory, an end-of-course exam and a platform certificate."));
+  set("tcOrgLbl",T("اسم المنظمة","Organization name"));
+  set("tcCTitleLbl",T("عنوان الكورس","Course title"));
+  set("tcCDescLbl",T("وصف الكورس (اختياري)","Course description (optional)"));
+  set("tcCPassLbl",T("كلمة سر الكورس (اختياري)","Course password (optional)"));
+  set("tcCPassHint",T("بعد إنشاء الكورس هيتفتح لك منشئ المحاضرات على طول: ضيف محاضرات فيديو ونظريات مكتوبة بالترتيب، واعمل اختبار نهاية الكورس من «اختبارات الكورس».","Once the course is created, the lesson builder opens for you right away: add video lectures and written theory lessons in order, and create the end-of-course exam from “Course quizzes”."));
+  set("tcCCreate",T("إنشاء الكورس المتكامل","Create the integrated course"));
+  sph("tcOrg",T("مثال: أكاديمية النور لتدريس الفيزياء","Example: Al-Noor Academy for Physics"));
+  sph("tcCTitle",T("مثال: فيزياء الصف الثالث الثانوي — الترم الأول","Example: Physics, Grade 12 — first term"));
+  sph("tcCDesc",T("الكورس ده هيعلّم الطالب إيه؟ ومين الطلاب المستهدفين؟","What will this course teach, and who is it for?"));
+  sph("tcCPass",T("اتركها فاضية لو الكورس بالكود بس","Leave empty for a code-only course"));
+  coursesChrome();
+  setExpsPane(EXPS_PANE);
+}
+/* ---------------- creation chooser + integrated-course creation ---------------- */
+function tcShowMode(mode){
+  const pf=document.getElementById("tcPlatformForm"),cf=document.getElementById("tcCustomForm");
+  const bp=document.getElementById("tcModePlatform"),bc=document.getElementById("tcModeCustom");
+  if(pf)pf.style.display=mode==="platform"?"block":"none";
+  if(cf)cf.style.display=mode==="custom"?"block":"none";
+  if(bp)bp.classList.toggle("on",mode==="platform");
+  if(bc)bc.classList.toggle("on",mode==="custom");
+}
+(function wireOrgCreate(){
+  const bp=document.getElementById("tcModePlatform"),bc=document.getElementById("tcModeCustom");
+  if(bp)bp.onclick=()=>tcShowMode("platform");
+  if(bc)bc.onclick=()=>tcShowMode("custom");
+  const cc=document.getElementById("tcCCreate");
+  if(cc)cc.onclick=async()=>{
+    const msg=document.getElementById("tcCMsg");const say=t=>{if(msg)msg.textContent=t;};
+    const org=(((document.getElementById("tcOrg")||{}).value)||"").trim();
+    const title=(((document.getElementById("tcCTitle")||{}).value)||"").trim();
+    const desc=(((document.getElementById("tcCDesc")||{}).value)||"").trim();
+    const pw=(((document.getElementById("tcCPass")||{}).value)||"").trim();
+    if(!org){say(T("اكتب اسم المنظمة أولًا.","Write the organization name first."));return;}
+    if(!title){say(T("اكتب عنوان الكورس أولًا.","Write the course title first."));return;}
+    if(pw&&pw.length<4){say(T("كلمة سر الكورس لازم تكون ٤ أحرف على الأقل — أو سيبها فاضية لكورس بالكود بس.","The course password must be at least 4 characters — or leave it empty for a code-only course."));return;}
+    const a=curAccount();if(!a)return;
+    if(cc.dataset.busy)return;cc.dataset.busy="1";setTimeout(()=>{delete cc.dataset.busy;},1500);
+    const c={id:Date.now(),title:title,exps:[],by:a.email,byName:(LANG==="en"?(a.nameEn||a.name):a.name)||a.email,code:czGenCode(),passH:"",passSalt:"",type:"custom",org:org,desc:desc};
+    if(pw){c.passSalt=c.code;c.passH=czHash(pw+"|"+c.passSalt);}
+    myCourses().push(c);
+    ["tcOrg","tcCTitle","tcCDesc","tcCPass"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+    say(T("اتعمل الكورس المتكامل بكود الانضمام ","Integrated course created with join code ")+c.code+T(" — منشئ المحاضرات مفتوح لك تحت على طول."," — the lesson builder is open for you below."));
+    try{renderTcMine();}catch(e){}
+    try{czZone();}catch(e){}
+    if(lsOnline()){
+      try{
+        const r=await sbCall(SB.from("courses").insert({teacher_id:SESSION.uid,title:c.title,exp_ids:[],course_type:"custom",org_name:c.org,description:c.desc||null}).select());
+        if(!r.error&&r.data&&r.data[0]){c.sid=r.data[0].id;try{czSyncServerFields(c);}catch(e){}}
+        else if(r.error)console.error("[org-course] courses insert failed:",r.error);
+      }catch(e){console.error("[org-course] courses insert failed:",e);}
+    }
+    lsOpenPanel(czKey(c));
+  };
+})();
+/* ---------------- lesson builder (teacher, custom courses) ---------------- */
+function lsOpenPanel(key){
+  LS_TC_KEY=key;LS_EDIT_ID=null;LS_DEL_ARM=null;LS_KIND="video";
+  const c=key?czByKey(key):null;
+  if(c&&c.sid)delete LS_DATA[c.sid];
+  const card=document.getElementById("tcLessonCard");
+  if(card)card.style.display="block";
+  lsRenderPanel();
+  if(card)setTimeout(()=>{try{card.scrollIntoView({behavior:"smooth",block:"start"});}catch(e){}},60);
+}
+function lsRenderPanel(){
+  const body=document.getElementById("tcLessonBody");if(!body)return;
+  const setT=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt;};
+  setT("lsTcH",T("محاضرات الكورس","Course lectures"));
+  setT("lsTcClose",T("إغلاق","Close"));
+  setT("lsTcIntro",T("ابنِ الكورس محاضرة محاضرة: محاضرة فيديو برابط يوتيوب أو ملف MP4 مباشر، أو محاضرة نظرية مكتوبة. رتّب المحاضرات بالأسهم، وتابع تقدم طلابك من الجدول اللي تحت.","Build the course lecture by lecture: a video lecture from a YouTube link or a direct MP4 file, or a written theory lecture. Order the lectures with the arrows, and follow your students' progress in the table below."));
+  setT("lsProgH",T("تقدم الطلاب في الكورس","Students' progress in this course"));
+  const c=LS_TC_KEY?czByKey(LS_TC_KEY):null;
+  setT("lsTcCourse",c?((LANG==="en"?"Course: ":"كورس: ")+(c.title||"")):"");
+  const pb=document.getElementById("tcProgBody");
+  if(!lsOnline()){
+    body.innerHTML=`<p class="small">${T("محاضرات الكورسات المتكاملة ميزة أونلاين — محتاجة حسابًا مسجلًا متصلًا بالسيرفر، عشان المحاضرات وتقدم طلابك يتحفظوا على السيرفر.","Integrated-course lectures are an online feature — they need a registered account connected to the server, so the lectures and your students' progress are stored on the server.")}</p>`;
+    if(pb)pb.innerHTML="";
+    return;
+  }
+  if(!c||!c.sid){
+    body.innerHTML=`<p class="small">${T("هذا الكورس غير محفوظ على السيرفر بعد — أعد تحميل الصفحة وافتح الكورس من جديد بعد ما يتزامن مع حسابك الأونلاين.","This course is not saved on the server yet — reload the page and reopen the course once it has synced with your online account.")}</p>`;
+    if(pb)pb.innerHTML="";
+    return;
+  }
+  body.innerHTML=`<p class="small">${T("جارٍ التحميل من السيرفر…","Loading from the server…")}</p>`;
+  lsFetch(c.sid,true).then(d=>{
+    const cc=LS_TC_KEY?czByKey(LS_TC_KEY):null;
+    if(!cc||cc.sid!==c.sid)return;
+    lsRenderBuilder(body,c,d.lessons);
+    lsRenderProgress(c);
+  }).catch(()=>{});
+}
+function lsRenderBuilder(body,c,lessons){
+  const edit=LS_EDIT_ID?lessons.find(l=>l.id===LS_EDIT_ID):null;
+  if(edit)LS_KIND=edit.kind;
+  const rows=lessons.map((l,i)=>{
+    if(LS_DEL_ARM===l.id){
+      return `<div class="owrow"><span class="grow"><b>${escHTML(l.title||"")}</b><br><span class="small" style="color:var(--red);font-weight:700">${T("متأكد من حذف هذه المحاضرة؟","Delete this lecture?")}</span></span><button class="btn sm primary" data-lsdelok="${l.id}">${T("نعم، احذف","Yes, delete")}</button><button class="btn sm" data-lsdelno="1">${T("إلغاء","Cancel")}</button></div>`;
+    }
+    return `<div class="owrow"><span class="czbadge">${AR(i+1)}</span><span class="grow"><b>${l.kind==="video"?"🎥":"📖"} ${escHTML(l.title||"")}</b></span><span class="lsrowbtns"><button class="btn sm" data-lsup="${l.id}" ${i===0?"disabled":""} aria-label="up">↑</button><button class="btn sm" data-lsdn="${l.id}" ${i===lessons.length-1?"disabled":""} aria-label="down">↓</button><button class="btn sm" data-lsedit="${l.id}">${T("تعديل","Edit")}</button><button class="btn sm" data-lsdel="${l.id}">${T("حذف","Delete")}</button></span></div>`;
+  }).join("");
+  body.innerHTML=(rows||`<p class="small">${T("لسه ما فيش محاضرات — ضيف أول محاضرة من النموذج اللي تحت.","No lectures yet — add the first one from the form below.")}</p>`)+`
+   <div style="border-top:2px solid var(--surface2);margin-top:14px;padding-top:12px">
+    <h3 style="margin:0 0 4px">${edit?T("تعديل المحاضرة","Edit lecture"):T("＋ إضافة محاضرة","+ Add a lecture")}</h3>
+    <label class="fldlbl" for="lsTitle">${T("عنوان المحاضرة","Lecture title")}</label>
+    <input class="fld" id="lsTitle" type="text" maxlength="120" value="${edit?escHTML(edit.title||""):""}" placeholder="${T("مثال: مقدمة في التيار الكهربائي","Example: Introduction to electric current")}">
+    <p class="small" style="margin-top:10px">${T("نوع المحاضرة:","Lecture type:")}</p>
+    <div class="ctlrow" style="margin-top:6px">
+      <button type="button" class="fchip ${LS_KIND==="video"?"on":""}" id="lsKindVideo">🎥 ${T("فيديو","Video")}</button>
+      <button type="button" class="fchip ${LS_KIND==="theory"?"on":""}" id="lsKindTheory">📖 ${T("نظرية مكتوبة","Written theory")}</button>
+    </div>
+    <div id="lsVideoFields" style="display:${LS_KIND==="video"?"block":"none"}">
+      <label class="fldlbl" for="lsUrl">${T("رابط الفيديو","Video URL")}</label>
+      <input class="fld" id="lsUrl" type="url" dir="ltr" value="${edit&&edit.kind==="video"?escHTML(edit.video_url||""):""}" placeholder="https://www.youtube.com/watch?v=…">
+      <p class="small" style="margin-top:4px">${T("روابط مقبولة: فيديو يوتيوب (watch أو youtu.be أو Shorts) أو رابط مباشر لملف MP4.","Accepted links: a YouTube video (watch, youtu.be or Shorts) or a direct MP4 file link.")}</p>
+    </div>
+    <div id="lsTheoryFields" style="display:${LS_KIND==="theory"?"block":"none"}">
+      <label class="fldlbl" for="lsText">${T("نص النظرية","Theory text")}</label>
+      <textarea class="fld" id="lsText" rows="8" maxlength="20000" placeholder="${T("اكتب شرح المحاضرة هنا — سطر فاضي بين كل فقرة والتانية.","Write the lecture explanation here — leave a blank line between paragraphs.")}">${edit&&edit.kind==="theory"?escHTML(edit.theory_text||""):""}</textarea>
+    </div>
+    <p class="small" id="lsErr" style="margin-top:8px;color:var(--red);font-weight:700"></p>
+    <div class="row" style="gap:8px;margin-top:6px">
+      <button class="btn primary grow" id="lsSave">${edit?T("حفظ التعديلات","Save changes"):T("إضافة المحاضرة","Add the lecture")}</button>
+      ${edit?`<button class="btn" id="lsCancelEdit">${T("إلغاء التعديل","Cancel editing")}</button>`:""}
+    </div>
+   </div>`;
+  body.querySelectorAll("[data-lsup]").forEach(b=>{b.onclick=()=>lsMove(c,lessons,b.dataset.lsup,-1);});
+  body.querySelectorAll("[data-lsdn]").forEach(b=>{b.onclick=()=>lsMove(c,lessons,b.dataset.lsdn,1);});
+  body.querySelectorAll("[data-lsedit]").forEach(b=>{b.onclick=()=>{LS_EDIT_ID=b.dataset.lsedit;LS_DEL_ARM=null;lsRenderBuilder(body,c,lessons);const t=document.getElementById("lsTitle");if(t)try{t.scrollIntoView({behavior:"smooth",block:"center"});}catch(e){}};});
+  body.querySelectorAll("[data-lsdel]").forEach(b=>{b.onclick=()=>{LS_DEL_ARM=b.dataset.lsdel;lsRenderBuilder(body,c,lessons);};});
+  body.querySelectorAll("[data-lsdelno]").forEach(b=>{b.onclick=()=>{LS_DEL_ARM=null;lsRenderBuilder(body,c,lessons);};});
+  body.querySelectorAll("[data-lsdelok]").forEach(b=>{b.onclick=()=>lsDelete(c,b.dataset.lsdelok);});
+  const kv=document.getElementById("lsKindVideo"),kt=document.getElementById("lsKindTheory");
+  const vf=document.getElementById("lsVideoFields"),tf=document.getElementById("lsTheoryFields");
+  if(kv)kv.onclick=()=>{LS_KIND="video";kv.classList.add("on");if(kt)kt.classList.remove("on");if(vf)vf.style.display="block";if(tf)tf.style.display="none";};
+  if(kt)kt.onclick=()=>{LS_KIND="theory";kt.classList.add("on");if(kv)kv.classList.remove("on");if(tf)tf.style.display="block";if(vf)vf.style.display="none";};
+  const sv=document.getElementById("lsSave");
+  if(sv)sv.onclick=()=>lsSaveLesson(c,lessons);
+  const ce=document.getElementById("lsCancelEdit");
+  if(ce)ce.onclick=()=>{LS_EDIT_ID=null;lsRenderBuilder(body,c,lessons);};
+}
+async function lsSaveLesson(c,lessons){
+  const err=document.getElementById("lsErr");const say=t=>{if(err)err.textContent=t;};
+  const title=(((document.getElementById("lsTitle")||{}).value)||"").trim();
+  if(!title){say(T("اكتب عنوان المحاضرة أولًا.","Write the lecture title first."));return;}
+  const row={course_id:c.sid,title:title,kind:LS_KIND};
+  if(LS_KIND==="video"){
+    const url=(((document.getElementById("lsUrl")||{}).value)||"").trim();
+    if(!lsVideoKind(url)){say(T("الرابط ده مش مقبول — حط رابط فيديو يوتيوب (watch أو youtu.be أو Shorts) أو رابط مباشر بينتهي بـ .mp4","This link is not accepted — use a YouTube video link (watch, youtu.be or Shorts) or a direct link ending in .mp4"));return;}
+    row.video_url=url;row.theory_text=null;
+  }else{
+    const txt=(((document.getElementById("lsText")||{}).value)||"").trim();
+    if(!txt){say(T("اكتب نص النظرية أولًا.","Write the theory text first."));return;}
+    row.theory_text=txt;row.video_url=null;
+  }
+  const btn=document.getElementById("lsSave");if(btn){btn.disabled=true;btn.style.opacity=.6;}
+  try{
+    let r;
+    if(LS_EDIT_ID){r=await sbCall(SB.from("course_lessons").update(row).eq("id",LS_EDIT_ID));}
+    else{row.sort=lessons.length?Math.max.apply(null,lessons.map(l=>l.sort||0))+1:0;r=await sbCall(SB.from("course_lessons").insert(row));}
+    if(r.error){say(sbErrText(r.error));return;}
+  }catch(e){say(sbErrText(e));return;}
+  finally{if(btn){btn.disabled=false;btn.style.opacity=1;}}
+  LS_EDIT_ID=null;LS_DEL_ARM=null;
+  delete LS_DATA[c.sid];
+  lsRenderPanel();
+}
+async function lsMove(c,lessons,id,dir){
+  const i=lessons.findIndex(l=>l.id===id),j=i+dir;
+  if(i<0||j<0||j>=lessons.length)return;
+  try{
+    if((lessons[i].sort||0)===(lessons[j].sort||0)){
+      for(let k=0;k<lessons.length;k++)await sbCall(SB.from("course_lessons").update({sort:k}).eq("id",lessons[k].id));
+      await sbCall(SB.from("course_lessons").update({sort:j}).eq("id",lessons[i].id));
+      await sbCall(SB.from("course_lessons").update({sort:i}).eq("id",lessons[j].id));
+    }else{
+      await sbCall(SB.from("course_lessons").update({sort:lessons[j].sort}).eq("id",lessons[i].id));
+      await sbCall(SB.from("course_lessons").update({sort:lessons[i].sort}).eq("id",lessons[j].id));
+    }
+  }catch(e){}
+  delete LS_DATA[c.sid];
+  lsRenderPanel();
+}
+async function lsDelete(c,id){
+  try{
+    const r=await sbCall(SB.from("course_lessons").delete().eq("id",id));
+    if(r.error)console.error("[lesson-delete] failed:",r.error);
+  }catch(e){console.error("[lesson-delete] failed:",e);}
+  LS_DEL_ARM=null;
+  if(LS_EDIT_ID===id)LS_EDIT_ID=null;
+  delete LS_DATA[c.sid];
+  lsRenderPanel();
+}
+/* ---------------- teacher: student progress table (course_progress RPC) ---------------- */
+async function lsRenderProgress(c){
+  const pb=document.getElementById("tcProgBody");if(!pb)return;
+  if(!lsOnline()||!c.sid){pb.innerHTML="";return;}
+  pb.innerHTML=`<button class="btn sm" id="lsProgRefresh">${T("↻ تحديث تقدم الطلاب","↻ Refresh student progress")}</button><p class="small" style="margin-top:8px">${T("جارٍ التحميل من السيرفر…","Loading from the server…")}</p>`;
+  const rb0=document.getElementById("lsProgRefresh");if(rb0)rb0.onclick=()=>lsRenderProgress(c);
+  let rows=[];
+  try{
+    const r=await sbCall(SB.rpc("course_progress",{p_course:c.sid}));
+    if(!r.error&&r.data)rows=r.data;
+    else if(r.error)console.error("[course-progress] rpc failed:",r.error);
+  }catch(e){console.error("[course-progress] rpc failed:",e);}
+  const cur=document.getElementById("tcProgBody");if(!cur)return;
+  const cc=LS_TC_KEY?czByKey(LS_TC_KEY):null;
+  if(!cc||cc.sid!==c.sid)return;
+  cur.innerHTML=`<button class="btn sm" id="lsProgRefresh">${T("↻ تحديث تقدم الطلاب","↻ Refresh student progress")}</button>`
+    +(rows.length?`<div style="margin-top:8px">${rows.map(r=>`<div class="owrow"><span class="grow"><b>${escHTML(r.display_name||"")}</b></span><span class="chip l0">${AR(r.lessons_done||0)} / ${AR(r.lessons_total||0)} ${T("محاضرة","lectures")}</span><span class="chip l0">${r.exam_best==null?"—":AR(r.exam_best)+(LANG==="en"?"%":"٪")}</span>${r.certified?`<span class="chip l1">🎓 ✓</span>`:""}</div>`).join("")}</div>`
+    :`<p class="small" style="margin-top:8px">${T("لسه مفيش طلاب سجلوا تقدم في الكورس ده.","No students have recorded progress in this course yet.")}</p>`);
+  const rb=document.getElementById("lsProgRefresh");if(rb)rb.onclick=()=>lsRenderProgress(c);
+}
+(function(){
+  const cl=document.getElementById("lsTcClose");
+  if(cl)cl.onclick=()=>{const card=document.getElementById("tcLessonCard");if(card)card.style.display="none";LS_TC_KEY=null;};
+})();
+/* «المحاضرات» button on each custom course in the teacher's own list */
+const _rtmLs=renderTcMine;
+renderTcMine=function(){
+  _rtmLs();
+  try{
+    const m=document.getElementById("tcMine");if(!m)return;
+    m.querySelectorAll("[data-tcdel]").forEach(b=>{
+      const row=b.parentElement;if(!row||row.querySelector("[data-lsopen]"))return;
+      const c=myCourses().find(x=>x.id===+b.dataset.tcdel);
+      if(!c||c.type!=="custom")return;
+      const btn=document.createElement("button");
+      btn.className="btn sm primary";btn.dataset.lsopen=b.dataset.tcdel;
+      btn.textContent=T("المحاضرات","Lectures");
+      row.insertBefore(btn,b);
+      btn.onclick=()=>{const cc=myCourses().find(x=>x.id===+btn.dataset.lsopen);if(cc)lsOpenPanel(czKey(cc));};
+    });
+  }catch(e){}
+};
+</script>
+<script>
+"use strict";
+/* ================= ORGANIZATIONS PLATFORM — student side: course path, lesson views, certificates ================= */
+/* ---------------- custom course screen (student path) ---------------- */
+function lsRenderCustomCourse(c){
+  const body=document.getElementById("csBody");if(!body)return;
+  const back=document.getElementById("csBack");if(back)back.textContent=T("→ الرئيسية","← Home");
+  const mine=czMine(c);
+  body.innerHTML=`
+   <div class="card">
+     <div class="row between"><h2 style="margin:0">${escHTML(c.title||"")}</h2><span class="chip l1">${T("كورس متكامل","Integrated course")}</span></div>
+     ${c.org?`<p style="margin-top:6px"><b>${T("تقديم:","Presented by:")} ${escHTML(c.org)}</b></p>`:`<p class="small" style="margin-top:6px">${T("كورس من إعداد:","Course by:")} ${escHTML(c.byName||"")}</p>`}
+     ${c.desc?`<p style="margin-top:6px;line-height:1.85">${escHTML(c.desc)}</p>`:""}
+     <p class="small" style="margin-top:6px">${c.passH?`<span class="chip l1">${T("مقفول بكلمة سر","Password-locked")}</span>`:`<span class="chip l0">${T("بالكود فقط","Code only")}</span>`}</p>
+     ${mine?`<p class="small" style="margin-top:10px">${T("كود الانضمام اللي تبعته لطلابك:","The join code you send your students:")}</p><div class="czcode">${escHTML(c.code||"—")}</div><button class="btn block" id="csManage2" style="margin-top:8px">${T("إدارة الكورس في مساحة المنظمات","Manage the course in the Organizations workspace")}</button><button class="btn block" id="csLessons2" style="margin-top:8px">${T("محاضرات الكورس وتقدم الطلاب","Course lectures & student progress")}</button>`:""}
+     <div id="csCustomMain" style="margin-top:14px"><p class="small">${T("جارٍ تحميل محاضرات الكورس…","Loading the course lectures…")}</p></div>
+   </div>`;
+  const mg=document.getElementById("csManage2");if(mg)mg.onclick=()=>{showScreen("scr-teacher");czOpenManage(c.id);};
+  const lb=document.getElementById("csLessons2");if(lb)lb.onclick=()=>{showScreen("scr-teacher");lsOpenPanel(czKey(c));};
+  lsFillCustomCourse(c);
+}
+async function lsFillCustomCourse(c){
+  const main0=document.getElementById("csCustomMain");
+  if(!c.sid){
+    if(main0)main0.innerHTML=`<p class="small">${T("هذا الكورس غير محفوظ على السيرفر بعد — محاضراته وتقدمك بيتحفظوا على السيرفر، فاستنى لما يتزامن وافتحه من جديد.","This course is not saved on the server yet — its lectures and your progress live on the server, so wait until it syncs and open it again.")}</p>`;
+    return;
+  }
+  const d=await lsFetch(c.sid,false);
+  const main=document.getElementById("csCustomMain");
+  if(!main||CZ_CUR!==czKey(c)||LS_VIEW||QZ_TAKE||CERT_VIEW)return;
+  const total=d.lessons.length;
+  const doneN=d.lessons.filter(l=>d.prog[l.id]&&d.prog[l.id].completed).length;
+  const pct=total?Math.round(doneN/total*100):0;
+  const nextL=d.lessons.find(l=>!(d.prog[l.id]&&d.prog[l.id].completed));
+  main.innerHTML=`
+    <h3 style="margin:0">${T("تقدّمك في الكورس","Your progress in this course")}</h3>
+    <div class="czbar" style="margin-top:8px"><i style="width:${pct}%"></i></div>
+    <p class="small" style="margin-top:6px">${AR(doneN)} ${T("من","of")} ${AR(total)} ${T("محاضرات أكملتها — ","lectures completed — ")}${AR(pct)}${LANG==="en"?"%":"٪"}</p>
+    ${total?`<h3 style="margin-top:14px">${T("مسار المحاضرات — بالترتيب","Lecture path — in order")}</h3>
+    ${safeMap(d.lessons,(l,i)=>{
+      const p=d.prog[l.id]||{};const done=!!p.completed;const isNext=nextL&&nextL.id===l.id;
+      const state=done?`<span class="chip l0">${T("أكملتها ✓","Completed ✓")}</span>`:isNext?`<span class="chip l1">${T("التالية","Next")}</span>`:(l.kind==="video"&&(p.watched_pct||0)>0?`<span class="chip l0">${T("شاهدت ","Watched ")}${AR(p.watched_pct)}${LANG==="en"?"%":"٪"}</span>`:"");
+      return `<div class="owrow"><span class="czbadge ${done?"done":isNext?"next":""}">${done?"✓":AR(i+1)}</span><span class="grow"><b>${l.kind==="video"?"🎥":"📖"} ${escHTML(l.title||"")}</b> ${state}</span><button class="btn sm" data-lsopen2="${l.id}">${l.kind==="video"?T("شاهد المحاضرة","Watch the lecture"):T("اقرأ المحاضرة","Read the lecture")}</button></div>`;
+    }).join("")}`:`<p class="small" style="margin-top:8px">${T("المنظمة لسه ما ضافتش محاضرات للكورس ده.","The organization has not added lectures to this course yet.")}</p>`}`;
+  main.querySelectorAll("[data-lsopen2]").forEach(b=>{b.onclick=()=>{LS_VIEW={lessonId:b.dataset.lsopen2};lsRenderLessonView();window.scrollTo(0,0);};});
+}
+/* ---------------- lesson sub-views ---------------- */
+function lsCurrentLesson(){
+  const c=CZ_CUR?czByKey(CZ_CUR):null;
+  if(!c||!LS_VIEW||!c.sid)return null;
+  const d=LS_DATA[c.sid];
+  if(!d)return null;
+  const l=d.lessons.find(x=>x.id===LS_VIEW.lessonId);
+  return l?{c:c,l:l,d:d}:null;
+}
+function lsRenderLessonView(){
+  const body=document.getElementById("csBody");if(!body)return;
+  const ctx=lsCurrentLesson();
+  if(!ctx){
+    const c=CZ_CUR?czByKey(CZ_CUR):null;
+    if(c&&c.sid&&LS_VIEW){lsFetch(c.sid,false).then(()=>{if(LS_VIEW)lsRenderLessonView();}).catch(()=>{});body.innerHTML=`<div class="card"><p class="small">${T("جارٍ تحميل المحاضرة…","Loading the lecture…")}</p></div>`;return;}
+    LS_VIEW=null;renderCourseScreen();return;
+  }
+  if(ctx.l.kind==="video")lsRenderVideoView(ctx);
+  else lsRenderTheoryView(ctx);
+}
+function lsBackToPath(){
+  lsCleanupVideo(true);
+  LS_VIEW=null;
+  renderCourseScreen();
+  window.scrollTo(0,0);
+}
+/* ---- video lesson: YouTube IFrame API or a direct MP4, with real watch progress ---- */
+let LS_YT_API=null;
+function lsYtApiReady(){
+  if(window.YT&&YT.Player)return Promise.resolve();
+  if(LS_YT_API)return LS_YT_API;
+  LS_YT_API=new Promise(res=>{
+    let done=false;const fin=()=>{if(!done){done=true;res();}};
+    const prev=window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady=function(){try{if(typeof prev==="function")prev();}catch(e){}fin();};
+    if(!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')){
+      const s=document.createElement("script");s.src="https://www.youtube.com/iframe_api";document.head.appendChild(s);
+    }
+    setTimeout(fin,6000); /* API blocked → resolve anyway; the plain embed + manual fallback still work */
+  });
+  return LS_YT_API;
+}
+function lsRenderVideoView(ctx){
+  const c=ctx.c,l=ctx.l,d=ctx.d;
+  const body=document.getElementById("csBody");if(!body)return;
+  lsCleanupVideo(false);
+  const prog=d.prog[l.id]||{};
+  const kind=lsVideoKind(l.video_url);
+  LS_VID={sid:c.sid,lessonId:l.id,max:prog.watched_pct||0,lastSaved:prog.watched_pct||0,completed:!!prog.completed,doneToast:!!prog.completed,player:null,timer:null,videoEl:null,kind:kind?kind.type:null};
+  body.innerHTML=`<div class="card">
+    <button class="btn sm" id="lsBackPath">→ ${T("ارجع لمسار الكورس","Back to the course path")}</button>
+    <h2 style="margin-top:12px">🎥 ${escHTML(l.title||"")}</h2>
+    <div class="lsframe" id="lsFrame"></div>
+    <p class="small" style="margin-top:12px">${T("شاهدت ","You watched ")}<b id="lsWatchPct">${AR(LS_VID.max)}${LANG==="en"?"%":"٪"}</b>${T(" من المحاضرة"," of the lecture")}</p>
+    <div class="lsprog"><i id="lsWatchBar" style="width:${LS_VID.max}%"></i></div>
+    <p class="small" id="lsDoneLbl" style="margin-top:8px">${LS_VID.completed?T("أكملت هذه المحاضرة ✓","You completed this lecture ✓"):T("المحاضرة بتتعلم مكتملة عند مشاهدة ٩٠٪ منها على الأقل.","The lecture is marked complete once you have watched at least 90% of it.")}</p>
+    <button class="btn block" id="lsManualDone" style="margin-top:10px">${T("أكملت مشاهدة المحاضرة ✓","I finished watching this lecture ✓")}</button>
+    <p class="small" style="margin-top:8px">${T("لو الفيديو ما اشتغلش هنا، افتحه من الرابط ده وبعدين ارجع علّم الإتمام من الزر اللي فوق:","If the video does not play here, open it from this link and then mark completion with the button above:")} <a href="${escHTML(l.video_url||"#")}" target="_blank" rel="noopener" dir="ltr">${escHTML(l.video_url||"")}</a></p>
+  </div>`;
+  const bk=document.getElementById("lsBackPath");if(bk)bk.onclick=lsBackToPath;
+  const md=document.getElementById("lsManualDone");
+  if(md)md.onclick=()=>{if(!LS_VID)return;LS_VID.max=100;lsVidTick(100);};
+  const frame=document.getElementById("lsFrame");if(!frame)return;
+  if(kind&&kind.type==="mp4"){
+    frame.innerHTML=`<video id="lsVideoEl" controls playsinline src="${escHTML(l.video_url||"")}"></video>`;
+    const v=document.getElementById("lsVideoEl");
+    if(v){
+      LS_VID.videoEl=v;
+      v.addEventListener("timeupdate",()=>{if(v.duration&&isFinite(v.duration)&&v.duration>0)lsVidTick(Math.floor(100*v.currentTime/v.duration));});
+      v.addEventListener("ended",()=>lsVidTick(100));
+    }
+  }else if(kind&&kind.type==="yt"){
+    frame.innerHTML=`<iframe id="lsYtFrame" src="https://www.youtube-nocookie.com/embed/${kind.id}?enablejsapi=1&rel=0" allow="accelerometer; autoplay; encrypted-media; picture-in-picture" allowfullscreen title="${escHTML(l.title||"")}"></iframe>`;
+    lsYtSetup();
+  }else{
+    frame.innerHTML=`<p class="small" style="color:#fff;padding:16px;line-height:1.8">${T("رابط الفيديو ده مش قابل للعرض هنا — استخدم الرابط اللي تحت أو زر الإتمام اليدوي.","This video link cannot be embedded here — use the link below or the manual completion button.")}</p>`;
+  }
+}
+function lsYtSetup(){
+  lsYtApiReady().then(()=>{
+    if(!LS_VID||LS_VID.kind!=="yt")return;
+    if(!document.getElementById("lsYtFrame"))return;
+    if(window.YT&&YT.Player&&!LS_VID.player){
+      try{
+        LS_VID.player=new YT.Player("lsYtFrame",{events:{
+          onReady:()=>lsYtStartPoll(),
+          onStateChange:(e)=>{try{if(e.data===YT.PlayerState.ENDED)lsVidTick(100);}catch(_){}}
+        }});
+      }catch(e){}
+    }
+    lsYtStartPoll();
+  }).catch(()=>{});
+}
+function lsYtStartPoll(){
+  const v=LS_VID;if(!v||v.timer)return;
+  v.timer=setInterval(()=>{
+    const p=LS_VID&&LS_VID.player;
+    if(!p||typeof p.getCurrentTime!=="function"||typeof p.getDuration!=="function")return;
+    try{const dur=p.getDuration(),t=p.getCurrentTime();if(dur>0)lsVidTick(Math.floor(100*t/dur));}catch(e){}
+  },5000);
+}
+function lsVidTick(pct){
+  const v=LS_VID;if(!v)return;
+  pct=Math.max(0,Math.min(100,pct|0));
+  if(pct>v.max)v.max=pct;
+  const was=v.completed;
+  if(v.max>=90)v.completed=true;
+  const p=document.getElementById("lsWatchPct");if(p)p.textContent=AR(v.max)+(LANG==="en"?"%":"٪");
+  const b=document.getElementById("lsWatchBar");if(b)b.style.width=v.max+"%";
+  const d=LS_DATA[v.sid];
+  if(d){const ex=d.prog[v.lessonId]||{};ex.watched_pct=Math.max(ex.watched_pct||0,v.max);if(v.completed)ex.completed=true;d.prog[v.lessonId]=ex;}
+  if(v.completed&&!was){
+    const dl=document.getElementById("lsDoneLbl");if(dl)dl.textContent=T("أكملت هذه المحاضرة ✓","You completed this lecture ✓");
+    if(!v.doneToast){v.doneToast=true;if(typeof toast==="function")toast(T("أكملت المحاضرة ✓","Lecture completed ✓"));}
+    lsVidPersist();
+  }else if(v.max-v.lastSaved>=2){
+    lsVidPersist();
+  }
+}
+function lsVidPersist(){
+  const v=LS_VID;if(!v)return;
+  v.lastSaved=v.max;
+  lsSaveProgress(v.lessonId,v.max,v.completed);
+}
+function lsCleanupVideo(save){
+  const v=LS_VID;if(!v)return;
+  if(v.timer){clearInterval(v.timer);v.timer=null;}
+  if(save&&(v.max>(v.lastSaved||0)||v.completed))lsVidPersist();
+  if(v.player&&typeof v.player.destroy==="function"){try{v.player.destroy();}catch(e){}}
+  if(v.videoEl){try{v.videoEl.pause();}catch(e){}}
+  LS_VID=null;
+}
+/* ---- theory lesson ---- */
+function lsRenderTheoryView(ctx){
+  const c=ctx.c,l=ctx.l,d=ctx.d;
+  const body=document.getElementById("csBody");if(!body)return;
+  const done=!!(d.prog[l.id]&&d.prog[l.id].completed);
+  const paras=String(l.theory_text||"").split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p style="line-height:1.95;margin:0 0 12px">${escHTML(x).replace(/\n/g,"<br>")}</p>`).join("");
+  body.innerHTML=`<div class="card">
+    <button class="btn sm" id="lsBackPath">→ ${T("ارجع لمسار الكورس","Back to the course path")}</button>
+    <h2 style="margin-top:12px">📖 ${escHTML(l.title||"")}</h2>
+    <div style="margin-top:10px">${paras||`<p class="small">${T("المحاضرة دي من غير نص مكتوب.","This lecture has no written text.")}</p>`}</div>
+    <button class="btn primary block" id="lsTheoryDone" style="margin-top:16px">${done?T("قرأتها — مكتملة ✓","Read — completed ✓"):T("قرأت المحاضرة — إتمام الدرس ✓","I read the lecture — complete the lesson ✓")}</button>
+  </div>`;
+  const bk=document.getElementById("lsBackPath");if(bk)bk.onclick=lsBackToPath;
+  const dn=document.getElementById("lsTheoryDone");
+  if(dn)dn.onclick=async()=>{
+    dn.disabled=true;
+    await lsSaveProgress(l.id,100,true);
+    const dd=LS_DATA[c.sid];if(dd)dd.prog[l.id]={user_id:SESSION.uid,lesson_id:l.id,watched_pct:100,completed:true};
+    if(typeof toast==="function")toast(T("أكملت المحاضرة ✓","Lecture completed ✓"));
+    lsBackToPath();
+  };
+}
+/* ---------------- certificate: eligibility card, issue, view, PDF, «شهاداتي» ---------------- */
+async function certRenderSection(c){
+  const body=document.getElementById("csBody");if(!body)return;
+  const old=document.getElementById("csCert");if(old)old.remove();
+  if(QZ_TAKE||LS_VIEW||CERT_VIEW)return;
+  if(czMine(c)||isOwnerSession()||!czEnrolled(czKey(c)))return;
+  const sec=document.createElement("div");
+  sec.id="csCert";sec.className="card";sec.style.marginTop="12px";
+  if(!c.sid){
+    sec.innerHTML=`<h2 style="margin-top:0">🎓 ${T("شهادة إتمام الكورس","Course completion certificate")}</h2><p class="small">${T("شهادات الكورسات المتكاملة بتتصدر من السيرفر — الكورس ده لسه مش متزامن مع السيرفر.","Integrated-course certificates are issued by the server — this course has not synced with the server yet.")}</p>`;
+    body.appendChild(sec);
+    return;
+  }
+  sec.innerHTML=`<h2 style="margin-top:0">🎓 ${T("شهادة إتمام الكورس","Course completion certificate")}</h2><p class="small">${T("جارٍ التحميل…","Loading…")}</p>`;
+  body.appendChild(sec);
+  const d=await lsFetch(c.sid,false);
+  const cur=document.getElementById("csCert");
+  if(!cur||CZ_CUR!==czKey(c)||QZ_TAKE||LS_VIEW||CERT_VIEW)return;
+  if(d.cert){
+    cur.innerHTML=`<h2 style="margin-top:0">🎓 ${T("شهادة إتمام الكورس","Course completion certificate")}</h2>
+      <p style="margin-top:6px">${T("مبروك — أنت حاصل على شهادة إتمام الكورس ده من المنصة.","Congratulations — you hold this course's platform certificate of completion.")}</p>
+      <p class="small" style="margin-top:4px">${T("كود التحقق:","Verification code:")} <b dir="ltr">${escHTML(d.cert.code||"")}</b>${d.cert.score!=null?` · ${T("النتيجة:","Score:")} ${AR(d.cert.score)}${LANG==="en"?"%":"٪"}`:""}</p>
+      <button class="btn primary block" id="certViewBtn" style="margin-top:10px">${T("عرض الشهادة","View the certificate")}</button>`;
+    const vb=document.getElementById("certViewBtn");
+    if(vb)vb.onclick=()=>{CERT_VIEW={cert:d.cert,course:c};lsRenderCertView();window.scrollTo(0,0);};
+    return;
+  }
+  const total=d.lessons.length;
+  const doneN=d.lessons.filter(l=>d.prog[l.id]&&d.prog[l.id].completed).length;
+  const missing=[];
+  if(total>0&&doneN<total)missing.push(T("باقي ","Still remaining: ")+AR(total-doneN)+T(" محاضرة"," lectures"));
+  let hasFinal=false,finalPassed=false;
+  try{
+    const qd=await qzFetch(c.sid,false);
+    const finals=qd.quizzes.filter(q=>q.is_final);
+    hasFinal=finals.length>0;
+    if(hasFinal){
+      finalPassed=finals.some(q=>qd.results.some(r=>r.quiz_id===q.id&&r.user_id===SESSION.uid&&r.total&&Math.round(r.score*100/r.total)>=50));
+    }
+  }catch(e){}
+  if(hasFinal&&!finalPassed)missing.push(T("لسه مخلصتش اختبار نهاية الكورس بنجاح (٥٠٪ على الأقل)","You have not passed the end-of-course exam yet (at least 50%)"));
+  if(missing.length){
+    cur.innerHTML=`<h2 style="margin-top:0">🎓 ${T("شهادة إتمام الكورس","Course completion certificate")}</h2>
+      <p style="margin-top:6px">${T("الشهادة بتتفتح لما تخلّص شروط الكورس — اللي ناقصك دلوقتي:","The certificate unlocks once you meet the course requirements — what is still missing:")}</p>
+      <ul class="thtopics" style="margin-top:6px">${missing.map(m=>`<li>${escHTML(m)}</li>`).join("")}</ul>`;
+    return;
+  }
+  cur.innerHTML=`<h2 style="margin-top:0">🎓 ${T("شهادة إتمام الكورس","Course completion certificate")}</h2>
+    <p style="margin-top:6px">${T("أكملت كل محاضرات الكورس","You completed every lecture in this course")}${hasFinal?T(" ونجحت في اختبار نهاية الكورس"," and passed the end-of-course exam"):""}${T(" — شهادتك جاهزة."," — your certificate is ready.")}</p>
+    <button class="btn primary block" id="certIssueBtn" style="margin-top:10px">${T("احصل على شهادتك 🎓","Get your certificate 🎓")}</button>
+    <p class="small" id="certMsg" style="margin-top:6px;color:var(--red);font-weight:700"></p>`;
+  const ib=document.getElementById("certIssueBtn");
+  if(ib)ib.onclick=()=>certIssue(c,ib);
+}
+async function certIssue(c,btn){
+  const msg=document.getElementById("certMsg");const say=t=>{if(msg)msg.textContent=t;};
+  if(btn)btn.disabled=true;
+  try{
+    const r=await sbCall(SB.rpc("issue_certificate",{p_course:c.sid}));
+    if(r.error){
+      const m=String((r.error&&r.error.message)||r.error);
+      if(/lessons_incomplete/i.test(m))say(T("لسه ما خلصتش كل محاضرات الكورس — كمّل المحاضرات الباقية الأول.","You have not completed all the course lectures yet — finish the remaining lectures first."));
+      else if(/final_not_passed/i.test(m))say(T("لسه ما نجحتش في اختبار نهاية الكورس (محتاج ٥٠٪ على الأقل) — حلّ الاختبار النهائي وعدّيه الأول.","You have not passed the end-of-course exam yet (you need at least 50%) — take the final exam and pass it first."));
+      else say(sbErrText(r.error));
+      return;
+    }
+    const row=Array.isArray(r.data)?r.data[0]:r.data;
+    delete LS_DATA[c.sid];
+    const d=await lsFetch(c.sid,true);
+    if(d.cert){CERT_VIEW={cert:d.cert,course:c};lsRenderCertView();window.scrollTo(0,0);return;}
+    if(row&&(row.code||row.score!=null)){
+      CERT_VIEW={cert:{user_id:SESSION.uid,course_id:c.sid,code:row.code||"",score:row.score!=null?row.score:null,issued_at:new Date().toISOString()},course:c};
+      lsRenderCertView();window.scrollTo(0,0);return;
+    }
+    say(T("اتعملت الشهادة — ارجع افتح الكورس من جديد عشان تعرضها.","The certificate was issued — reopen the course to view it."));
+  }catch(e){
+    const m=String((e&&e.message)||e);
+    if(/lessons_incomplete/i.test(m))say(T("لسه ما خلصتش كل محاضرات الكورس — كمّل المحاضرات الباقية الأول.","You have not completed all the course lectures yet — finish the remaining lectures first."));
+    else if(/final_not_passed/i.test(m))say(T("لسه ما نجحتش في اختبار نهاية الكورس (محتاج ٥٠٪ على الأقل) — حلّ الاختبار النهائي وعدّيه الأول.","You have not passed the end-of-course exam yet (you need at least 50%) — take the final exam and pass it first."));
+    else say(sbErrText(e));
+  }
+  finally{if(btn)btn.disabled=false;}
+}
+function certCardHTML(cert,course){
+  const a=(typeof curAccount==="function")?curAccount():null;
+  const myName=cert.user_id===SESSION.uid?(((a&&((LANG==="en"?(a.nameEn||a.name):a.name)))||"")):"";
+  const title=course?(course.title||""):(cert._courseTitle||"");
+  const org=course?(course.org||""):(cert._courseOrg||"");
+  const dateStr=cert.issued_at?qzDateStr(cert.issued_at):"";
+  return `<div class="certcard" id="certCardEl">
+    <img class="certlogo" src="assets/logo.png" alt="">
+    <p style="margin:2px 0 0;font-weight:700">${T("مختبر الحدس الفيزيائي","Physics Intuition Lab")}</p>
+    <h2 style="margin:10px 0 2px">${T("شهادة إتمام","Certificate of Completion")}</h2>
+    <p class="small">${T("نشهد بأن","This is to certify that")}</p>
+    <div class="certname">${escHTML(myName||T("الطالب","The student"))}</div>
+    <p>${T("أتمّ بنجاح كورس","has successfully completed the course")}</p>
+    <p style="font-weight:800;font-size:1.14rem">${escHTML(title)}</p>
+    ${org?`<p class="small">${T("تقديم:","Presented by:")} ${escHTML(org)}</p>`:""}
+    ${cert.score!=null?`<p>${T("النتيجة:","Score:")} <b>${AR(cert.score)}${LANG==="en"?"%":"٪"}</b></p>`:""}
+    <p class="small">${T("تاريخ الإصدار:","Issue date:")} ${escHTML(dateStr)}</p>
+    <p class="small">${T("كود التحقق:","Verification code:")} <b dir="ltr">${escHTML(cert.code||"")}</b></p>
+  </div>`;
+}
+function lsRenderCertView(){
+  const body=document.getElementById("csBody");if(!body||!CERT_VIEW)return;
+  const back=document.getElementById("csBack");if(back)back.textContent=T("→ الرئيسية","← Home");
+  body.innerHTML=certCardHTML(CERT_VIEW.cert,CERT_VIEW.course)
+    +`<div class="row" style="gap:8px;margin-top:12px"><button class="btn grow" id="certBack">${T("رجوع","Back")}</button><button class="btn primary grow" id="certPdf">${T("تحميل الشهادة PDF","Download the certificate (PDF)")}</button></div>`;
+  const bk=document.getElementById("certBack");
+  if(bk)bk.onclick=()=>{
+    const course=CERT_VIEW.course;const key=course?czKey(course):null;
+    CERT_VIEW=null;
+    if(key){CZ_CUR=key;try{sessionStorage.setItem("il_course_key",key);}catch(e){}if(currentScreen!=="scr-course")showScreen("scr-course");else renderCourseScreen();}
+    else showScreen("scr-courses");
+  };
+  const pf=document.getElementById("certPdf");
+  if(pf)pf.onclick=()=>certDownloadPdf();
+}
+/* certificate PDF — the same stage + html2canvas + jsPDF mechanism as the theory PDFs */
+async function certDownloadPdf(){
+  const el=document.getElementById("certCardEl");if(!el)return;
+  try{
+    if(!(window.html2canvas&&window.jspdf&&window.jspdf.jsPDF)){
+      await new Promise(res=>{
+        let n=0;const done=()=>{if(++n>=2)res();};
+        const s1=document.createElement("script");s1.src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js";s1.onload=done;s1.onerror=done;document.head.appendChild(s1);
+        const s2=document.createElement("script");s2.src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";s2.onload=done;s2.onerror=done;document.head.appendChild(s2);
+        setTimeout(res,8000);
+      });
+    }
+    if(!(window.html2canvas&&window.jspdf&&window.jspdf.jsPDF)){
+      if(typeof toast==="function")toast(T("تعذّر تجهيز مكوّنات إنشاء ملف PDF — أعد تحميل الصفحة وحاول مرة أخرى.","The PDF components could not be prepared — reload the page and try again."));
+      return;
+    }
+    if(typeof toast==="function")toast(T("جارٍ تجهيز ملف PDF…","Preparing your PDF…"),true);
+    let st=document.getElementById("pdfStage");
+    if(!st){st=document.createElement("div");st.id="pdfStage";document.body.appendChild(st);}
+    st.setAttribute("dir",LANG==="en"?"ltr":"rtl");
+    st.innerHTML=`<section class="pdf-exp">${el.outerHTML}</section>`;
+    const sec=st.querySelector(".pdf-exp");
+    const canvas=await html2canvas(sec,{scale:2,backgroundColor:"#ffffff",useCORS:true,logging:false});
+    const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"landscape",compress:true});
+    const M=12,PW=297-2*M,PH=210-2*M;
+    const w=Math.min(PW,canvas.width*PH/canvas.height),h=w*canvas.height/canvas.width;
+    doc.addImage(canvas.toDataURL("image/jpeg",0.96),"JPEG",(297-w)/2,(210-h)/2,w,h);
+    doc.save("intuition-lab-certificate.pdf");
+    st.innerHTML="";
+    if(typeof toast==="function")toast(T("تم تنزيل الشهادة PDF ✓","Your certificate PDF has been downloaded ✓"));
+  }catch(e){
+    if(typeof toast==="function")toast(T("حدثت مشكلة أثناء توليد ملف PDF — حاول مرة أخرى.","Something went wrong while generating the PDF — please try again."));
+  }
+}
+/* «شهاداتي» in the courses home area */
+async function certsRenderMine(){
+  const box=document.getElementById("myCerts");if(!box)return;
+  const signed=(typeof SESSION!=="undefined")&&(SESSION.mode==="user"||SESSION.mode==="owner");
+  if(!signed||!lsOnline()){box.innerHTML="";return;}
+  let rows=[];
+  try{
+    const r=await sbCall(SB.from("certificates").select("*").order("issued_at",{ascending:false}).limit(100));
+    if(!r.error&&r.data)rows=r.data.filter(x=>x.user_id===SESSION.uid);
+  }catch(e){}
+  if(!rows.length){box.innerHTML="";return;}
+  box.innerHTML=`<h2 class="secttl">🎓 ${T("شهاداتي","My certificates")}</h2>`+rows.map((ct,i)=>{
+    const c=czByKey("S:"+ct.course_id);
+    const title=c?(c.title||""):T("كورس","Course");
+    return `<div class="card"><div class="row between"><b>${escHTML(title)}</b><span class="chip" dir="ltr">${escHTML(ct.code||"")}</span></div><p class="small" style="margin-top:4px">${escHTML(qzDateStr(ct.issued_at))}${ct.score!=null?` · ${T("النتيجة:","Score:")} ${AR(ct.score)}${LANG==="en"?"%":"٪"}`:""}</p><button class="btn block" data-certview="${i}" style="margin-top:8px">${T("عرض الشهادة","View the certificate")}</button></div>`;
+  }).join("");
+  box.querySelectorAll("[data-certview]").forEach(b=>{b.onclick=()=>{
+    const ct=rows[+b.dataset.certview];
+    const c=czByKey("S:"+ct.course_id);
+    CERT_VIEW={cert:ct,course:c||null};
+    if(c){CZ_CUR=czKey(c);try{sessionStorage.setItem("il_course_key",CZ_CUR);}catch(e){}}
+    showScreen("scr-course");
+    lsRenderCertView();
+  };});
+}
+/* ---------------- wiring into the existing flows (wrappers only) ---------------- */
+const _rcsLs=renderCourseScreen;
+renderCourseScreen=function(){
+  if(CERT_VIEW){lsRenderCertView();return;}
+  if(LS_VIEW){lsRenderLessonView();return;}
+  const c=CZ_CUR?czByKey(CZ_CUR):null;
+  if(c&&c.type==="custom"&&!QZ_TAKE&&(czMine(c)||isOwnerSession()||czEnrolled(czKey(c)))){
+    lsRenderCustomCourse(c);
+    try{qzRenderCourseSection();}catch(e){}
+    try{certRenderSection(c);}catch(e){}
+    return;
+  }
+  _rcsLs();
+};
+const _ocLs=openCourse;
+openCourse=function(arg){
+  try{lsCleanupVideo(false);}catch(e){}
+  LS_VIEW=null;CERT_VIEW=null;
+  _ocLs(arg);
+};
+const _ssLs=showScreen;
+showScreen=function(id){
+  if(id==="scr-theory"){ /* the theory index now lives inside the experiments screen */
+    _ssLs("scr-exps");
+    try{setExpsPane("th");}catch(e){}
+    return;
+  }
+  if(id!=="scr-course"){
+    try{lsCleanupVideo(true);}catch(e){}
+    LS_VIEW=null;CERT_VIEW=null;
+  }
+  _ssLs(id);
+  try{
+    if(id==="scr-courses"){czZone();certsRenderMine();}
+    if(id==="scr-exps")setExpsPane(EXPS_PANE);
+  }catch(e){}
+};
+const _rtsLs=renderTeacherSpace;
+renderTeacherSpace=function(openId){_rtsLs(openId);try{orgLabels();}catch(e){}};
+const _alLs=applyLang;
+applyLang=function(l){
+  _alLs(l);
+  try{
+    orgLabels();
+    if(currentScreen==="scr-teacher"&&LS_TC_KEY){const card=document.getElementById("tcLessonCard");if(card&&card.style.display!=="none")lsRenderPanel();}
+    if(currentScreen==="scr-courses")certsRenderMine();
+  }catch(e){}
+};
+(function wireOrgNav(){
+  const be=document.getElementById("expTabExps"),bt=document.getElementById("expTabTh");
+  if(be)be.onclick=()=>setExpsPane("exps");
+  if(bt)bt.onclick=()=>setExpsPane("th");
+  document.querySelectorAll("[data-thpane]").forEach(b=>b.addEventListener("click",()=>setExpsPane("th")));
+  try{orgLabels();coursesChrome();}catch(e){}
+})();
+</script>
+
 <style>
 /* ===== ELEVATION — SITE-WIDE DESIGN SYSTEM (final polish layer) =====
    One token set consumed by every screen, appended last so it refines —
