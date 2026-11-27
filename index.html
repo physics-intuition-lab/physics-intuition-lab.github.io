@@ -523,7 +523,7 @@ html[data-accent="nature"]:not([data-theme="light"]){--teal:#63c873;--teal-d:#9a
 #printSheet{display:none}
 @media print{
   body{padding:0;background:#fff;color:#000}
-  .bnav,.noprint{display:none!important}
+  .bnav,.noprint,#infoFab{display:none!important}
   .screen{display:none!important}
   #printSheet{display:block!important;padding:6mm 4mm;font-size:11.5pt;line-height:1.75}
   #printSheet h1{font-size:19pt;border-bottom:3px solid #0b766e;padding-bottom:8px}
@@ -626,9 +626,23 @@ body.auth{padding-bottom:20px}
 .scell.got .sd{color:rgba(255,255,255,.75)}
 .scell.got .sm{color:#fff}
 .scell.today{border-color:var(--amber);box-shadow:inset 0 0 0 2px var(--amber)}
-/* ===== INFO (?) BUTTON ON THE LOGIN PAGE + ABOUT SCREEN ===== */
+/* ===== INFO (?) BUTTON ON THE LOGIN PAGE + ABOUT SCREEN =====
+   A FLOATING button: position:fixed at the bottom-start corner of the
+   viewport, shown on the login screen only. It MUST stay a direct child
+   of <body>, outside every .screen: .screen.on runs the scrIn entrance
+   animation (transform:translateY), which makes the section a containing
+   block for fixed descendants — inside the section, "fixed" resolved
+   against the full-height login page and the button sat stuck at the
+   page's bottom instead of floating. As a body child no ancestor can
+   re-anchor it, so it floats over the page at every scroll position.
+   Visibility: hidden by default; the .fabon class (kept in sync with
+   #scr-login's .on state by a MutationObserver next to its click
+   wiring) shows it on the login screen only. The login wrap keeps a
+   generous bottom padding so the floating button never covers the
+   login card's text or the "Made by" line when scrolled to the end. */
 #scr-login .wrap{padding-bottom:118px}
-.infofab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);inset-inline-start:12px;z-index:55;display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px;color:var(--teal-d);font-weight:700;min-height:0}
+.infofab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 16px);inset-inline-start:12px;z-index:55;display:none;flex-direction:column;align-items:center;gap:3px;background:none;border:none;padding:4px;color:var(--teal-d);font-weight:700;min-height:0;cursor:pointer}
+.infofab.fabon{display:flex}
 .infofab .q{width:54px;height:54px;border-radius:50%;background:var(--surface);border:2px solid var(--teal);color:var(--teal-d);font-size:1.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.22);line-height:1;transition:transform .12s ease}
 .infofab .cap{font-size:.72rem;background:var(--surface);border:1px solid var(--line);padding:1px 8px;border-radius:999px;box-shadow:var(--shadow)}
 .infofab:active .q{transform:scale(.93)}
@@ -1077,6 +1091,14 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
 <div class="guestbar" id="guestBar"></div>
 <div class="guesttoast" id="guestToast"></div>
 <div class="streaktoast" id="streakToast" role="status"></div>
+<!-- Floating "About" button for the LOGIN screen only. It lives directly
+     under <body> — outside every .screen — so no transformed/animated
+     ancestor can turn its position:fixed into page-anchored positioning;
+     it floats at the viewport's bottom-start corner at all scroll depths. -->
+<button class="infofab" id="infoFab" type="button" aria-label="عن مختبر الحدس الفيزيائي">
+  <span class="q" aria-hidden="true">؟</span>
+  <span class="cap" data-i18n="info_fab">عن الموقع</span>
+</button>
 <section class="screen on" id="scr-login">
   <div class="wrap">
     <div class="brandlock">
@@ -1191,10 +1213,6 @@ html[dir="ltr"] .sc-ribbon{transform:rotate(45deg)}
         <p class="small" style="margin-top:8px" data-i18n="auth_guest_d">الزائر يطّلع على المختبر لمدة ٥ دقائق فقط، ومن غير أي حفظ للتقدم. أنشئ حسابًا ليُحفظ تقدمك ورتبتك وترجع لهما في كل دخول.</p>
       </div>
     </div>
-    <button class="infofab" id="infoFab" type="button" aria-label="عن مختبر الحدس الفيزيائي">
-      <span class="q" aria-hidden="true">؟</span>
-      <span class="cap" data-i18n="info_fab">عن الموقع</span>
-    </button>
     <p class="madeby" dir="ltr">Made by Mohamed Nader Lotfy Abouelnaga</p>
   </div>
 </section>
@@ -2189,6 +2207,12 @@ function fmtVal(v,unit){const d=(unit==="مم"||unit==="بيكومتر"||unit===
    a value like 1.5 atm must never be rounded up to "2" in a result line,
    a marker label or an axis tick, in duels or anywhere else */
 return (Number.isInteger(v)?v:Math.round(v*100)/100)+" "+unit;}
+/* THE VALUE SHOWN IS THE VALUE SCORED: every estimation readout in the app
+   prints the player's guess through fmtVal, so before any scoring the guess
+   is quantized to exactly the number fmtVal prints for that unit. A guess
+   whose displayed value equals the truth then scores exactly 100, and the
+   reveal text and the «ليه؟» numbers quote this same quantized guess. */
+function qVal(v,unit){const d=(unit==="مم"||unit==="بيكومتر"||unit==="أنجستروم"||unit==="ثانية"||unit==="درجة (2θ)")?1:0;if(d)return +v.toFixed(1);if(v!==0&&Math.abs(v)<1)return Math.round(v*1000)/1000;return Math.round(v*100)/100;}
 
 /* ================= NAVIGATION ================= */
 let currentScreen="scr-login";
@@ -3129,7 +3153,7 @@ function startMarker(exp){
       if(running)return;running=true;setPhase("run");$("#cf").disabled=true;$("#rg").disabled=true;
       const t0=performance.now();
       const step=t=>{const a=clamp((t-t0)/runMs(1500),0,1);draw(a,true);if(a<1)window.__raf=requestAnimationFrame(step);
-        else{const guessVal=exp.min+guessPct*(exp.max-exp.min);
+        else{const guessVal=qVal(exp.min+guessPct*(exp.max-exp.min),exp.unit);
           let sc=scoreFromErr(Math.abs(guessVal-trueVal)/(exp.max-exp.min));
           /* daily "combo" modifier: a close guess (80+) that follows
              another close guess multiplies this round's points */
@@ -3653,6 +3677,11 @@ function startUnits(exp){
     $("#cf").onclick=()=>{
       if(running)return;running=true;setPhase("run");
       $("#cf").disabled=true;$("#rg").disabled=true;
+      /* the value shown is the value scored: the readout prints fmtR(guess) —
+         rounded to this round's display precision (e.g. 24.5 shows as 25) —
+         so the guess is quantized to that exact precision BEFORE the reveal
+         draw, the scoring and the «ليه؟» explanation all use it */
+      guess=r.dec?(+guess.toFixed(r.dec)):Math.round(guess);$("#rg").value=guess;
       const t0=performance.now();
       const step=t=>{const a=clamp((t-t0)/(r.revDur||1300),0,1);r.draw(ctx,a,guess);
         if(a<1)window.__raf=requestAnimationFrame(step);
@@ -3835,6 +3864,7 @@ function startCircuit(exp){
     sceneDrag($("#cv"),{get:()=>guess,set:v=>{guess=Math.round(v/0.05)*0.05;$("#rg").value=guess;upd();},min:0,max:5,off:()=>running});
     $("#cf").onclick=()=>{
       if(running)return;running=true;setPhase("run");$("#cf").disabled=true;$("#rg").disabled=true;
+      guess=+guess.toFixed(2); /* the value shown is the value scored: the readout prints toFixed(2) */
       const t0=performance.now();
       const step=t=>{draw((t-t0)/1000,true);if(t-t0<1600)window.__raf=requestAnimationFrame(step);
         else{const sc=scoreFromErr(Math.abs(guess-I)/5);scores.push(sc);
@@ -4082,6 +4112,7 @@ function startPhoto(exp){
 
   $("#cf").onclick=()=>{
     if(photoRunning)return;photoRunning=true;
+    guessKE=+guessKE.toFixed(2); /* the value shown is the value scored: the readout prints toFixed(2) */
     $("#cf").disabled=true;$("#rg").disabled=true;setPhase("run");
     $$("#expStage .opt").forEach(x=>{x.disabled=true;});
     $("#playZone").style.display="block";
@@ -4324,7 +4355,7 @@ function startFringe(exp){
     const t0=performance.now();
     const step=t=>{const a=clamp((t-t0)/(kind==="photon"?2600:1600),0,1);draw(a,true);
       if(a<1)window.__raf=requestAnimationFrame(step);
-      else{const guessVal=cfg.min+guessPct*(cfg.max-cfg.min);
+      else{const guessVal=qVal(cfg.min+guessPct*(cfg.max-cfg.min),cfg.unit);
         /* photon (#53): the accumulated pattern is symmetric about the centre,
            so the first side peak stands at Δy on BOTH sides — the prediction is
            scored against whichever first side peak it is closer to */
@@ -4408,11 +4439,11 @@ function startDecay(exp){
     const t0=performance.now();
     const step=t=>{const a=clamp((t-t0)/2200,0,1);draw(a,true);
       if(a<1)window.__raf=requestAnimationFrame(step);
-      else{const guessVal=axis.min+guessPct*(axis.max-axis.min);
+      else{const guessVal=qVal(axis.min+guessPct*(axis.max-axis.min),axis.unit);
         const sc=scoreFromErr(Math.abs(guessVal-trueVal)/(axis.max-axis.min));
         decayFinish(exp,sc,carbon?
-          (LANG==="en"?`The artefact's true age ≈ <b>${AR(trueVal)} years</b>. <b>Why?</b> The remaining carbon-14 is ${remainPct.toFixed(1)}% of the living level, and the number of half-lives in that fraction is log₂(100 ÷ ${remainPct.toFixed(1)}) = ${NV(Math.log2(100/remainPct))}, so the age = 5730 × ${NV(Math.log2(100/remainPct))} ≈ ${AR(trueVal)} years. Your prediction was ${AR(Math.round(guessVal))} years${guessVal>trueVal*1.15?` — an age that large would have required only ${NV(100*Math.pow(.5,guessVal/5730),1)}% remaining, less than the measured ${remainPct.toFixed(1)}%, so the true age had to be younger`:guessVal<trueVal*0.85?` — an age that small would have left ${NV(100*Math.pow(.5,guessVal/5730),1)}% remaining, more than the measured ${remainPct.toFixed(1)}%, so the true age had to be older`:` — very close: you counted the halvings correctly`}.`:`عمر القطعة الحقيقي ≈ <b>${AR(trueVal)} سنة</b>. <b>ليه؟</b> الكربون-14 المتبقي ${remainPct.toFixed(1)}٪ من مستوى العينة الحية، وعدد أعمار النصف اللي في النسبة دي = log₂(100 ÷ ${remainPct.toFixed(1)}) = ${NV(Math.log2(100/remainPct))}، فالعمر = 5730 × ${NV(Math.log2(100/remainPct))} ≈ ${AR(trueVal)} سنة. توقعك كان ${AR(Math.round(guessVal))} سنة${guessVal>trueVal*1.15?` — وعمر بالحجم ده كان هيتطلب متبقي ${NV(100*Math.pow(.5,guessVal/5730),1)}٪ بس، أقل من المقاس ${remainPct.toFixed(1)}٪، فالعمر الحقيقي لازم يكون أصغر`:guessVal<trueVal*0.85?` — وعمر بالحجم ده كان هيسيب متبقي ${NV(100*Math.pow(.5,guessVal/5730),1)}٪، أكتر من المقاس ${remainPct.toFixed(1)}٪، فالعمر الحقيقي لازم يكون أكبر`:` — قريب جدًا: عدّيت التنصيفات صح`}.`):
-          (LANG==="en"?`The true remaining amount is <b>${remainPct.toFixed(0)}%</b> and your prediction was ${AR(Math.round(guessVal))}%. <b>Why?</b> After ${NV(hlCount,1)} half-lives the remaining fraction = (1/2)^${NV(hlCount,1)} = ${NV(remainPct,1)}% — every half-life halves what remains; this is an exponential curve, not a straight line${guessVal>remainPct*1.2?`, and your higher estimate suggests linear thinking: decay does not subtract a fixed amount each period, it halves`:guessVal<remainPct*0.8?`, and your lower estimate overshot the halving: even after several half-lives a real fraction always remains — it never reaches zero`:` — and your estimate tracked the halvings correctly`}.`:`المتبقي الحقيقي <b>${remainPct.toFixed(0)}٪</b> وتوقعك ${AR(Math.round(guessVal))}٪. <b>ليه؟</b> بعد ${NV(hlCount,1)} عمر نصف النسبة المتبقية = (1/2)^${NV(hlCount,1)} = ${NV(remainPct,1)}٪ — كل عمر نصف بينصّف المتبقي مهما كان؛ ده منحنى أسي مش خطي${guessVal>remainPct*1.2?`، وتوقعك الأعلى بيوحي بتفكير خطي: الاضمحلال لا يطرح مقدارًا ثابتًا كل فترة، بل يُنصّف`:guessVal<remainPct*0.8?`، وتوقعك الأقل بالغ في التنصيف: حتى بعد أعمار نصف كتير بيتبقى كسر حقيقي دايمًا — لا يصل لصفر أبدًا`:`، وتوقعك تتبع التنصيفات صح`}.`),carbon,remainPct);}};
+          (LANG==="en"?`The artefact's true age ≈ <b>${AR(trueVal)} years</b>. <b>Why?</b> The remaining carbon-14 is ${remainPct.toFixed(1)}% of the living level, and the number of half-lives in that fraction is log₂(100 ÷ ${remainPct.toFixed(1)}) = ${NV(Math.log2(100/remainPct))}, so the age = 5730 × ${NV(Math.log2(100/remainPct))} ≈ ${AR(trueVal)} years. Your prediction was ${fmtVal(guessVal,axis.unit)}${guessVal>trueVal*1.15?` — an age that large would have required only ${NV(100*Math.pow(.5,guessVal/5730),1)}% remaining, less than the measured ${remainPct.toFixed(1)}%, so the true age had to be younger`:guessVal<trueVal*0.85?` — an age that small would have left ${NV(100*Math.pow(.5,guessVal/5730),1)}% remaining, more than the measured ${remainPct.toFixed(1)}%, so the true age had to be older`:` — very close: you counted the halvings correctly`}.`:`عمر القطعة الحقيقي ≈ <b>${AR(trueVal)} سنة</b>. <b>ليه؟</b> الكربون-14 المتبقي ${remainPct.toFixed(1)}٪ من مستوى العينة الحية، وعدد أعمار النصف اللي في النسبة دي = log₂(100 ÷ ${remainPct.toFixed(1)}) = ${NV(Math.log2(100/remainPct))}، فالعمر = 5730 × ${NV(Math.log2(100/remainPct))} ≈ ${AR(trueVal)} سنة. توقعك كان ${fmtVal(guessVal,axis.unit)}${guessVal>trueVal*1.15?` — وعمر بالحجم ده كان هيتطلب متبقي ${NV(100*Math.pow(.5,guessVal/5730),1)}٪ بس، أقل من المقاس ${remainPct.toFixed(1)}٪، فالعمر الحقيقي لازم يكون أصغر`:guessVal<trueVal*0.85?` — وعمر بالحجم ده كان هيسيب متبقي ${NV(100*Math.pow(.5,guessVal/5730),1)}٪، أكتر من المقاس ${remainPct.toFixed(1)}٪، فالعمر الحقيقي لازم يكون أكبر`:` — قريب جدًا: عدّيت التنصيفات صح`}.`):
+          (LANG==="en"?`The true remaining amount is <b>${remainPct.toFixed(0)}%</b> and your prediction was ${fmtVal(guessVal,axis.unit)}. <b>Why?</b> After ${NV(hlCount,1)} half-lives the remaining fraction = (1/2)^${NV(hlCount,1)} = ${NV(remainPct,1)}% — every half-life halves what remains; this is an exponential curve, not a straight line${guessVal>remainPct*1.2?`, and your higher estimate suggests linear thinking: decay does not subtract a fixed amount each period, it halves`:guessVal<remainPct*0.8?`, and your lower estimate overshot the halving: even after several half-lives a real fraction always remains — it never reaches zero`:` — and your estimate tracked the halvings correctly`}.`:`المتبقي الحقيقي <b>${remainPct.toFixed(0)}٪</b> وتوقعك ${fmtVal(guessVal,axis.unit)}. <b>ليه؟</b> بعد ${NV(hlCount,1)} عمر نصف النسبة المتبقية = (1/2)^${NV(hlCount,1)} = ${NV(remainPct,1)}٪ — كل عمر نصف بينصّف المتبقي مهما كان؛ ده منحنى أسي مش خطي${guessVal>remainPct*1.2?`، وتوقعك الأعلى بيوحي بتفكير خطي: الاضمحلال لا يطرح مقدارًا ثابتًا كل فترة، بل يُنصّف`:guessVal<remainPct*0.8?`، وتوقعك الأقل بالغ في التنصيف: حتى بعد أعمار نصف كتير بيتبقى كسر حقيقي دايمًا — لا يصل لصفر أبدًا`:`، وتوقعك تتبع التنصيفات صح`}.`),carbon,remainPct);}};
     window.__raf=requestAnimationFrame(step);};
 }
 /* ---- DISPATCH: خطوتان منفصلتان — (١) الهدف والنظرية (٢) المعمل التفاعلي ---- */
@@ -5678,6 +5709,7 @@ function applyLang(l){
   if(typeof renderInvites==="function")renderInvites();
   if(typeof renderOwnerBits==="function")renderOwnerBits();
   if(typeof renderRateUs==="function")renderRateUs();
+  try{if(typeof updateGuestBar==="function")updateGuestBar();}catch(e){} /* the guest countdown pill re-renders in the new language NOW — not on its next 1-second tick */
   renderHome();renderExps();renderTheory($("#thSearch").value.trim());renderRank();
   if(curExp){
     const n=curExp.n;
@@ -12434,6 +12466,11 @@ confirmDuel=function(timedOut){
   if(!D||D.locked||!D.R)return;
   if(D.phase!=="play")return; /* nothing can lock before the player presses Start */
   const R=D.R;
+  /* the value shown is the value scored: the player's mark is quantized to
+     the duelFmt (fmtVal) precision it was displayed with BEFORE any error is
+     measured against the truth — the reveal then draws and quotes this same
+     mark. (The bot's mark is the bot's own and stays raw.) */
+  if(R.mode==="slider"&&D.guess!=null&&R.max>R.min){const qv=qVal(R.min+D.guess*(R.max-R.min),R.unit);D.guess=(qv-R.min)/(R.max-R.min);}
   const hasMark=R.mode==="choice"?(D.sel!=null):(D.guess!=null);
   if(!hasMark&&!timedOut)return;
   D.locked=true;D.phase="done";
@@ -12807,6 +12844,17 @@ function renderInfo(){
 }
 const _ifab=document.getElementById("infoFab");
 if(_ifab)_ifab.onclick=()=>showScreen("scr-info");
+/* #infoFab is a direct child of <body> so it can truly float (see its CSS
+   note); keep it visible on the login screen ONLY by mirroring #scr-login's
+   .on class onto it — every screen switch goes through class toggles on the
+   sections, so a MutationObserver stays in sync with all of them. */
+(function(){
+  const fab=document.getElementById("infoFab"),login=document.getElementById("scr-login");
+  if(!fab||!login)return;
+  const sync=()=>fab.classList.toggle("fabon",login.classList.contains("on"));
+  sync();
+  new MutationObserver(sync).observe(login,{attributes:true,attributeFilter:["class"]});
+})();
 const _ibk=document.getElementById("infoBack");
 if(_ibk)_ibk.onclick=()=>showScreen((typeof SESSION!=="undefined"&&SESSION.mode!=="none")?"scr-home":"scr-login");
 </script>
