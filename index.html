@@ -327,6 +327,25 @@ input[type=range].unplaced::-webkit-slider-runnable-track{height:6px;border-radi
 input[type=range].unplaced::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:28px;height:28px;margin-top:-11px;border-radius:50%;background:transparent;border:none;box-shadow:none;opacity:0}
 input[type=range].unplaced::-moz-range-track{height:6px;border-radius:99px;background:var(--line);opacity:.45}
 input[type=range].unplaced::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:transparent;border:none;box-shadow:none;opacity:0}
+/* Experiment 1 estimation strip: a RELATIVE-drag control built from scratch.
+   Before the first touch it is visually EMPTY — no thumb, no track fill, no
+   value, no marker anywhere (the thumb/track nodes are only created by the
+   first pointerdown). Dragging moves the value by drag DISTANCE from the
+   scale zero, never by press position, so the far-left edge works fully. */
+.estctl{position:relative;width:100%;height:46px;border:1.5px dashed var(--line);border-radius:12px;background:transparent;cursor:pointer;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;margin:2px 0 4px}
+.estctl .esthint{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:var(--muted);pointer-events:none;padding:0 10px;text-align:center}
+.estctl.placed{border-style:solid;border-color:var(--line);background:var(--surface2);cursor:grab}
+.estctl.placed:active{cursor:grabbing}
+.estctl.locked{pointer-events:none;opacity:.75}
+.estctl .esttrack{position:absolute;left:14px;right:14px;top:50%;height:6px;margin-top:-3px;border-radius:99px;background:var(--line)}
+.estctl .estfill{position:absolute;left:0;top:0;height:100%;border-radius:99px;background:var(--teal)}
+.estctl .estthumb{position:absolute;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:var(--teal);border:3px solid var(--surface);box-shadow:0 1px 5px rgba(0,0,0,.35);pointer-events:none}
+.estctl:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+/* inline LaTeX inside the expanded study reference (rendered by KaTeX through
+   the same typesetMath pass as the display formulas, PDF stage included) */
+.fxl{direction:ltr;unicode-bidi:isolate;white-space:nowrap}
+.fxl .katex{font-size:1.02em}
+#pdfStage .fxl .katex{color:#141414}
 input[type=checkbox],input[type=radio]{min-height:auto}
 .opts{display:grid;gap:8px}
 .opt{display:flex;gap:10px;align-items:center;text-align:right;width:100%;background:var(--surface);border:2px solid var(--line);border-radius:12px;padding:12px;font-size:1rem;color:var(--ink);font-weight:500}
@@ -1886,7 +1905,7 @@ const LAB_H="حرارة وخواص المادة", LAB_E="كهربية ومغنا
 function E(n,t,lab,lvl,type,scene,goal,theory,duel,x){return Object.assign({n,t,lab,lvl,type,scene,goal,theory,duel},x||{});}
 const CATALOG=[
 /* ---------- EASY 1-10: Heat & Properties of Matter ---------- */
-E(1,"الوحدات والأبعاد: معمل التقدير البصري",LAB_H,0,"units",null,"معمل تقدير كامل من ٥ جولات: تخمّن بعينك الطول والكتلة والحجم ودرجة الحرارة والزمن — من غير ما تشوف أداة القياس قبل توقعك — وبينها جولات تحويل بين أنظمة SI وCGS والإنجليزي.",["القياس والتقدير بالعين","تقدير الطول والكتلة والحجم","تقدير الزمن ودرجة الحرارة","النظام الدولي SI","نظام CGS (سم/جم/إرج)","الوحدات الإنجليزية (بوصة/رطل/جالون)","التحويل بين الأنظمة","الأبعاد الفيزيائية"],"أقرب تقدير عبر كميات مختلفة (طول/كتلة/حجم/حرارة/زمن) واختيار التحويل الصحيح بين الأنظمة."),
+E(1,"الوحدات والأبعاد: معمل التقدير البصري",LAB_H,0,"units",null,"معمل تقدير كامل من ٥ جولات: تخمّن بعينك الطول والكتلة والحجم ودرجة الحرارة والزمن — من غير ما تشوف أداة القياس قبل توقعك — وبينها جولات تحويل بين أنظمة SI وCGS والإنجليزي.",["القياس والتقدير بالعين","تقدير الطول والكتلة والحجم","تقدير الزمن ودرجة الحرارة","النظام الدولي SI","نظام CGS (سم/جم/إرج)","الوحدات الإنجليزية (بوصة/رطل/جالون)","التحويل بين الأنظمة","الأبعاد الفيزيائية","بادئات SI وسلّم القوى العشرية","الأرقام المعنوية وعدم اليقين","رتب المقدار وتقدير فيرمي"],"أقرب تقدير عبر كميات مختلفة (طول/كتلة/حجم/حرارة/زمن) واختيار التحويل الصحيح بين الأنظمة."),
 E(2,"مفهوم الحرارة وانتقالها",LAB_H,0,"heat",null,"تشوف الحرارة وهي بتنتقل داخل جسم، وتتابع توزيع درجة الحرارة بعينك قبل ما تتقاس.",["ما هي الحرارة؟","درجة الحرارة مقابل كمية الحرارة","التوصيل والحمل والإشعاع","الاتزان الحراري","توزيع الحرارة داخل الجسم"],"موضع جبهة الحرارة داخل القضيب بعد زمن معين."),
 E(3,"الحرارة النوعية",LAB_H,0,"choice",null,"تقارن مادتين اتسخنوا بنفس الطاقة وتخمّن مين حرارته هتطلع أكتر.",["الحرارة النوعية","العلاقة Q = mcΔT","السعة الحرارية","لماذا تسخن المعادن أسرع من الماء؟"],"اختيار المادة الأعلى حرارة بعد التسخين.",{q:"سخّنا كتلتين متساويتين — واحدة حديد وواحدة ماء — بنفس كمية الحرارة بالظبط. مين هتكون حرارته أعلى في الآخر؟",opts:["الماء، لأنه بيخزن حرارة أكتر","الحديد، لأن حرارته النوعية أصغر","الاتنين زي بعض، لأن الطاقة واحدة"],ans:1,ex:"الطاقة واحدة، لكن الحرارة النوعية للماء كبيرة جدًا فحرارته بتطلع ببطء. الحديد حرارته النوعية صغيرة، فنفس كمية الحرارة ترفع حرارته أكتر بكتير."}),
 E(4,"التوصيل الحراري",LAB_H,0,"heat",null,"تقارن سرعة انتقال الحرارة في معدنين مختلفين وتخمّن مين هيوصّل أسرع.",["معامل التوصيل الحراري","العوازل والموصلات الحرارية","تدرّج درجة الحرارة","قانون فورييه للتوصيل"],"ترتيب المواد حسب سرعة وصول الحرارة للطرف الآخر.",{variant:"compare"}),
@@ -2930,21 +2949,27 @@ const CHOICE_DATA={
 /* Estimation anchors for the UNITS lab (#1): the reference facts each quantity
    is judged against — shown before predicting, explained after the reveal. */
 const UNITS_GIVENS={
-"الطول":[["مرجع بصري: طول الموبايل الممدّد جنب القلم","Visual reference: the phone lying beside the pencil","15 cm"]],
+"الطول":[["المطلوب","The task",["تقدير طول القلم بالسنتيمتر بالعين المجرّدة فقط","Estimate the pencil's length in centimetres by the naked eye alone"]],["في المشهد","In the scene",["قلم رصاص على مكتب — من غير أي أداة قياس أو مرجع حجمي جنبه","A pencil on a desk — with no measuring tool or size reference beside it"]],["مدى شريط التقدير","Range of the estimation strip","0–30 cm"]],
 "الكتلة":[["كثافة البطيخ ≈ كثافة الماء","A watermelon's density ≈ water's density","1 kg/L"],["بطيخة سوق متوسطة الحجم","A medium market watermelon","4–6 kg"]],
 "الحجم":[["السعة القصوى للدورق","The jug's maximum capacity","3 L"]],
 "درجة الحرارة":[["نقطة غليان الماء","Boiling point of water","100 °C"],["حرارة جسم الإنسان","Human body temperature","37 °C"]],
 "الزمن":[["حركة الكرة على المنحدر","The ball's motion on the ramp",["تسارع ثابت — والمسافة ∝ مربع الزمن","Constant acceleration — and distance ∝ time²"]]]};
 function unitsWhy(r,g){
   const tv=r.trueVal;
+  /* every number below is computed from THIS round's own drawn truth and the
+     learner's actual guess: guess vs truth vs absolute and relative error —
+     and any everyday comparison appears only here, AFTER the reveal */
+  const ae=Math.abs(g-tv),re=tv?Math.round(ae/tv*100):0;
+  const un=LANG==="en"?(UNIT_EN[r.unit]||r.unit):r.unit;
+  const nums=T(`توقعك ${NV(g,r.dec)} ${un} والحقيقة ${NV(tv,r.dec)} ${un} — خطؤك المطلق ${NV(ae,r.dec)} ${un} (خطأ نسبي ≈ ${re}٪).`,`Your prediction was ${NV(g,r.dec)} ${un} and the truth is ${NV(tv,r.dec)} ${un} — your absolute error is ${NV(ae,r.dec)} ${un} (a relative error of ≈ ${re}%).`);
   const dir=g>tv*1.12?T("توقعك أكبر من الحقيقة.","Your estimate was higher than the truth."):g<tv*0.88?T("توقعك أصغر من الحقيقة.","Your estimate was lower than the truth."):T("توقعك قريب جدًا من الحقيقة.","Your estimate was very close to the truth.");
   let core="";
-  if(r.name==="الطول")core=T(`القلم طوله ${NV(tv)} سم، والموبايل المرجعي اللي جنبه 15 سم — يعني القلم ≈ ${NV(tv/15,2)} من طول الموبايل. قاعدة العين هنا: قارن الأطوال المجهولة بمرجع معلوم جنبها على نفس المقياس دايمًا.`,`The pencil is ${NV(tv)} cm long, and the reference phone beside it is 15 cm — so the pencil ≈ ${NV(tv/15,2)} of the phone's length. The eye's rule here: always compare unknown lengths with a known reference beside them at the same scale.`);
-  else if(r.name==="الكتلة")core=T(`البطيخة كتلتها ${NV(tv,1)} كجم. البطيخ معظمه مية، فكتلته بالكيلوجرام ≈ حجمه باللتر تقريبًا — قدّر الحجم بعينك الأول، والكتلة تيجي وراه.`,`The watermelon's mass is ${NV(tv,1)} kg. A watermelon is mostly water, so its mass in kilograms ≈ its volume in litres — judge the volume with your eye first, and the mass follows.`);
+  if(r.name==="الطول")core=T(`القلم طوله الحقيقي ${NV(tv)} سم. للمقارنة بعد القياس: القلم الجديد غير المبري طوله ≈ 17.5 سم، فالقلم ده ${tv>=17?`قريب من قلم جديد كامل الطول`:`أقصر من القلم الجديد بمقدار ${NV(17.5-tv,1)} سم — قلم مستخدم ومبري`}. قاعدة العين هنا: من غير مرجع في المشهد، مرجعك هو ذاكرتك البصرية وحدها — ثبّت فيها صورة قلم حقيقي تعرفه وقارن بيها دايمًا.`,`The pencil's true length is ${NV(tv)} cm. A comparison for after the measurement: a new, unsharpened pencil is ≈ 17.5 cm long, so this pencil is ${tv>=17?`close to a full new pencil`:`${NV(17.5-tv,1)} cm shorter than a new one — a used, sharpened pencil`}. The eye's rule here: with no reference in the scene, your reference is your visual memory alone — fix in it the image of a real pencil you know, and always compare against it.`);
+  else if(r.name==="الكتلة")core=T(`البطيخة كتلتها ${NV(tv,1)} كجم. البطيخ معظمه مية (كثافته ≈ 1 كجم/لتر)، فكتلته بالكيلوجرام ≈ حجمه باللتر — وحجمها هنا ≈ ${NV(tv,1)} لتر. قدّر الحجم بعينك الأول، والكتلة تيجي وراه.`,`The watermelon's mass is ${NV(tv,1)} kg. A watermelon is mostly water (its density ≈ 1 kg/L), so its mass in kilograms ≈ its volume in litres — and its volume here is ≈ ${NV(tv,1)} L. Judge the volume with your eye first, and the mass follows.`);
   else if(r.name==="الحجم")core=T(`حجم المية ${NV(tv,1)} لتر من دورق سعته القصوى 3 لتر — يعني المية واخدة ${NV(tv/3*100)}٪ من ارتفاع الدورق المفيد. قدّر الكسر من الارتفاع الأول، وبعدين اضربه في السعة الكلية.`,`The water volume is ${NV(tv,1)} L in a jug whose full capacity is 3 L — the water fills ${NV(tv/3*100)}% of the jug's useful height. Judge the fraction of the height first, then multiply by the total capacity.`);
-  else if(r.name==="درجة الحرارة")core=T(`حرارة الشاي ${NV(tv)} °م. الشاي الطازة بيبدأ من قريب نقطة الغليان (100 °م) وبيبرد بسرعة في الكوباية — كثافة البخار اللي شفتها هي مقياس عينك: بخار كثيف متواصل يعني حرارة عالية قريبة من الغليان.`,`The tea's temperature is ${NV(tv)} °C. Fresh tea starts near the boiling point (100 °C) and cools quickly in the mug — the steam density you saw is your eye's gauge: dense, continuous steam means a high temperature close to boiling.`);
+  else if(r.name==="درجة الحرارة")core=T(`حرارة الشاي ${NV(tv)} °م — يعني تحت نقطة الغليان (100 °م) بمقدار ${NV(100-tv)} درجة. الشاي الطازة بيبدأ من قريب الغليان وبيبرد بسرعة في الكوباية — كثافة البخار اللي شفتها هي مقياس عينك: بخار كثيف متواصل يعني حرارة عالية قريبة من الغليان.`,`The tea's temperature is ${NV(tv)} °C — that is ${NV(100-tv)} degrees below the boiling point (100 °C). Fresh tea starts near boiling and cools quickly in the mug — the steam density you saw is your eye's gauge: dense, continuous steam means a high temperature close to boiling.`);
   else if(r.name==="الزمن")core=T(`زمن الرحلة ${NV(tv,1)} ثانية. الكرة بتتسارع على المنحدر، فالمسافة بتكبر مع مربع الزمن — النص الأول من الرحلة بياخد وقت أطول بكتير من النص التاني، وده اللي بيخدع الحدس الخطي.`,`The trip took ${NV(tv,1)} seconds. The ball accelerates on the ramp, so distance grows with the square of time — the first half of the trip takes much longer than the second half, which is exactly what deceives linear intuition.`);
-  return core+" "+dir;
+  return nums+" "+core+" "+dir;
 }
 /* ================= MARKER MODELS =================
    One physical model per marker experiment. Each call draws FRESH givens,
@@ -3432,30 +3457,27 @@ function startUnits(exp){
     {q:"ضغط جوي واحد (atm) يساوي تقريبًا كام باسكال؟",opts:["١٠١٣ باسكال","١٠١٬٣٢٥ باسكال","٧٦٠ باسكال"],ans:1,ex:"1 atm = 101,325 Pa — أما 760 فدي بالمليمتر زئبق (mmHg) مش بالباسكال."}
   ];
   function makeLength(){
-    const tv=ri(8,26);
-    const SC=12.2,PX=150,PY=196; // px per cm — ONE scale for pencil AND phone
+    /* a real pencil: a new unsharpened one is ≈17.5–19 cm and a well-used stub
+       can be ≈9 cm — the drawn truth is drawn INSIDE that real band, never
+       outside it (no 26 cm fantasy pencils) */
+    const tv=ri(9,20);
+    const SC=12.2,PX=150,PY=196; // px per cm — the scene's one drawing scale
     const OX=PX-13; // TRUE zero of the pencil: its far-left edge (the eraser end) — marker, tap and ruler all share it
     return {est:true,name:"الطول",unit:"سم",min:0,max:30,step:.5,dec:0,trueVal:tv,revDur:1400,
       tapX(x){return Math.round(clamp((x-OX)/SC,0,30)*2)/2;},
-      prompt:"قلم رصاص على مكتب، وتحته موبايل حقيقي ممدّد أفقيًا بيبدأ من نفس خط بداية القلم بالظبط وطوله الحقيقي ١٥ سم، ومرسوم بنفس مقياس القلم — قارن الطولين مباشرة بعينك. مفيش علامة جاهزة: المس أي نقطة على الرسم (بما فيها الطرف الشمال خالص) أو اسحب السلايدر عشان تحط علامة توقعك بنفسك عند الطرف اللي تتوقعه، وبعد ما تأكّد هنقيسه بالمسطرة قدامك.",
+      prompt:"قلم رصاص على مكتب — والمشهد نضيف تمامًا: مفيش جنبه أي أداة قياس ولا مرجع حجمي ولا أي حاجة تقارن بيها. قدّر طوله بعينك وذاكرتك البصرية بس. مفيش علامة جاهزة: اسحب على الرسم نفسه أو على شريط التقدير الفاضي تحت — أول لمسة بتبدأ من الصفر، والسحب بيحرّك علامتك على قد مسافة سحبك بالظبط — لحد ما توصل للطرف اللي تتوقعه، وبعد ما تأكّد هنقيسه بالمسطرة قدامك.",
       draw(ctx,rev,guess){
         ctx.clearRect(0,0,640,260);
         ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,214);
         ctx.fillStyle="#8a5a2b";ctx.fillRect(0,214,640,46);
         ctx.strokeStyle=C_INK;ctx.beginPath();ctx.moveTo(0,214);ctx.lineTo(640,214);ctx.stroke();
-        // smartphone LYING FLAT under the pencil, sharing the pencil's exact start line (OX):
-        // its real length is 15 cm at the SAME px/cm — the two lengths compare directly, end to end
-        const phY=148,phH=34,phX=OX,phW=15*SC;
-        ctx.strokeStyle="rgba(217,119,6,.6)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);
-        ctx.beginPath();ctx.moveTo(OX,102);ctx.lineTo(OX,196);ctx.moveTo(OX+phW,102);ctx.lineTo(OX+phW,196);ctx.stroke();ctx.setLineDash([]);
-        ctx.fillStyle="#22303a";rr(ctx,phX,phY,phW,phH,8);ctx.fill();
-        ctx.fillStyle="#3d5a6b";rr(ctx,phX+8,phY+6,phW-24,phH-12,4);ctx.fill();
-        ctx.fillStyle="#7fd4ff";ctx.beginPath();ctx.arc(phX+phW-8,phY+phH/2,2.2,0,7);ctx.fill();
+        /* a clean everyday desk scene: the pencil alone on the desk — NO phone,
+           NO ruler, NO object of known size beside it. The eye estimates alone,
+           from visual memory; the only drawn extras are light and shadow. */
+        ctx.fillStyle="rgba(255,255,255,.20)";ctx.beginPath();ctx.moveTo(430,0);ctx.lineTo(640,0);ctx.lineTo(640,120);ctx.lineTo(520,214);ctx.lineTo(430,214);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(PX+(tv*SC)/2-6,PY+24,tv*SC/2,5,0,0,7);ctx.fill();
         ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";
-        /* the hint is longer than the scene is wide: it goes through the shared
-           measured wrap (fillCap) — rows stack upward so the last row keeps the
-           old baseline at y=138, clear of the phone drawn below it */
-        fillCap(ctx,T("موبايل حقيقي ممدّد تحت القلم — طوله ١٥ سم، من نفس خط بداية القلم وبنفس مقياسه: قارن الطولين مباشرة","A real phone lying flat under the pencil — its length is 15 cm, from the same start line and at the same scale: compare the two lengths directly"),330,123,"center",15,640);
+        fillCap(ctx,T("قلم رصاص على مكتب — من غير أي مرجع جنبه: عينك وذاكرتك البصرية بس","A pencil on a desk — with nothing beside it to compare with: your eye and your visual memory only"),330,64,"center",15,640);
         // pencil — MEASUREMENT RULE: the pencil's TOTAL drawn length (eraser edge to
         // tip point) is exactly tv cm at SC px/cm, so the ruler revealed below measures
         // precisely what the eye saw: wood = total − eraser assembly (13px) − tip (22px)
@@ -3556,7 +3578,10 @@ function startUnits(exp){
       }};
   }
   function makeTemp(){
-    const tv=ri(35,95);
+    /* fresh tea is served near boiling and cools through the drinking band —
+       the drawn truth stays inside the realistic 50–95 °C band for a cup that
+       was just made (never lukewarm 35 °C "fresh" tea) */
+    const tv=ri(50,95);
     return {est:true,name:"درجة الحرارة",unit:"°م",min:10,max:100,step:1,dec:0,trueVal:tv,revDur:1300,
       prompt:"كوباية شاي لسه معمولة، والبخار طالع منها — مفيش ترمومتر باين. خمّن حرارة الشاي بدرجات مئوية من كثافة البخار وشكل المشهد.",
       draw(ctx,rev,guess){
@@ -3653,40 +3678,86 @@ function startUnits(exp){
      <p class="small" style="margin-top:8px"><b>${T("الكمية:","Quantity:")} ${(LANG==="en"&&UNITS_NAME_EN[r.name])||r.name}.</b> ${(LANG==="en"&&UNITS_PROMPT_EN[r.name])||r.prompt}</p>
      ${(typeof UNITS_GIVENS!=="undefined"&&UNITS_GIVENS[r.name])?givensPanel(UNITS_GIVENS[r.name]):""}
      <canvas class="sim" id="cv" width="640" height="260"></canvas>
-     <label class="lbl" for="rg">${T("توقعك:","Your prediction:")} <b id="gv"></b></label>
-     <input type="range" id="rg" class="unplaced" min="${r.min}" max="${r.max}" step="${r.step}" value="${r.min}">
+     <label class="lbl">${T("توقعك:","Your prediction:")} <b id="gv"></b></label>
+     <div class="estctl" id="rg" role="slider" tabindex="0" aria-label="${T("شريط التقدير — اسحب لتحريك توقعك","Estimation strip — drag to move your prediction")}"><span class="esthint">${T("شريط التقدير فاضي — اسحب هنا أو على الرسم، وأول لمسة تبدأ من الصفر","The estimation strip is empty — drag here or on the scene; the first touch starts from zero")}</span></div>
      <button class="btn primary block" id="cf" disabled>${T("أكّد التوقع — وقِس دلوقتي","Confirm prediction — and measure now")}</button>
      <div class="feedback" id="roundFb"></div>${feedbackBox()}`;
     const ctx=$("#cv").getContext("2d");
     const drawT=rafCall(()=>r.draw(ctx,0,guess));
-    const upd=()=>{$("#gv").textContent=guess==null?T("اسحب على الرسم أو هنا لوضع علامتك","Drag on the scene or here to place your mark"):fmtR(guess,r);if(guess!=null){$("#rg").classList.remove("unplaced");$("#cf").disabled=false;}drawT();};
-    $("#rg").addEventListener("input",e=>{guess=+e.target.value;upd();});
+    /* ===== THE ESTIMATION STRIP — rebuilt from scratch =====
+       Before the first touch the strip is VISUALLY EMPTY: its DOM holds only
+       the hint line — no thumb node, no track, no fill, no value anywhere,
+       in the strip, in the readout, or in the scene. The first pointerdown
+       (on the strip OR on the scene) CREATES the thumb at the scale ZERO
+       (the round's minimum); from then on the value moves by drag DISTANCE
+       only — value = base + (drag px ÷ strip width) × range — so pressing
+       anywhere, the far-left edge included, never jumps the value to the
+       press point, and a small drag changes the value a little, both ways. */
+    const ctl=$("#rg");let ctlParts=null,ctlDrag=null;
+    const quant=v=>{v=clamp(v,r.min,r.max);return Math.round(Math.round(v/r.step)*r.step*1e6)/1e6;};
+    function ctlBuild(){ // runs on the FIRST touch only — before it, nothing exists to see
+      ctl.classList.add("placed");
+      ctl.innerHTML=`<div class="esttrack"><div class="estfill"></div></div><div class="estthumb"></div>`;
+      ctlParts={fill:ctl.querySelector(".estfill"),thumb:ctl.querySelector(".estthumb")};
+      ctlSync();
+    }
+    function ctlSync(){
+      if(!ctlParts||guess==null)return;
+      const p=(guess-r.min)/(r.max-r.min),w=ctl.clientWidth||300;
+      ctlParts.fill.style.width=(p*100)+"%";
+      ctlParts.thumb.style.left=(14+p*Math.max(w-28,0))+"px";
+    }
+    const upd=()=>{$("#gv").textContent=guess==null?T("اسحب على الرسم أو على الشريط لوضع علامتك","Drag on the scene or on the strip to place your mark"):fmtR(guess,r);if(guess!=null){$("#cf").disabled=false;ctlSync();}drawT();};
+    function setGuess(v){guess=quant(v);upd();}
+    ctl.addEventListener("pointerdown",e=>{
+      if(running)return;
+      e.preventDefault();
+      if(guess==null){guess=r.min;ctlBuild();} // first touch: the value begins at the scale ZERO
+      ctlDrag={x:e.clientX,v:guess};
+      try{ctl.setPointerCapture(e.pointerId);}catch(_){}
+      upd();
+    });
+    ctl.addEventListener("pointermove",e=>{
+      if(!ctlDrag||running)return;
+      const w=Math.max(ctl.getBoundingClientRect().width,1);
+      setGuess(ctlDrag.v+(e.clientX-ctlDrag.x)/w*(r.max-r.min)); // drag distance only — never the press position
+    });
+    const ctlEnd=()=>{ctlDrag=null;};
+    ctl.addEventListener("pointerup",ctlEnd);ctl.addEventListener("pointercancel",ctlEnd);
+    ctl.addEventListener("keydown",e=>{
+      if(running)return;
+      if(e.key==="ArrowRight"||e.key==="ArrowUp"||e.key==="ArrowLeft"||e.key==="ArrowDown"){
+        e.preventDefault();
+        if(guess==null){guess=r.min;ctlBuild();}
+        setGuess(guess+((e.key==="ArrowRight"||e.key==="ArrowUp")?r.step:-r.step)*(e.shiftKey?10:1));
+      }
+    });
     if(r.tapX||r.tapY){const cvEl=$("#cv");
-      // RELATIVE drag: the press starts the value at the scale minimum (zero) — never at the
-      // pressed point. Dragging changes the value by the drag distance only, converted
-      // through the round's own tap mapping at the anchor point.
+      // RELATIVE drag on the scene: the press starts the value at the scale minimum (zero) —
+      // never at the pressed point. Dragging changes the value by the drag distance only,
+      // converted through the round's own tap mapping at the anchor point.
       let dragA=null;
-      cvEl.addEventListener("pointerdown",e=>{if(running)return;const b=cvEl.getBoundingClientRect();dragA={cx:(e.clientX-b.left)/b.width*640,cy:(e.clientY-b.top)/b.height*260,v:guess==null?r.min:guess};if(guess==null){guess=r.min;$("#rg").value=guess;upd();}});
-      cvEl.addEventListener("pointermove",e=>{if(!dragA||running)return;const b=cvEl.getBoundingClientRect();const cx=(e.clientX-b.left)/b.width*640,cy=(e.clientY-b.top)/b.height*260;let dv=0;if(r.tapX)dv=r.tapX(cx)-r.tapX(dragA.cx);if(r.tapY)dv=r.tapY(cy)-r.tapY(dragA.cy);guess=clamp(dragA.v+dv,r.min,r.max);$("#rg").value=guess;upd();});
+      cvEl.addEventListener("pointerdown",e=>{if(running)return;const b=cvEl.getBoundingClientRect();dragA={cx:(e.clientX-b.left)/b.width*640,cy:(e.clientY-b.top)/b.height*260,v:guess==null?r.min:guess};if(guess==null){guess=r.min;ctlBuild();upd();}});
+      cvEl.addEventListener("pointermove",e=>{if(!dragA||running)return;const b=cvEl.getBoundingClientRect();const cx=(e.clientX-b.left)/b.width*640,cy=(e.clientY-b.top)/b.height*260;let dv=0;if(r.tapX)dv=r.tapX(cx)-r.tapX(dragA.cx);if(r.tapY)dv=r.tapY(cy)-r.tapY(dragA.cy);guess=clamp(dragA.v+dv,r.min,r.max);upd();});
       if(_upH)window.removeEventListener("pointerup",_upH);
       _upH=()=>{dragA=null;};window.addEventListener("pointerup",_upH);}
     else{const cvEl=$("#cv");
       // Rounds without a geometric tap mapping (mass / temperature / time) still get an
       // ON-SCENE relative drag: horizontal drag distance maps onto the value range,
-      // starting from the minimum — the scene itself is the input, not just the slider.
+      // starting from the minimum — the scene itself is an input, like the strip.
       let dragA=null;
-      cvEl.addEventListener("pointerdown",e=>{if(running)return;dragA={x:e.clientX,v:guess==null?r.min:guess};if(guess==null){guess=r.min;$("#rg").value=guess;upd();}});
-      cvEl.addEventListener("pointermove",e=>{if(!dragA||running||e.buttons===0)return;const b=cvEl.getBoundingClientRect();let v=dragA.v+(e.clientX-dragA.x)/Math.max(b.width,1)*(r.max-r.min);v=clamp(v,r.min,r.max);guess=Math.round(v/r.step)*r.step;$("#rg").value=guess;upd();});
+      cvEl.addEventListener("pointerdown",e=>{if(running)return;dragA={x:e.clientX,v:guess==null?r.min:guess};if(guess==null){guess=r.min;ctlBuild();upd();}});
+      cvEl.addEventListener("pointermove",e=>{if(!dragA||running||e.buttons===0)return;const b=cvEl.getBoundingClientRect();let v=dragA.v+(e.clientX-dragA.x)/Math.max(b.width,1)*(r.max-r.min);guess=quant(v);upd();});
       cvEl.addEventListener("pointerup",()=>{dragA=null;});cvEl.addEventListener("pointercancel",()=>{dragA=null;});}
     upd();
     $("#cf").onclick=()=>{
       if(running)return;running=true;setPhase("run");
-      $("#cf").disabled=true;$("#rg").disabled=true;
+      $("#cf").disabled=true;ctl.classList.add("locked");
       /* the value shown is the value scored: the readout prints fmtR(guess) —
          rounded to this round's display precision (e.g. 24.5 shows as 25) —
          so the guess is quantized to that exact precision BEFORE the reveal
          draw, the scoring and the «ليه؟» explanation all use it */
-      guess=r.dec?(+guess.toFixed(r.dec)):Math.round(guess);$("#rg").value=guess;
+      guess=r.dec?(+guess.toFixed(r.dec)):Math.round(guess);ctlSync();
       const t0=performance.now();
       const step=t=>{const a=clamp((t-t0)/(r.revDur||1300),0,1);r.draw(ctx,a,guess);
         if(a<1)window.__raf=requestAnimationFrame(step);
@@ -4839,7 +4910,7 @@ $("#duelConfirm").onclick=()=>confirmDuel(false); // explicit false: a click is 
 /* ================= THEORY: full explanation + law in mathematical form =================
    s = الفكرة ببساطة | fx = القانون بصيغة LaTeX (يُرسم بمحرك KaTeX) | fp = نفس القانون نصيًا للطباعة | d = شرح الرموز وحدود القانون */
 const THEORY={
-1:{s:"القياس هو مقارنة كمية مجهولة بوحدة متفق عليها. وعينك نفسها أداة قياس تقريبية بتتحسّن بالتدريب — خصوصًا لو عندك مرجع بصري معروف الحجم جنب اللي بتقدّره. الأنظمة التلاتة (SI وCGS والإنجليزي) بيقيسوا نفس الكميات لكن بوحدات مختلفة، والتحويل بينهم ضرب وقسمة في ثابت واحد.",fx:"1\\ \\mathrm{in} = 2.54\\ \\mathrm{cm} \\qquad 1\\ \\mathrm{ft} = 30.48\\ \\mathrm{cm} \\qquad 1\\ \\mathrm{lb} = 0.454\\ \\mathrm{kg} \\qquad 1\\ \\mathrm{J} = 10^{7}\\ \\mathrm{erg}",fp:"1 بوصة = 2.54 سم ، 1 قدم = 30.48 سم ، 1 رطل = 0.454 كجم ، 1 جول = 10^7 إرج",d:"وحدات SI الأساسية: المتر والكيلوجرام والثانية والكلفن والأمبير. نظام CGS بيستخدم السنتيمتر والجرام والثانية. القاعدة الذهبية: قبل أي تقدير، ثبّت في دماغك مرجعًا واحدًا تعرفه كويس (طول موبايلك، كتلة لتر المية = 1 كجم) وقِس كل حاجة عليه."},
+1:{s:"القياس هو مقارنة كمية مجهولة بوحدة قياس متفق عليها: أي قياس في الحقيقة «نسبة» — كام مرة الوحدة بتتكرر في الكمية. وعينك نفسها أداة قياس تقريبية بتتحسّن بالتدريب، لأنها بتقارن المجهول بمرجع محفوظ في ذاكرتك البصرية. البشرية اتفقت على ثلاثة أنظمة وحدات كبرى: النظام الدولي SI (متر/كيلوجرام/ثانية) وهو لغة العلم اليوم، ونظام CGS (سنتيمتر/جرام/ثانية) الأقدم والأصغر وحدات، والنظام الإنجليزي (بوصة/رطل/جالون) اللي لسه عايش في الحياة اليومية والكتب الأمريكية. الأنظمة التلاتة بيقيسوا نفس الكميات الفيزيائية، والفرق بينهم في حجم الوحدة بس — وعشان كده التحويل بينهم ضرب أو قسمة في ثابت واحد معروف. تحت هذه النظرية مرجع دراسة كامل: الوحدات الأساسية السبع والمشتقة، وسلّم البادئات، ومقارنة الأنظمة، والتحليل البعدي، والأرقام المعنوية وعدم اليقين، وجداول تحويل مفصّلة بأمثلة محلولة لكل كمية.",der:"ليه التحويل ضرب في ثابت؟ لأن الكمية الفيزيائية نفسها لا تتغير بتغيّر الوحدة — اللي بيتغير هو العدد اللي بيعبّر عنها. لو الوحدة الجديدة أصغر، العدد بيكبر بنفس نسبة صغرها بالضبط، والعكس. رياضيًا: التحويل ضرب في «كسر قيمته واحد» زي (100 سم / 1 م) فتُلغى الوحدة القديمة جبريًا وتبقى الجديدة — ودي طريقة «إلغاء الوحدات» اللي بتكشف أي تحويلة مقلوبة فورًا. ومن نفس الفكرة بييجي التحليل البعدي: كل كمية ليها «بُعد» (طول L، كتلة M، زمن T...)، وأي معادلة صحيحة لازم أبعاد طرفيها تتطابق — تجانس أبعاد هو أول اختبار لصحة أي قانون. والتعريفات الحديثة (من 2019) ربطت وحدات SI كلها بثوابت طبيعية لا تتغير: المتر بمسافة الضوء في زمن محدد، والكيلوجرام بثابت بلانك، والثانية باهتزاز ذرة السيزيوم.",fx:"1\\ \\mathrm{in} = 2.54\\ \\mathrm{cm} \\qquad 1\\ \\mathrm{ft} = 30.48\\ \\mathrm{cm} \\qquad 1\\ \\mathrm{lb} = 0.454\\ \\mathrm{kg} \\qquad 1\\ \\mathrm{J} = 10^{7}\\ \\mathrm{erg}",fp:"1 بوصة = 2.54 سم ، 1 قدم = 30.48 سم ، 1 رطل = 0.454 كجم ، 1 جول = 10^7 إرج",d:"وحدات SI الأساسية سبع: المتر (الطول)، الكيلوجرام (الكتلة)، الثانية (الزمن)، الأمبير (التيار)، الكلفن (درجة الحرارة)، المول (كمية المادة)، الكانديلا (شدة الإضاءة) — وكل وحدة تانية في الفيزياء «مشتقة» منها جبريًا (النيوتن = كجم·م/ث²، والجول = نيوتن·م، والواط = جول/ث). نظام CGS بيستبدل المتر بالسنتيمتر والكيلوجرام بالجرام ويُبقي الثانية، فبتتغير وحداته المشتقة: القوة بالداين والطاقة بالإرج. القاعدة الذهبية للتقدير: ثبّت في دماغك مراجع من جسمك وحياتك تعرفها يقينًا (باب الأوضة ≈ 2 م، لتر المية كتلته 1 كجم بالضبط تقريبًا، خطوتك وانت ماشي ≈ 0.75 م) وقارن كل مجهول بيها — دي مهارة «فيرمي» اللي المعمل ده بيبنيها.",exp:"في المعمل هتقدّر خمس كميات بعينك المجردة — طول وكتلة وحجم وحرارة وزمن — من غير ما تشوف أي أداة قياس قبل توقعك، وبعد التأكيد الأداة الحقيقية بتظهر وتقيس قدامك. لاحظ بنفسك: خطؤك النسبي بيصغر لما تبني تقديرك على مرجع ذهني ثابت بدل التخمين الحر. وجولات التحويل في اختبار التجربة بتتحسم بثابت واحد: البوصة = 2.54 سم بالضبط، والرطل = 0.454 كجم، والجالون الأمريكي = 3.785 لتر."},
 2:{s:"الحرارة طاقة بتنتقل من الجسم الأسخن للأبرد بسبب فرق درجة الحرارة، وبتسرح جوه الجسم الصلب بالتوصيل: كل طبقة تسلّم اللي بعدها. النتيجة إن توزيع الحرارة جوه الجسم بيبقى تدريجيًا ناعمًا — مفيش خط فاصل حاد بين «سخن» و«بارد»، وده بالظبط اللي عينك بتتدرّب تشوفه.",fx:"\\frac{dQ}{dt} = -k \\cdot A \\cdot \\frac{dT}{dx} \\qquad (\\text{قانون فورييه})",fp:"dQ/dt = −k A (dT/dx) — قانون فورييه للتوصيل",d:"k معامل التوصيل الحراري (بيختلف جدًا من مادة لمادة)، A مساحة المقطع، وdT/dx تدرّج الحرارة على طول القضيب. الإشارة السالبة معناها الحرارة ماشية عكس اتجاه زيادة الحرارة — من السخن للبارد دايمًا."},
 3:{s:"نفس كمية الحرارة بتغيّر حرارة الأجسام بمقادير مختلفة تمامًا حسب المادة. المية «عنيدة» حراريًا: محتاجة طاقة ضخمة عشان تسخن درجة واحدة، وده سبب اعتدال جو المدن الساحلية. الحديد على العكس بيولّع بسرعة وبيبرد بسرعة.",fx:"Q = m \\cdot c \\cdot \\Delta T",fp:"Q = m c ΔT",d:"Q الطاقة الحرارية بالجول، m الكتلة، c الحرارة النوعية (للمية 4186 وللحديد 450 جول/كجم·°م — لاحظ الفرق المرعب)، ΔT التغيّر في درجة الحرارة. من القانون: لنفس Q وm، المادة الأصغر c هي اللي ΔT بتاعتها أكبر."},
 4:{s:"التوصيل الحراري بيقيس سرعة «تسريب» المادة للحرارة. النحاس من أسرع المواد (عشان كده قعر الحلل النحاس بيوزّع الحرارة كويس)، والحديد أبطأ منه بكتير، والخشب والفلين عوازل لأن k بتاعتهم صغيرة جدًا. جبهة الحرارة نفسها بتتقدّم ببطء متزايد: سرعتها بتقل مع الزمن.",fx:"k_{\\mathrm{Cu}} \\approx 400 > k_{\\mathrm{Fe}} \\approx 80\\ \\mathrm{W/(m\\cdot K)} \\qquad x_{\\mathrm{front}} \\propto \\sqrt{\\alpha\\, t}",fp:"k للنحاس ≈ 400 وللحديد ≈ 80 واط/(م·كلفن) ، وجبهة الحرارة تتقدم مع جذر الزمن",d:"α = k/(ρc) اسمها الانتشارية الحرارية. لأن الجبهة بتتقدّم مع √t مش مع t، فالحرارة بتوصل بسرعة في الأول وبعدين بتباطأ — دي طبيعة كل عمليات الانتشار في الفيزياء."},
@@ -5404,6 +5475,9 @@ const TOPICS_EN={
 "الوحدات الإنجليزية (بوصة/رطل/جالون)":"Imperial units (inch/pound/gallon)",
 "التحويل بين الأنظمة":"Converting between systems",
 "الأبعاد الفيزيائية":"Physical dimensions",
+"بادئات SI وسلّم القوى العشرية":"SI prefixes and the powers-of-ten ladder",
+"الأرقام المعنوية وعدم اليقين":"Significant figures and uncertainty",
+"رتب المقدار وتقدير فيرمي":"Orders of magnitude and Fermi estimation",
 "ما هي الحرارة؟":"What is heat?",
 "درجة الحرارة مقابل كمية الحرارة":"Temperature vs quantity of heat",
 "التوصيل والحمل والإشعاع":"Conduction, convection and radiation",
@@ -5688,7 +5762,7 @@ openExp=function(n){
 /* ===== تعميق أكاديمي لكل نظرية: اشتقاق/منطق القانون (der) + الربط بنتيجة التجربة (exp) ===== */
 const DEEP={};
 Object.assign(DEEP,{
-1:{der:"القياس في جوهره نسبة: قيمة الكمية ÷ قيمة الوحدة المعيارية. ولأن الكمية الفيزيائية نفسها لا تتغير بتغيير الوحدة، فالتحويل بين نظامين هو ضرب في عامل يساوي نسبة الوحدتين — وهذا أساس التحليل البُعدي: أي معادلة صحيحة يجب أن تتطابق أبعاد طرفيها (طول، كتلة، زمن) وإلا فهي خاطئة حتمًا. تعريفات حديثة ربطت الوحدات بثوابت كونية: المتر بمسافة الضوء في زمن محدد، والكيلوجرام بثابت بلانك.",exp:"في الجولات الخمس ستقدّر أولًا ثم يُقاس أمامك — لاحظ أن خطأك النسبي يقل عندما تثبّت مرجعًا بصريًا (الموبايل، لتر الماء = 1 كجم)، وأن جولات التحويل تُحسم بعامل واحد ثابت: البوصة 2.54 سم بالتعريف، والرطل 0.454 كجم، والجالون الأمريكي 3.785 لتر."},
+1:{der:"القياس في جوهره نسبة: قيمة الكمية ÷ قيمة الوحدة المعيارية. ولأن الكمية الفيزيائية نفسها لا تتغير بتغيير الوحدة، فالتحويل بين نظامين هو ضرب في عامل يساوي نسبة الوحدتين — عمليًا ضرب في «كسر قيمته واحد» مثل (100 سم / 1 م) فتُلغى الوحدة القديمة جبريًا وتبقى الجديدة، وهي طريقة «إلغاء الوحدات» التي تكشف أي تحويلة مقلوبة فورًا. وهذا أساس التحليل البُعدي: أي معادلة صحيحة يجب أن تتطابق أبعاد طرفيها (طول، كتلة، زمن) وإلا فهي خاطئة حتمًا. تعريفات حديثة ربطت الوحدات بثوابت كونية: المتر بمسافة الضوء في زمن محدد، والكيلوجرام بثابت بلانك.",exp:"في الجولات الخمس ستقدّر أولًا ثم يُقاس أمامك — والمشاهد نضيفة من أي أداة قياس أو مرجع حجمي قبل توقعك، فمرجعك الوحيد ذاكرتك البصرية: لاحظ أن خطأك النسبي يقل عندما تثبّت فيها مراجع تعرفها يقينًا (باب الأوضة ≈ 2 م، لتر الماء = 1 كجم)، وأن جولات التحويل تُحسم بعامل واحد ثابت: البوصة 2.54 سم بالتعريف، والرطل 0.454 كجم، والجالون الأمريكي 3.785 لتر."},
 2:{der:"اشتقاق فورييه يأتي من موازنة الطاقة على شريحة رقيقة من القضيب: صافي الفيض الحراري الداخل إليها يساوي معدل تغيّر طاقتها الداخلية، فينتج قانون الانتشار ∂T/∂t = α ∂²T/∂x². وفي الحالة شبه المستقرة يتكامل القانون إلى أن الفيض يتناسب مع تدرّج درجة الحرارة، والإشارة السالبة تفرضها الديناميكا الحرارية: الحرارة لا تنتقل تلقائيًا من البارد إلى الساخن.",exp:"توقع توزيعًا تدريجيًا منحنيًا لا خطوة حادة: الجبهة الحرارية تتقدم مع جذر الزمن (√t) فتتباطأ كلما ابتعدت، وحرارة المنتصف قيمة وسيطة محسوبة من شكل التوزيع كله — لهذا توقعاك مرتبطان: من قدّر الجبهة صح قدّر المنتصف أقرب."},
 3:{der:"الحرارة النوعية تُعرّف إجرائيًا من المسعرات: c هي كمية الحرارة اللازمة لرفع كتلة وحدة من المادة درجة واحدة، أي dQ = mc·dT عند ثبات الضغط تقريبًا. وبتكاملها مع افتراض ثبات c في المدى الحراري المعتاد نحصل على Q = mcΔT. وارتفاع c للماء سببه الروابط الهيدروجينية التي تمتص الطاقة في كسرها وإعادة تشكيلها قبل أن تظهر كحركة حرارية.",exp:"لنفس الطاقة والكتلة، ΔT تتناسب عكسيًا مع c: الحديد (450) سيسخن نحو 9 أضعاف الماء (4186). وفي سؤال المتابعة عن الزيت: نصف c يعني ضعف ΔT بالضبط — النسبة هي كل شيء هنا."},
 4:{der:"الانتشارية الحرارية α = k/(ρc) تجمع ثلاث خصائص: سرعة التوصيل k، ومقاومة التخزين الحراري ρc. ومن معادلة الانتشار يتبين أن الزمن اللازم لاختراق الحرارة عمقًا x يتناسب مع x²/α — علاقة تربيعية تفسر لماذا تسخن الطبقات السطحية بسرعة بينما يتأخر العمق طويلًا. والنحاس يتفوق على الحديد في k بنحو خمسة أضعاف وفي α بنحو أربعة أضعاف.",exp:"في المقارنة، جبهة النحاس ستبتعد بوضوح عن جبهة الحديد في نفس الزمن (بنسبة تقارب جذر نسبة الانتشاريتين)، وحرارة منتصف النحاس أعلى لأن التوزيع كله متقدم — لا تتوقع تساويًا لمجرد تساوي مصدر الحرارة."},
@@ -5924,7 +5998,7 @@ setExpProg(0);
    Every experiment's deep theory in English: definition, derivation, symbols/limits, link.
    Selected by theoryBlock whenever LANG === "en". */
 const THEORY_EN={
-1:{s:"Measurement is comparing an unknown quantity with an agreed standard unit. Your eye is itself an approximate measuring instrument that improves with training — especially when a reference of known size stands beside the object. The three systems (SI, CGS, imperial) measure the same quantities in different units, and converting between them is a single multiplication by a constant.",der:"A measurement is a ratio: the quantity divided by the standard unit. The quantity itself does not change when the unit changes, so conversion is multiplication by the ratio of the two units. This is the basis of dimensional analysis: in any correct equation, the dimensions (length, mass, time) of both sides must match. Modern definitions tie the units to constants of nature: the metre to the distance light travels in a fixed time, and the kilogram to Planck's constant.",d:"Base SI units: metre, kilogram, second, kelvin, ampere. CGS uses centimetre, gram, second. Golden rule: before estimating, fix in your mind one reference you know well (the length of your phone; one litre of water = 1 kg) and measure everything against it.",exp:"You estimate first and are measured afterwards — notice how your relative error shrinks when you anchor to a visual reference. Conversion rounds are settled by one fixed factor: the inch is exactly 2.54 cm, the pound 0.454 kg, the US gallon 3.785 litres."},
+1:{s:"Measurement is comparing an unknown quantity with an agreed standard unit: every measurement is really a ratio — how many times the unit fits into the quantity. Your eye is itself an approximate measuring instrument that improves with training, because it compares the unknown against references stored in your visual memory. Humanity has settled on three great unit systems: the international SI system (metre/kilogram/second), the language of science today; the older, smaller-scaled CGS system (centimetre/gram/second); and the imperial/US system (inch/pound/gallon), still alive in daily life and American textbooks. The three systems measure the same physical quantities; they differ only in the size of the unit — which is why converting between them is one multiplication or division by a fixed constant. Below this theory stands a complete study reference: the seven base units and the derived units, the prefixes ladder, a comparison of the systems, dimensional analysis, significant figures and uncertainty, and detailed conversion tables with a worked example for every quantity.",der:"Why is conversion a multiplication by a constant? Because the physical quantity itself does not change when the unit changes — only the number expressing it does. If the new unit is smaller, the number grows by exactly the ratio of the shrinking, and vice versa. Formally, conversion is multiplication by a 'fraction equal to one' (such as 100 cm / 1 m), so the old unit cancels algebraically and the new one remains — the unit-cancellation method, which exposes any inverted conversion at once. From the same idea comes dimensional analysis: every quantity has a 'dimension' (length L, mass M, time T…), and in any correct equation the dimensions of the two sides must match — dimensional homogeneity is the first test of any law. The modern definitions (since 2019) tie all SI units to constants of nature that never change: the metre to the distance light travels in a fixed time, the kilogram to Planck's constant, and the second to the vibration of the caesium atom.",d:"The SI base units are seven: the metre (length), the kilogram (mass), the second (time), the ampere (current), the kelvin (temperature), the mole (amount of substance), and the candela (luminous intensity) — and every other unit in physics is 'derived' from them algebraically (the newton = kg·m/s², the joule = newton·metre, the watt = joule/second). The CGS system replaces the metre with the centimetre and the kilogram with the gram while keeping the second, so its derived units change too: force in dynes and energy in ergs. The golden rule of estimation: fix in your mind references from your own body and life that you know for certain (a room door ≈ 2 m; a litre of water has a mass of almost exactly 1 kg; your walking pace ≈ 0.75 m) and compare every unknown against them — this is the 'Fermi' skill this lab builds.",exp:"In the lab you will estimate five quantities with your naked eye — length, mass, volume, temperature, and time — without seeing any measuring instrument before your prediction; after you confirm, the real instrument appears and measures in front of you. Notice for yourself: your relative error shrinks when you build your estimate on a fixed mental reference instead of guessing freely. The conversion rounds in this experiment's test are settled by one fixed factor: the inch is exactly 2.54 cm, the pound is 0.454 kg, and the US gallon is 3.785 litres."},
 2:{s:"Heat is energy transferred from a hotter body to a colder one because of the temperature difference. Inside a solid it travels by conduction: each layer hands energy to the next. The result is that the temperature distribution inside the body is smooth and gradual — there is no sharp boundary between 'hot' and 'cold', and that is exactly what your eye is being trained to see.",der:"Fourier's law follows from energy balance on a thin slice of the rod: the net heat flowing into the slice equals the rate of change of its internal energy, which yields the diffusion equation ∂T/∂t = α ∂²T/∂x². In the quasi-steady state the flux is proportional to the temperature gradient, and the minus sign is imposed by thermodynamics: heat never flows spontaneously from cold to hot.",d:"k is the thermal conductivity (it differs greatly between materials), A the cross-sectional area, and dT/dx the temperature gradient along the rod. The minus sign means heat always flows opposite to the direction of increasing temperature — from hot to cold.",exp:"Expect a smooth, curved profile, not a step: the heat front advances as the square root of time (√t) and keeps slowing down, and the midpoint temperature is an intermediate value fixed by the whole profile — which is why your two predictions are linked: whoever judges the front well judges the midpoint closely too."},
 3:{s:"The same amount of heat changes the temperature of different bodies by completely different amounts, depending on the material. Water is thermally 'stubborn': it needs an enormous amount of energy to warm by one degree, which is why coastal cities have mild weather. Iron, in contrast, heats up fast and cools down fast.",der:"Specific heat is defined operationally from calorimetry: c is the heat required to raise unit mass of the material by one degree, i.e. dQ = mc·dT at roughly constant pressure. Integrating with c treated as constant over ordinary temperature ranges gives Q = mcΔT. Water's exceptionally high c comes from its hydrogen bonds, which absorb energy in breaking and re-forming before that energy appears as thermal motion.",d:"Q is the heat energy in joules, m the mass, c the specific heat (water 4186, iron 450 J/kg·°C — note the dramatic difference), and ΔT the temperature change. From the law: for the same Q and m, the material with the smaller c has the larger ΔT.",exp:"For equal energy and equal mass, ΔT is inversely proportional to c: iron (450) will heat about nine times more than water (4186). In the follow-up about oil: half the c means exactly double the ΔT — the ratio is everything here."},
 4:{s:"Thermal conduction measures how fast a material 'leaks' heat. Copper is one of the fastest materials (which is why copper pan bottoms spread heat so well), iron is far slower, and wood and cork are insulators because their k is very small. The heat front itself advances ever more slowly: its speed decreases with time.",der:"Thermal diffusivity α = k/(ρc) combines three properties: conduction speed k and heat-storage resistance ρc. The diffusion equation shows that the time heat needs to penetrate a depth x is proportional to x²/α — a quadratic relation explaining why surface layers heat quickly while the depth lags far behind. Copper beats iron about fivefold in k and about fourfold in α.",d:"α = k/(ρc) is called the thermal diffusivity. Because the front advances as √t rather than t, heat arrives quickly at first and then slows down — this is the nature of every diffusion process in physics.",exp:"In the comparison, the copper front will move clearly farther than the iron front in the same time (roughly in the ratio of the square roots of the diffusivities), and the midpoint of the copper will be hotter because the whole distribution is more advanced — do not expect equality just because the heat source is the same."},
@@ -6068,7 +6142,7 @@ const CONV_EN=[
 {q:"One atmosphere (atm) is approximately how many pascals?",opts:["1013 pascals","101,325 pascals","760 pascals"],ex:"1 atm = 101,325 Pa — while 760 is the value in millimetres of mercury (mmHg), not in pascals."}];
 const UNITS_NAME_EN={"الطول":"Length","الكتلة":"Mass","الحجم":"Volume","درجة الحرارة":"Temperature","الزمن":"Time"};
 const UNITS_PROMPT_EN={
-"الطول":"A pencil on a desk, and beneath it a real phone lying flat horizontally, starting from exactly the same start line as the pencil; the phone's real length is 15 cm and it is drawn at exactly the pencil's scale — compare the two lengths directly with your eye. There is no pre-placed marker: tap any point on the drawing (including the far-left end) or drag the slider to place your own prediction marker where you expect the tip to be, and after you confirm we will measure it with the ruler in front of you.",
+"الطول":"A pencil on a desk — and the scene is completely clean: no measuring tool, no size reference, nothing beside it to compare with. Estimate its length with your eye and your visual memory alone. There is no pre-placed marker: drag on the drawing itself or on the empty estimation strip below — the first touch starts from zero, and dragging moves your mark by exactly your drag distance — until you reach the tip you expect; after you confirm, we will measure it with the ruler in front of you.",
 "الكتلة":"A watermelon on a kitchen table — no scale in sight. The blue dashed outline is the size of your guess: enlarge or shrink it with the slider until it matches your sense of its mass, and guess how many kilograms it is.",
 "الحجم":"A glass jug of maximum capacity 3 litres containing an unknown amount of water — there are no graduations on the glass. The dashed line is the level of your guess. Guess the volume of the water in litres.",
 "درجة الحرارة":"A cup of freshly made tea with steam rising from it — no thermometer in sight. Guess the temperature of the tea in degrees Celsius from the density of the steam and the look of the scene.",
@@ -7434,98 +7508,384 @@ const TH_PLUS_EN={
 };
 /* ---- Experiment 1: the complete unit-conversion reference (tables + worked examples) -- */
 const CONV_HTML={
-ar:`<div class="thlaw">قسم التحويلات الكامل — جداول SI وCGS والإنجليزي:</div>
-<p class="thsum">قاعدة العمل: أي تحويل هو ضرب في «كسر قيمته 1» (مثل 100 سم/1 م) فتُلغى الوحدة القديمة وتبقى الجديدة. الأمثلة المحلولة تحت كل جدول.</p>
+ar:`<div class="thlaw">المرجع الدراسي الكامل — الوحدات والقياس والتحويلات:</div>
+<p class="thsum">هذا القسم مرجع مذاكرة متكامل لموضوع الوحدات والأبعاد: اقرأه قبل الامتحان وستجد فيه كل ما تحتاجه — الأنظمة الثلاثة، والتحليل البعدي، والأرقام المعنوية، وجداول التحويل لكل كمية بأمثلة محلولة خطوة بخطوة.</p>
+<h3 style="margin-top:12px">أولًا: الوحدات الأساسية السبع في النظام الدولي SI</h3>
+<p class="thsum">سبع كميات «أساسية» فقط اختارها العلماء أساسًا، وكل كمية فيزيائية أخرى تُبنى منها. ومنذ 2019 تُعرّف الوحدات السبع بثوابت طبيعية ثابتة لا تتغير أبدًا، فالوحدة لم تعد قطعة معدن محفوظة في خزنة بل قانونًا من قوانين الكون نفسه.</p>
+<table class="tt"><tr><th>الكمية</th><th>الوحدة</th><th>الرمز</th><th>ماذا تقيس؟</th></tr>
+<tr><td>الطول</td><td>المتر</td><td>m</td><td>المسافة بين نقطتين — معرّف بسرعة الضوء: الضوء يقطع المتر في 1/299,792,458 من الثانية</td></tr>
+<tr><td>الكتلة</td><td>الكيلوجرام</td><td>kg</td><td>كمية المادة وقصورها الذاتي — معرّف بثابت بلانك</td></tr>
+<tr><td>الزمن</td><td>الثانية</td><td>s</td><td>مدة الأحداث — 9,192,631,770 اهتزازة من ذرة السيزيوم-133</td></tr>
+<tr><td>التيار الكهربي</td><td>الأمبير</td><td>A</td><td>معدل تدفق الشحنة — معرّف بالشحنة الأولية للإلكترون</td></tr>
+<tr><td>درجة الحرارة</td><td>الكلفن</td><td>K</td><td>متوسط طاقة حركة الجسيمات — معرّف بثابت بولتزمان، والصفر المطلق = 0 K</td></tr>
+<tr><td>كمية المادة</td><td>المول</td><td>mol</td><td>عدد الجسيمات — المول الواحد = 6.022×10²³ جسيمًا (عدد أفوجادرو)</td></tr>
+<tr><td>شدة الإضاءة</td><td>الكانديلا</td><td>cd</td><td>سطوع مصدر ضوئي في اتجاه معيّن كما تراه العين</td></tr></table>
+<h3 style="margin-top:12px">ثانيًا: الوحدات المشتقة — مبنية من الأساسيات</h3>
+<p class="thsum">ماذا تعني «مشتقة»؟ أن وحدتها تُكتب جبريًا بدلالة الوحدات الأساسية وحدها. فالسرعة مشتقة (متر/ثانية)، والقوة مشتقة (كيلوجرام·متر/ثانية²) وقد أُعطيت اسمًا خاصًا هو النيوتن لكثرتها. حفظ جدول المشتقات بدلالة الأساسيات هو أسرع طريقة للتحقق من أي قانون بالتحليل البعدي.</p>
+<table class="tt"><tr><th>الكمية</th><th>الوحدة</th><th>الرمز</th><th>بدلالة الوحدات الأساسية</th></tr>
+<tr><td>القوة</td><td>نيوتن</td><td>N</td><td>kg·m/s²</td></tr>
+<tr><td>الطاقة والشغل</td><td>جول</td><td>J</td><td>kg·m²/s²</td></tr>
+<tr><td>القدرة</td><td>واط</td><td>W</td><td>kg·m²/s³</td></tr>
+<tr><td>الضغط</td><td>باسكال</td><td>Pa</td><td>kg/(m·s²)</td></tr>
+<tr><td>التردد</td><td>هرتز</td><td>Hz</td><td>1/s</td></tr>
+<tr><td>الشحنة الكهربية</td><td>كولوم</td><td>C</td><td>A·s</td></tr>
+<tr><td>الجهد الكهربي</td><td>فولت</td><td>V</td><td>kg·m²/(A·s³)</td></tr>
+<tr><td>المقاومة الكهربية</td><td>أوم</td><td>Ω</td><td>kg·m²/(A²·s³)</td></tr>
+<tr><td>المجال المغناطيسي</td><td>تسلا</td><td>T</td><td>kg/(A·s²)</td></tr>
+<tr><td>السعة الكهربية</td><td>فاراد</td><td>F</td><td>A²·s⁴/(kg·m²)</td></tr></table>
+<h3 style="margin-top:12px">ثالثًا: بادئات SI — سلّم القوى العشرية</h3>
+<p class="thsum">البادئة اختصار لقوة عشرية تُضرب فيها الوحدة: كيلو تعني ×1000 ومللي تعني ×0.001. كل ثلاث درجات على السلّم (×1000) لها اسم مشهور، وبينها درجات فرعية (هكتو/ديكا/ديسي/سنتي) تُستخدم في الحياة اليومية أكثر من المختبر. مثال سريع: 0.025 m = 2.5 cm = 25 mm — نفس الطول، والبادئة الأقرب لحجم الشيء هي الأوضح دائمًا.</p>
+<figure class="thfig"><svg viewBox="0 0 650 118" role="img" aria-label="سلّم بادئات SI"><rect x="2" y="78" width="46" height="14" fill="var(--amber)" opacity=".8"/><text x="25" y="72" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">p</text><text x="25" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻¹²</text><rect x="52" y="70" width="46" height="22" fill="var(--amber)" opacity=".8"/><text x="75" y="64" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">n</text><text x="75" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻⁹</text><rect x="102" y="62" width="46" height="30" fill="var(--amber)" opacity=".8"/><text x="125" y="56" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">µ</text><text x="125" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻⁶</text><rect x="152" y="55" width="46" height="37" fill="var(--amber)" opacity=".8"/><text x="175" y="49" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">m</text><text x="175" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻³</text><rect x="202" y="52" width="46" height="40" fill="var(--amber)" opacity=".8"/><text x="225" y="46" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">c</text><text x="225" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻²</text><rect x="252" y="49" width="46" height="43" fill="var(--amber)" opacity=".8"/><text x="275" y="43" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">d</text><text x="275" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻¹</text><rect x="302" y="46" width="46" height="46" fill="var(--ink)" opacity=".55"/><text x="325" y="40" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">1</text><text x="325" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁰</text><rect x="352" y="44" width="46" height="48" fill="var(--teal)" opacity=".8"/><text x="375" y="38" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">da</text><text x="375" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10¹</text><rect x="402" y="41" width="46" height="51" fill="var(--teal)" opacity=".8"/><text x="425" y="35" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">h</text><text x="425" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10²</text><rect x="452" y="38" width="46" height="54" fill="var(--teal)" opacity=".8"/><text x="475" y="32" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">k</text><text x="475" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10³</text><rect x="502" y="31" width="46" height="61" fill="var(--teal)" opacity=".8"/><text x="525" y="25" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">M</text><text x="525" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁶</text><rect x="552" y="23" width="46" height="69" fill="var(--teal)" opacity=".8"/><text x="575" y="17" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">G</text><text x="575" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁹</text><rect x="602" y="16" width="46" height="76" fill="var(--teal)" opacity=".8"/><text x="625" y="10" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">T</text><text x="625" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10¹²</text></svg><figcaption>سلّم البادئات: كل درجة لأعلى ×10، والدرجات المشهورة (k، M، G، T وm، µ، n، p) تقفز ×1000 كل مرة — والوحدة الأساسية في المنتصف.</figcaption></figure>
+<table class="tt"><tr><th>البادئة</th><th>الرمز</th><th>القيمة</th><th>مثال حي</th></tr>
+<tr><td>تيرا</td><td>T</td><td>10¹²</td><td>سعة أقراص التخزين الحديثة</td></tr>
+<tr><td>جيجا</td><td>G</td><td>10⁹</td><td>ترددات المعالجات (GHz)</td></tr>
+<tr><td>ميجا</td><td>M</td><td>10⁶</td><td>ضغط بالميجاباسكال في الهندسة</td></tr>
+<tr><td>كيلو</td><td>k</td><td>10³</td><td>الكيلوجرام والكيلومتر</td></tr>
+<tr><td>هكتو</td><td>h</td><td>10²</td><td>الهكتار = 10000 م²</td></tr>
+<tr><td>ديكا</td><td>da</td><td>10¹</td><td>نادرًا ما تُستخدم</td></tr>
+<tr><td>ديسي</td><td>d</td><td>10⁻¹</td><td>الديسيلتر في الوصفات</td></tr>
+<tr><td>سنتي</td><td>c</td><td>10⁻²</td><td>السنتيمتر — وحدة طول CGS</td></tr>
+<tr><td>مللي</td><td>m</td><td>10⁻³</td><td>الملليمتر والملليجرام</td></tr>
+<tr><td>ميكرو</td><td>µ</td><td>10⁻⁶</td><td>الميكرومتر — حجم الخلايا</td></tr>
+<tr><td>نانو</td><td>n</td><td>10⁻⁹</td><td>النانومتر — أطوال موجات الضوء بمئاته</td></tr>
+<tr><td>بيكو</td><td>p</td><td>10⁻¹²</td><td>البيكوفاراد في الإلكترونيات</td></tr></table>
+<h3 style="margin-top:12px">رابعًا: نظام CGS — النظام الأصغر الأقدم</h3>
+<p class="thsum">نظام CGS يأخذ أساسياته من السنتيمتر (C) والجرام (G) والثانية (S) — نفس الثانية تمامًا، لكن المتر يُستبدل بسنتيمتر والكيلوجرام بجرام، فيتغير حجم كل وحدة مشتقة بعده. كان نظام العلماء حتى منتصف القرن العشرين، ولسه عايش في الفلك (المسافات بالسنتيمتر أحيانًا) وكتب الكهرومغناطيسية القديمة وفي وحدتين شهيرتين: الداين والإرج. الفرق الجوهري عن SI: الوحدات أصغر فالأعداد أكبر، والعلاقات العشرية بين النظامين قوى عشرية نظيفة (100 و1000 و10⁵ و10⁷) لأن النظامين متريان معًا.</p>
+<table class="tt"><tr><th>الكمية</th><th>SI</th><th>CGS</th><th>العلاقة</th></tr>
+<tr><td>الطول</td><td>متر m</td><td>سنتيمتر cm</td><td>1 m = 100 cm</td></tr>
+<tr><td>الكتلة</td><td>كيلوجرام kg</td><td>جرام g</td><td>1 kg = 1000 g</td></tr>
+<tr><td>الزمن</td><td>ثانية s</td><td>ثانية s</td><td>وحدة واحدة مشتركة</td></tr>
+<tr><td>القوة</td><td>نيوتن N</td><td>داين dyn</td><td>1 N = 10⁵ dyn</td></tr>
+<tr><td>الطاقة</td><td>جول J</td><td>إرج erg</td><td>1 J = 10⁷ erg</td></tr>
+<tr><td>الضغط</td><td>باسكال Pa</td><td>داين/سم² (باري)</td><td>1 Pa = 10 dyn/cm²</td></tr></table>
+<h3 style="margin-top:12px">خامسًا: النظام الإنجليزي — الإمبراطوري والأمريكي</h3>
+<p class="thsum">نظام تاريخي وحداته من جسم الإنسان والحياة اليومية (البوصة من الإبهام، والقدم من القدم)، ولسه رسميًا في أمريكا وشائعًا في بريطانيا. منذ 1959 اتفق العالم على تعريف البوصة = 2.54 سم بالضبط فأصبحت التحويلات دقيقة لا تقريبية. تنبيه حقيقي: الجالون الأمريكي (3.785 لتر) أصغر من الجالون الإمبراطوري البريطاني (4.546 لتر) — نفس الاسم ووحدتان مختلفتان فعلًا.</p>
+<table class="tt"><tr><th>الكمية</th><th>الوحدة</th><th>تساوي</th></tr>
+<tr><td>الطول</td><td>بوصة in</td><td>2.54 سم (بالضبط)</td></tr>
+<tr><td>الطول</td><td>قدم ft = 12 بوصة</td><td>30.48 سم</td></tr>
+<tr><td>الطول</td><td>ياردة yd = 3 أقدام</td><td>0.9144 م</td></tr>
+<tr><td>الطول</td><td>ميل = 1760 ياردة</td><td>1.609 كم</td></tr>
+<tr><td>الكتلة</td><td>أونصة oz</td><td>28.35 جم</td></tr>
+<tr><td>الكتلة</td><td>رطل lb = 16 أونصة</td><td>0.454 كجم</td></tr>
+<tr><td>الحجم</td><td>جالون أمريكي</td><td>3.785 لتر</td></tr>
+<tr><td>الحجم</td><td>جالون إمبراطوري</td><td>4.546 لتر</td></tr>
+<tr><td>الحرارة</td><td>فهرنهايت °F</td><td>الماء يتجمد عند 32° ويغلي عند 212°</td></tr></table>
+<h3 style="margin-top:12px">سادسًا: التحليل البعدي — اختبار صحة القوانين واشتقاقها</h3>
+<p class="thsum">لكل كمية فيزيائية «بُعد» يصف طبيعتها لا وحدتها: الطول بعده <span class="fxl" data-tex="L"></span> والكتلة <span class="fxl" data-tex="M"></span> والزمن <span class="fxl" data-tex="T"></span>، ومنها تُبنى أبعاد كل شيء: السرعة <span class="fxl" data-tex="v: LT^{-1}"></span>، والعجلة <span class="fxl" data-tex="LT^{-2}"></span>، والقوة <span class="fxl" data-tex="MLT^{-2}"></span>، والطاقة <span class="fxl" data-tex="ML^{2}T^{-2}"></span>. القاعدة الذهبية — التجانس البعدي: لا يجوز جمع كميتين مختلفتي البعد أبدًا، وأي معادلة فيزيائية صحيحة يجب أن يتطابق بُعد طرفيها تمامًا. للأداة دي ثلاث قوى: (1) كشف الأخطاء في أي قانون أو حساب، (2) التحقق من تحويلة وحدات، (3) اشتقاق صورة علاقة مجهولة من الكميات اللي تعتمد عليها.</p>
+<p class="thsum"><b>مثال محلول 1 — التحقق من قانون:</b> هل قانون البندول <span class="fxl" data-tex="T = 2\\pi\\sqrt{L/g}"></span> ممكن بعديًا؟ الخطوة 1: بُعد g هو <span class="fxl" data-tex="LT^{-2}"></span>. الخطوة 2: بُعد النسبة L/g هو <span class="fxl" data-tex="L / (LT^{-2}) = T^{2}"></span>. الخطوة 3: الجذر التربيعي يعطي <span class="fxl" data-tex="T"></span> — وهو بُعد الزمن بالضبط، والثابت 2π عديم البعد. القانون نجا من الاختبار. ولو كان القانون <span class="fxl" data-tex="T = 2\\pi\\sqrt{g/L}"></span> لكان البعد <span class="fxl" data-tex="T^{-1}"></span> — تردد لا زمن — فنرفضه فورًا من غير أي تجربة.</p>
+<p class="thsum"><b>مثال محلول 2 — اشتقاق صورة علاقة:</b> افترض أن زمن البندول يعتمد على الطول L والعجلة g وكتلة الكرة m بصورة <span class="fxl" data-tex="T \\propto L^{a} g^{b} m^{c}"></span>. بمساواة الأبعاد: <span class="fxl" data-tex="T = (L)^{a} (LT^{-2})^{b} (M)^{c}"></span> فنقارن الأسس: للكتلة c = 0 (الكتلة لا تدخل أصلًا!)، وللزمن: ‎−2b = 1 فيعطي b = −1/2، وللطول: a + b = 0 فيعطي a = 1/2. النتيجة: <span class="fxl" data-tex="T \\propto \\sqrt{L/g}"></span> — اشتقينا صورة القانون وكشفنا استقلال الزمن عن الكتلة من الأبعاد وحدها، ولم يتبقَّ سوى الثابت 2π الذي تحدده التجربة أو الاشتقاق الكامل.</p>
+<p class="thsum"><b>مثال محلول 3 — صيد خطأ:</b> طالب كتب مسافة السقوط <span class="fxl" data-tex="s = v t^{2}"></span>. بُعد الطرف الأيمن <span class="fxl" data-tex="(LT^{-1})(T^{2}) = LT"></span> وهو ليس طولًا — المعادلة خاطئة قطعًا. الصور الصحيحة بعديًا: <span class="fxl" data-tex="s = vt"></span> أو <span class="fxl" data-tex="s = \\tfrac{1}{2} a t^{2}"></span> لأن <span class="fxl" data-tex="(LT^{-2})(T^{2}) = L"></span>.</p>
+<h3 style="margin-top:12px">سابعًا: القياس والأرقام المعنوية وعدم اليقين</h3>
+<p class="thsum">أي قياس حقيقي ناقص بيقين: آخر رقم تكتبه دائمًا «تقديري». قواعد الأرقام المعنوية: (1) كل رقم غير صفري معنوي، (2) الأصفار بين أرقام معنوية معنوية (مثل 1005 فيها 4)، (3) الأصفار بعد الفاصلة في آخر العدد معنوية لأنها معلومة القياس (14.60 تعني دقة لأقرب 0.01)، (4) الأصفار الأولى قبل أول رقم معنوي ليست معنوية أبدًا (0.0042 فيها رقمَان معنويان فقط). وعدم اليقين له وجهان: مطلق (±0.1 سم) ونسبي يُقاس بـ <span class="fxl" data-tex="\\dfrac{\\Delta x}{x}"></span> ويُعبّر عنه غالبًا كنسبة مئوية — وهو الأهم لأنه يقارن الخطأ بحجم الكمية نفسها.</p>
+<p class="thsum"><b>مثال محلول:</b> قست قلمًا بمسطرة مدرّجة بالملليمتر فوجدته 14.6 سم، وعدم اليقين المطلق = ±0.1 سم (نصف أصغر تدريج تقريبًا عند التقدير بين الخطوط). عدم اليقين النسبي = 0.1/14.6 ≈ 0.0068 أي حوالي 0.7٪ فقط — قياس جيد. ولاحظ: كتابة النتيجة 14.600 سم كذبة علمية، لأنها تدّعي دقة لا تملكها أداتك؛ وعدد الأرقام المعنوية في نتيجتك لا يجوز أن يتجاوز أرقام قياسك.</p>
+<h3 style="margin-top:12px">ثامنًا: التقدير البصري ورتب المقدار — طريقة فيرمي</h3>
+<p class="thsum">«رتبة المقدار» هي أقرب قوة عشرية للكمية: طول القلم رتبته 10⁻¹ م، وطول الإنسان 10⁰ م، وارتفاع برج 10² م. وطريقة فيرمي (نسبة لإنريكو فيرمي) لتقدير أي كمية مجهولة: فكّكها لعوامل تقدر تقدّر كل واحد منها، وقرّب كل عامل لأقرب قوة عشرية، واضرب — الأخطاء الفردية بتلغي بعضها غالبًا فتصل النتيجة لرتبة المقدار الصحيحة. دي بالضبط المهارة اللي معمل التجربة دي بيبنيها: عين مدرّبة على المقارنة بمرجع، ودماغ بيشتغل بالقوى العشرية.</p>
+<p class="thsum"><b>مثال محلول — كتلة الهواء في قاعة محاضرات:</b> الخطوة 1: حجم القاعة ≈ 10 م × 8 م × 3 م = 240 م³ (رتبته 10²). الخطوة 2: كثافة الهواء ≈ 1.2 كجم/م³ (رتبتها 10⁰ — تعرفها من أن لتر الهواء حوالي جرام وربع). الخطوة 3: الكتلة = 240 × 1.2 ≈ 290 كجم ≈ 300 كجم — كتلة أربعة طلاب تقريبًا، تتنفسها القاعة كلها! من غير أي أداة، وبثلاثة تقديرات بسيطة، وصلت لرتبة المقدار الصحيحة.</p>
+<h3 style="margin-top:12px">تاسعًا: جداول التحويل الكاملة — بأمثلة محلولة لكل كمية</h3>
+<p class="thsum">قاعدة العمل في كل جدول: التحويل ضرب في «كسر قيمته 1» (مثل 100 سم/1 م) فتُلغى الوحدة القديمة وتبقى الجديدة. وتحت كل جدول: ماذا تعني التحويلة فيزيائيًا، ومثال محلول خطوة بخطوة يعبر بين الأنظمة.</p>
 <h3 style="margin-top:12px">الطول</h3>
+<p class="thsum">ماذا تعني؟ كل وحدات الطول تقيس الشيء نفسه — المسافة — وتختلف في حجم «المسطرة». البوصة هي الجسر بين العالمين لأنها معرّفة دوليًا بـ2.54 سم بالضبط، فكل تحويلات الطول الإنجليزية دقيقة لا تقريبية.</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
 <tr><td>بوصة (in)</td><td>سم</td><td>× 2.54 (بالضبط)</td></tr>
 <tr><td>قدم (ft)</td><td>سم / م</td><td>× 30.48 سم = 0.3048 م</td></tr>
 <tr><td>ياردة (yd)</td><td>م</td><td>× 0.9144</td></tr>
 <tr><td>ميل (mile)</td><td>كم</td><td>× 1.609</td></tr>
-<tr><td>م (SI)</td><td>سم (CGS)</td><td>× 100</td></tr></table>
-<p class="thsum">مثال محلول: ارتفاع باب 6 أقدام و5 بوصات = 6×30.48 + 5×2.54 = 182.9 + 12.7 = 195.6 سم ≈ 1.96 م.</p>
+<tr><td>م (SI)</td><td>سم (CGS)</td><td>× 100</td></tr>
+<tr><td>كم</td><td>ميل</td><td>× 0.6214</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: لاعب طوله 6 أقدام و1 بوصة. الخطوة 1: الأقدام للمتر: 6 × 0.3048 = 1.829 م. الخطوة 2: البوصة للسنتيمتر: 1 × 2.54 = 2.54 سم = 0.0254 م. الخطوة 3: المجموع = 1.829 + 0.025 ≈ 1.85 م — وهو 185 سم بوحدات CGS.</p>
+<h3 style="margin-top:12px">المساحة</h3>
+<p class="thsum">ماذا تعني؟ المساحة طول × طول، فمعامل تحويلها هو مربع معامل الطول: 1 م = 100 سم لكن 1 م² = 100² = 10,000 سم². نسيان التربيع أشهر خطأ في تحويلات المساحة كلها.</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>م² (SI)</td><td>سم² (CGS)</td><td>× 10⁴</td></tr>
+<tr><td>سم²</td><td>مم²</td><td>× 100</td></tr>
+<tr><td>كم²</td><td>م²</td><td>× 10⁶</td></tr>
+<tr><td>هكتار (ha)</td><td>م²</td><td>× 10⁴</td></tr>
+<tr><td>قدم² (ft²)</td><td>م²</td><td>× 0.0929</td></tr>
+<tr><td>فدان (مصر)</td><td>م²</td><td>× 4200 تقريبًا</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: شقة مساحتها 120 م² — كم تساوي بالسنتيمتر المربع؟ الخطوة 1: معامل الطول من م لسم هو 100. الخطوة 2: ربّعه للمساحة: 100² = 10,000. الخطوة 3: 120 × 10,000 = 1,200,000 سم² = 1.2×10⁶ سم². وبالعكس قطعة أرض 2 فدان ≈ 8400 م².</p>
+<h3 style="margin-top:12px">الحجم</h3>
+<p class="thsum">ماذا تعني؟ الحجم طول × طول × طول، فمعامله مكعب معامل الطول: 1 م³ = 100³ = 10⁶ سم³. واللتر نفسه وحدة حجم مخفية: 1 لتر = 1000 سم³ بالضبط (مكعب ضلعه 10 سم).</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>لتر (L)</td><td>سم³ (CGS) / مل</td><td>× 1000</td></tr>
+<tr><td>م³ (SI)</td><td>لتر</td><td>× 1000</td></tr>
+<tr><td>م³</td><td>سم³</td><td>× 10⁶</td></tr>
+<tr><td>جالون أمريكي</td><td>لتر</td><td>× 3.785</td></tr>
+<tr><td>جالون إمبراطوري</td><td>لتر</td><td>× 4.546</td></tr>
+<tr><td>كوب أمريكي</td><td>مل</td><td>× 237</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: خزان وقود سعته 40 لترًا — كم جالونًا أمريكيًا؟ الخطوة 1: الجالون أكبر من اللتر، فالنتيجة أصغر — العملية قسمة لا ضرب. الخطوة 2: 40 ÷ 3.785 ≈ 10.6 جالون. وبالعكس: دورق المعمل 2.5 لتر = 2500 سم³ بوحدات CGS.</p>
 <h3 style="margin-top:12px">الكتلة</h3>
+<p class="thsum">ماذا تعني؟ الكتلة كمية المادة نفسها، لا تتغير بمكانك في الكون — اللي يتغير وزنك (قوة الجاذبية عليها). الرطل وحدة كتلة إنجليزية تساوي 0.454 كجم تقريبًا: تذكّر «الرطل أقل من نصف كيلو بقليل».</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
 <tr><td>رطل (lb)</td><td>كجم</td><td>× 0.454</td></tr>
 <tr><td>أونصة (oz)</td><td>جم</td><td>× 28.35</td></tr>
 <tr><td>كجم (SI)</td><td>جم (CGS)</td><td>× 1000</td></tr>
-<tr><td>طن متري</td><td>كجم</td><td>× 1000</td></tr></table>
-<p class="thsum">مثال محلول: ملاكم وزنه 176 رطلًا = 176 × 0.454 ≈ 79.9 كجم ≈ 80 كجم (فئة الوزن الثقيل الخفيف تقريبًا).</p>
-<h3 style="margin-top:12px">الزمن ودرجة الحرارة</h3>
+<tr><td>طن متري</td><td>كجم</td><td>× 1000</td></tr>
+<tr><td>ستون (stone)</td><td>كجم</td><td>× 6.35</td></tr>
+<tr><td>قيراط (ألماس)</td><td>جم</td><td>× 0.2</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: ملاكم وزنه 200 رطل. الخطوة 1: الرطل أصغر من الكيلوجرام فالنتيجة أصغر من 200 — ضرب في 0.454. الخطوة 2: 200 × 0.454 = 90.8 كجم. الخطوة 3: بوحدات CGS: 90.8 × 1000 = 90,800 جم.</p>
+<h3 style="margin-top:12px">الزمن</h3>
+<p class="thsum">ماذا تعني؟ الثانية هي الوحدة الوحيدة المشتركة حرفيًا بين SI وCGS والإنجليزي معًا — لا تحويل نظام فيها أبدًا. وكل التحويلات الزمنية من تقسيم اليوم الأرضي: 60 و60 و24.</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
-<tr><td>دقيقة</td><td>ثانية (SI وCGS معًا)</td><td>× 60</td></tr>
+<tr><td>دقيقة</td><td>ثانية</td><td>× 60</td></tr>
 <tr><td>ساعة</td><td>ثانية</td><td>× 3600</td></tr>
-<tr><td>°م (Celsius)</td><td>كلفن (SI)</td><td>+ 273.15</td></tr>
-<tr><td>°ف (Fahrenheit)</td><td>°م</td><td>(°F − 32) × 5/9</td></tr></table>
-<p class="thsum">مثال محلول: حمّى 102°F: ‏(102 − 32) × 5/9 = 38.9°م. ولاحظ: الثانية وحدة مشتركة بين SI وCGS — لا تحويل فيها.</p>
-<h3 style="margin-top:12px">الحجم</h3>
+<tr><td>يوم</td><td>ثانية</td><td>× 86,400</td></tr>
+<tr><td>أسبوع</td><td>يوم</td><td>× 7</td></tr>
+<tr><td>سنة</td><td>ثانية</td><td>× 3.156×10⁷ تقريبًا</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: فيلم مدته ساعتان ونصف. الخطوة 1: للساعات للدقائق: 2.5 × 60 = 150 دقيقة. الخطوة 2: للدقائق للثواني: 150 × 60 = 9000 ثانية. حيلة فيرمي الشهيرة: السنة ≈ π×10⁷ ثانية — تقريب يكفي لأغلب التقديرات.</p>
+<h3 style="margin-top:12px">السرعة</h3>
+<p class="thsum">ماذا تعني؟ السرعة طول ÷ زمن، فتحويلها تحويلتان معًا. الرقم السحري: اقسم كم/ساعة على 3.6 لتحصل على م/ث (لأن الساعة 3600 ثانية والكيلومتر 1000 متر: 1000/3600 = 1/3.6).</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
-<tr><td>لتر</td><td>سم³ (CGS) / مل</td><td>× 1000</td></tr>
-<tr><td>جالون أمريكي</td><td>لتر</td><td>× 3.785</td></tr>
-<tr><td>م³ (SI)</td><td>لتر</td><td>× 1000</td></tr>
-<tr><td>كوب أمريكي</td><td>مل</td><td>× 237</td></tr></table>
-<p class="thsum">مثال محلول: خزان سيارة 12 جالونًا = 12 × 3.785 ≈ 45.4 لتر.</p>
-<h3 style="margin-top:12px">الطاقة والقدرة</h3>
+<tr><td>كم/ساعة</td><td>م/ث (SI)</td><td>÷ 3.6</td></tr>
+<tr><td>م/ث</td><td>سم/ث (CGS)</td><td>× 100</td></tr>
+<tr><td>ميل/ساعة (mph)</td><td>كم/ساعة</td><td>× 1.609</td></tr>
+<tr><td>ميل/ساعة</td><td>م/ث</td><td>× 0.447</td></tr>
+<tr><td>عقدة (knot)</td><td>كم/ساعة</td><td>× 1.852</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: سيارة سرعتها 90 كم/ساعة. الخطوة 1: لوحدات SI: 90 ÷ 3.6 = 25 م/ث. الخطوة 2: لوحدات CGS: 25 × 100 = 2500 سم/ث. وبالعكس سيارة أمريكية 60 mph: ‏60 × 1.609 ≈ 96.6 كم/ساعة.</p>
+<h3 style="margin-top:12px">العجلة (التسارع)</h3>
+<p class="thsum">ماذا تعني؟ العجلة تغيّر السرعة كل ثانية، ووحدتها طول/زمن². أشهر قيمتها: عجلة الجاذبية g = 9.8 م/ث² = 980 سم/ث² — لاحظ أن تحويلها من SI لـCGS ضربه في 100 (معامل الطول وحده، لأن الزمن مشترك).</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>م/ث² (SI)</td><td>سم/ث² (CGS)</td><td>× 100</td></tr>
+<tr><td>g (جاذبية أرضية)</td><td>م/ث²</td><td>× 9.8</td></tr>
+<tr><td>قدم/ث²</td><td>م/ث²</td><td>× 0.3048</td></tr>
+<tr><td>كم/ساعة لكل ثانية</td><td>م/ث²</td><td>÷ 3.6</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: سيارة تصل من السكون لـ100 كم/ساعة في 8 ثوانٍ. الخطوة 1: حوّل السرعة النهائية: 100 ÷ 3.6 ≈ 27.8 م/ث. الخطوة 2: العجلة = Δv/Δt = 27.8 ÷ 8 ≈ 3.5 م/ث². الخطوة 3: بوحدات CGS: 3.5 × 100 = 350 سم/ث² — أي حوالي ثلث g.</p>
+<h3 style="margin-top:12px">القوة</h3>
+<p class="thsum">ماذا تعني؟ القوة في SI هي النيوتن: ما يعجّل كيلوجرامًا واحدًا بمقدار 1 م/ث². وفي CGS هي الداين: ما يعجّل جرامًا واحدًا بمقدار 1 سم/ث² — وبينهما 10⁵ بالضبط من حاصل (1000 جم/كجم) × (100 سم/م).</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>نيوتن (SI)</td><td>داين (CGS)</td><td>× 10⁵</td></tr>
+<tr><td>كيلوجرام-قوة (kgf)</td><td>نيوتن</td><td>× 9.807</td></tr>
+<tr><td>رطل-قوة (lbf)</td><td>نيوتن</td><td>× 4.448</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: وزن طالب كتلته 70 كجم. الخطوة 1: الوزن = الكتلة × g: ‏70 × 9.8 = 686 نيوتن. الخطوة 2: لوحدات CGS: 686 × 10⁵ = 6.86×10⁷ داين. لاحظ: الكتلة 70 كجم في النظامين، لكن «الوزن» كقوة يختلف عدده باختلاف وحدة القوة.</p>
+<h3 style="margin-top:12px">الطاقة</h3>
+<p class="thsum">ماذا تعني؟ الطاقة شغل مبذول: قوة × مسافة. الجول نيوتن·متر، والإرج داين·سنتيمتر — وبينهما 10⁷. والكالوري وحدة حرارية قديمة ما زالت على أغلفة الطعام (والكالوري الغذائية الواحدة = 1000 كالوري فيزيائية = 1 kcal).</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
 <tr><td>جول (SI)</td><td>إرج (CGS)</td><td>× 10⁷</td></tr>
 <tr><td>كالوري (cal)</td><td>جول</td><td>× 4.184</td></tr>
+<tr><td>كيلوكالوري (kcal)</td><td>جول</td><td>× 4184</td></tr>
 <tr><td>كيلوواط·ساعة</td><td>جول</td><td>× 3.6×10⁶</td></tr>
-<tr><td>إلكترون فولت (eV)</td><td>جول</td><td>× 1.602×10⁻¹⁹</td></tr>
+<tr><td>إلكترون فولت (eV)</td><td>جول</td><td>× 1.602×10⁻¹⁹</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: لمبة 100 واط أُضيئت ساعة كاملة. الخطوة 1: الطاقة = القدرة × الزمن = 100 × 3600 = 360,000 جول = 3.6×10⁵ J. الخطوة 2: هي نفسها 0.1 كيلوواط·ساعة (وحدة الفاتورة). الخطوة 3: بوحدات CGS: 3.6×10⁵ × 10⁷ = 3.6×10¹² إرج — رقم ضخم يوضح لماذا اختار SI الجول.</p>
+<h3 style="margin-top:12px">القدرة</h3>
+<p class="thsum">ماذا تعني؟ القدرة معدل بذل الطاقة: جول كل ثانية = واط. والحصان وحدة إنجليزية من عصر المحركات البخارية: حصان واحد ≈ 746 واط — أي أن محرك 100 حصان قدرته 74.6 كيلوواط.</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>واط (SI)</td><td>إرج/ثانية (CGS)</td><td>× 10⁷</td></tr>
+<tr><td>كيلوواط</td><td>واط</td><td>× 1000</td></tr>
 <tr><td>حصان (hp)</td><td>واط</td><td>× 746</td></tr></table>
-<p class="thsum">مثال محلول: وجبة 500 كيلوكالوري = 500,000 × 4.184 ≈ 2.09×10⁶ جول — طاقة ترفع 70 كجم لمسافة 3 كم رأسيًا تقريبًا!</p>
+<p class="thsum">مثال محلول خطوة بخطوة: محرك سيارة 150 حصانًا. الخطوة 1: 150 × 746 = 111,900 واط. الخطوة 2: بالكيلوواط: ≈ 112 kW. الخطوة 3: بوحدات CGS: 111,900 × 10⁷ ≈ 1.12×10¹² إرج/ثانية.</p>
 <h3 style="margin-top:12px">الضغط</h3>
+<p class="thsum">ماذا تعني؟ الضغط قوة موزعة على مساحة: باسكال واحد = نيوتن على متر مربع كامل — وحدة صغيرة جدًا، فالضغط الجوي مئة ألف منها. ووحدة CGS له هي الداين/سم² وتسمى «باري»، وبينها وبين الباسكال 10 فقط.</p>
 <table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
 <tr><td>جو (atm)</td><td>باسكال (SI)</td><td>× 101,325</td></tr>
 <tr><td>بار (bar)</td><td>باسكال</td><td>× 10⁵</td></tr>
 <tr><td>مم زئبق (mmHg)</td><td>باسكال</td><td>× 133.3</td></tr>
-<tr><td>atm</td><td>داين/سم² (CGS)</td><td>× 1.013×10⁶</td></tr></table>
-<p class="thsum">مثال محلول: ضغط دم 120 mmHg = 120 × 133.3 ≈ 16,000 باسكال ≈ 0.158 جو.</p>`,
-en:`<div class="thlaw">The complete conversion reference — SI, CGS and imperial tables:</div>
-<p class="thsum">The working rule: every conversion is a multiplication by a 'fraction equal to 1' (such as 100 cm/1 m), so the old unit cancels and the new one remains. Worked examples follow each table.</p>
+<tr><td>باسكال</td><td>داين/سم² (CGS)</td><td>× 10</td></tr>
+<tr><td>رطل/بوصة² (psi)</td><td>باسكال</td><td>× 6895</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: ضغط إطار سيارة 32 psi. الخطوة 1: 32 × 6895 ≈ 220,600 باسكال. الخطوة 2: بالأجواء: 220,600 ÷ 101,325 ≈ 2.18 جو. الخطوة 3: بوحدات CGS: 220,600 × 10 ≈ 2.2×10⁶ داين/سم².</p>
+<h3 style="margin-top:12px">الكثافة</h3>
+<p class="thsum">ماذا تعني؟ الكثافة كتلة وحدة الحجم، وتحويلها يجمع تحويلة كتلة وتحويلة حجم معًا: 1 جم/سم³ = 1000 كجم/م³ بالضبط. والماء هو المرجع الكوني: 1 جم/سم³ في CGS هي نفسها 1000 كجم/م³ في SI.</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>جم/سم³ (CGS)</td><td>كجم/م³ (SI)</td><td>× 1000</td></tr>
+<tr><td>كجم/م³</td><td>جم/سم³</td><td>÷ 1000</td></tr>
+<tr><td>الماء (المرجع)</td><td>—</td><td>1 جم/سم³ = 1000 كجم/م³</td></tr>
+<tr><td>رطل/قدم³</td><td>كجم/م³</td><td>× 16.02</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: كثافة الحديد 7.87 جم/سم³. الخطوة 1: لاحظ أن جم/سم³ هي وحدة CGS والعدد فيها «صغير ولطيف». الخطوة 2: لوحدات SI: 7.87 × 1000 = 7870 كجم/م³. وكثافة الزيت 0.92 جم/سم³ = 920 كجم/م³ — أقل من الماء فيطفو عليه.</p>
+<h3 style="margin-top:12px">درجة الحرارة</h3>
+<p class="thsum">ماذا تعني؟ تحويلات الحرارة هي الوحيدة غير التناسبية: فيها «إزاحة» لأن أصفار المقاييس مختلفة. الكلفن والمئوي حجم الدرجة فيهما واحد والفرق إزاحة 273.15 فقط، أما الفهرنهايت فدرجته أصغر (9 درجات فهرنهايت = 5 درجات مئوية) وصفره مزاح 32 درجة. القوانين بصيغتها الرياضية: <span class="fxl" data-tex="T_{K} = T_{C} + 273.15"></span> و <span class="fxl" data-tex="T_{F} = \\tfrac{9}{5} T_{C} + 32"></span> و <span class="fxl" data-tex="T_{C} = \\tfrac{5}{9} (T_{F} - 32)"></span>.</p>
+<table class="tt"><tr><th>من</th><th>إلى</th><th>العلاقة</th></tr>
+<tr><td>°م (Celsius)</td><td>كلفن (SI)</td><td>+ 273.15</td></tr>
+<tr><td>كلفن</td><td>°م</td><td>− 273.15</td></tr>
+<tr><td>°م</td><td>°ف</td><td>× 9/5 ثم + 32</td></tr>
+<tr><td>°ف (Fahrenheit)</td><td>°م</td><td>− 32 ثم × 5/9</td></tr></table>
+<p class="thsum">مثال محلول خطوة بخطوة: فرن بيتزا على 200°م — كم بالفهرنهايت؟ الخطوة 1: اضرب في 9/5: 200 × 9/5 = 360. الخطوة 2: أضف الإزاحة: 360 + 32 = 392°F. وبالكلفن (وحدة SI): 200 + 273.15 = 473.15 K. وتذكّر: فرق درجة واحدة مئوية = فرق كلفن واحد بالضبط، ففروق الحرارة لا تُزاح أبدًا.</p>`,
+en:`<div class="thlaw">The complete study reference — units, measurement and conversions:</div>
+<p class="thsum">This section is a complete revision reference for the topic of units and dimensions: read it before an exam and you will find everything you need — the three systems, dimensional analysis, significant figures, and conversion tables for every quantity, each with a worked example.</p>
+<h3 style="margin-top:12px">1. The seven SI base units</h3>
+<p class="thsum">Only seven 'base' quantities were chosen as the foundation, and every other physical quantity is built from them. Since 2019 the seven units are defined by fixed constants of nature that never change, so a unit is no longer a metal artefact in a vault but a law of the universe itself.</p>
+<table class="tt"><tr><th>Quantity</th><th>Unit</th><th>Symbol</th><th>What does it measure?</th></tr>
+<tr><td>Length</td><td>metre</td><td>m</td><td>The distance between two points — defined by the speed of light: light travels one metre in 1/299,792,458 of a second</td></tr>
+<tr><td>Mass</td><td>kilogram</td><td>kg</td><td>The amount of matter and its inertia — defined by Planck's constant</td></tr>
+<tr><td>Time</td><td>second</td><td>s</td><td>The duration of events — 9,192,631,770 vibrations of the caesium-133 atom</td></tr>
+<tr><td>Electric current</td><td>ampere</td><td>A</td><td>The rate of flow of charge — defined by the elementary charge</td></tr>
+<tr><td>Temperature</td><td>kelvin</td><td>K</td><td>The average kinetic energy of particles — defined by Boltzmann's constant; absolute zero = 0 K</td></tr>
+<tr><td>Amount of substance</td><td>mole</td><td>mol</td><td>The number of particles — one mole = 6.022×10²³ particles (Avogadro's number)</td></tr>
+<tr><td>Luminous intensity</td><td>candela</td><td>cd</td><td>The brightness of a light source in a given direction, as the eye sees it</td></tr></table>
+<h3 style="margin-top:12px">2. Derived units — built from the base units</h3>
+<p class="thsum">What does 'derived' mean? That the unit can be written algebraically in terms of the base units alone. Speed is derived (metre/second), and force is derived (kilogram·metre/second²) and was given the special name newton because it is used so often. Memorising the derived-units table in base terms is the fastest way to check any law by dimensional analysis.</p>
+<table class="tt"><tr><th>Quantity</th><th>Unit</th><th>Symbol</th><th>In base units</th></tr>
+<tr><td>Force</td><td>newton</td><td>N</td><td>kg·m/s²</td></tr>
+<tr><td>Energy and work</td><td>joule</td><td>J</td><td>kg·m²/s²</td></tr>
+<tr><td>Power</td><td>watt</td><td>W</td><td>kg·m²/s³</td></tr>
+<tr><td>Pressure</td><td>pascal</td><td>Pa</td><td>kg/(m·s²)</td></tr>
+<tr><td>Frequency</td><td>hertz</td><td>Hz</td><td>1/s</td></tr>
+<tr><td>Electric charge</td><td>coulomb</td><td>C</td><td>A·s</td></tr>
+<tr><td>Electric potential</td><td>volt</td><td>V</td><td>kg·m²/(A·s³)</td></tr>
+<tr><td>Electric resistance</td><td>ohm</td><td>Ω</td><td>kg·m²/(A²·s³)</td></tr>
+<tr><td>Magnetic field</td><td>tesla</td><td>T</td><td>kg/(A·s²)</td></tr>
+<tr><td>Capacitance</td><td>farad</td><td>F</td><td>A²·s⁴/(kg·m²)</td></tr></table>
+<h3 style="margin-top:12px">3. SI prefixes — the powers-of-ten ladder</h3>
+<p class="thsum">A prefix is a shorthand for a power of ten multiplying the unit: kilo means ×1000 and milli means ×0.001. Every three steps up the ladder (×1000) there is a famous name, with sub-steps in between (hecto/deca/deci/centi) used in daily life more than in the laboratory. Quick example: 0.025 m = 2.5 cm = 25 mm — the same length, and the prefix closest to the object's size is always the clearest.</p>
+<figure class="thfig"><svg viewBox="0 0 650 118" role="img" aria-label="The SI prefixes ladder"><rect x="2" y="78" width="46" height="14" fill="var(--amber)" opacity=".8"/><text x="25" y="72" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">p</text><text x="25" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻¹²</text><rect x="52" y="70" width="46" height="22" fill="var(--amber)" opacity=".8"/><text x="75" y="64" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">n</text><text x="75" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻⁹</text><rect x="102" y="62" width="46" height="30" fill="var(--amber)" opacity=".8"/><text x="125" y="56" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">µ</text><text x="125" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻⁶</text><rect x="152" y="55" width="46" height="37" fill="var(--amber)" opacity=".8"/><text x="175" y="49" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">m</text><text x="175" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻³</text><rect x="202" y="52" width="46" height="40" fill="var(--amber)" opacity=".8"/><text x="225" y="46" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">c</text><text x="225" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻²</text><rect x="252" y="49" width="46" height="43" fill="var(--amber)" opacity=".8"/><text x="275" y="43" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">d</text><text x="275" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁻¹</text><rect x="302" y="46" width="46" height="46" fill="var(--ink)" opacity=".55"/><text x="325" y="40" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">1</text><text x="325" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁰</text><rect x="352" y="44" width="46" height="48" fill="var(--teal)" opacity=".8"/><text x="375" y="38" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">da</text><text x="375" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10¹</text><rect x="402" y="41" width="46" height="51" fill="var(--teal)" opacity=".8"/><text x="425" y="35" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">h</text><text x="425" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10²</text><rect x="452" y="38" width="46" height="54" fill="var(--teal)" opacity=".8"/><text x="475" y="32" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">k</text><text x="475" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10³</text><rect x="502" y="31" width="46" height="61" fill="var(--teal)" opacity=".8"/><text x="525" y="25" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">M</text><text x="525" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁶</text><rect x="552" y="23" width="46" height="69" fill="var(--teal)" opacity=".8"/><text x="575" y="17" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">G</text><text x="575" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10⁹</text><rect x="602" y="16" width="46" height="76" fill="var(--teal)" opacity=".8"/><text x="625" y="10" font-size="12" font-weight="700" fill="var(--ink)" text-anchor="middle">T</text><text x="625" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">10¹²</text></svg><figcaption>The prefixes ladder: each step up is ×10, and the famous steps (k, M, G, T and m, µ, n, p) jump ×1000 at a time — with the base unit in the middle.</figcaption></figure>
+<table class="tt"><tr><th>Prefix</th><th>Symbol</th><th>Value</th><th>A living example</th></tr>
+<tr><td>tera</td><td>T</td><td>10¹²</td><td>Modern storage-drive capacities</td></tr>
+<tr><td>giga</td><td>G</td><td>10⁹</td><td>Processor frequencies (GHz)</td></tr>
+<tr><td>mega</td><td>M</td><td>10⁶</td><td>Pressure in megapascals in engineering</td></tr>
+<tr><td>kilo</td><td>k</td><td>10³</td><td>The kilogram and the kilometre</td></tr>
+<tr><td>hecto</td><td>h</td><td>10²</td><td>The hectare = 10,000 m²</td></tr>
+<tr><td>deca</td><td>da</td><td>10¹</td><td>Rarely used</td></tr>
+<tr><td>deci</td><td>d</td><td>10⁻¹</td><td>The decilitre in recipes</td></tr>
+<tr><td>centi</td><td>c</td><td>10⁻²</td><td>The centimetre — the CGS length unit</td></tr>
+<tr><td>milli</td><td>m</td><td>10⁻³</td><td>The millimetre and the milligram</td></tr>
+<tr><td>micro</td><td>µ</td><td>10⁻⁶</td><td>The micrometre — the size of cells</td></tr>
+<tr><td>nano</td><td>n</td><td>10⁻⁹</td><td>The nanometre — wavelengths of light are hundreds of it</td></tr>
+<tr><td>pico</td><td>p</td><td>10⁻¹²</td><td>The picofarad in electronics</td></tr></table>
+<h3 style="margin-top:12px">4. The CGS system — the older, smaller system</h3>
+<p class="thsum">The CGS system takes its base units from the centimetre (C), the gram (G) and the second (S) — exactly the same second, but the metre is replaced by the centimetre and the kilogram by the gram, so the size of every derived unit changes with them. It was the scientists' system until the mid-twentieth century, and it still lives in astronomy, in older electromagnetism books, and in two famous units: the dyne and the erg. The essential difference from SI: smaller units, so larger numbers — and the relations between the two systems are clean powers of ten (100, 1000, 10⁵, 10⁷) because both systems are metric.</p>
+<table class="tt"><tr><th>Quantity</th><th>SI</th><th>CGS</th><th>Relation</th></tr>
+<tr><td>Length</td><td>metre m</td><td>centimetre cm</td><td>1 m = 100 cm</td></tr>
+<tr><td>Mass</td><td>kilogram kg</td><td>gram g</td><td>1 kg = 1000 g</td></tr>
+<tr><td>Time</td><td>second s</td><td>second s</td><td>One shared unit</td></tr>
+<tr><td>Force</td><td>newton N</td><td>dyne dyn</td><td>1 N = 10⁵ dyn</td></tr>
+<tr><td>Energy</td><td>joule J</td><td>erg</td><td>1 J = 10⁷ erg</td></tr>
+<tr><td>Pressure</td><td>pascal Pa</td><td>dyne/cm² (barye)</td><td>1 Pa = 10 dyn/cm²</td></tr></table>
+<h3 style="margin-top:12px">5. The imperial and US customary system</h3>
+<p class="thsum">A historical system whose units come from the human body and daily life (the inch from the thumb, the foot from the foot), still official in the United States and common in Britain. Since 1959 the world has agreed that the inch is exactly 2.54 cm, so imperial conversions are now exact, not approximate. A real warning: the US gallon (3.785 litres) is smaller than the British imperial gallon (4.546 litres) — the same name, two genuinely different units.</p>
+<table class="tt"><tr><th>Quantity</th><th>Unit</th><th>Equals</th></tr>
+<tr><td>Length</td><td>inch in</td><td>2.54 cm (exact)</td></tr>
+<tr><td>Length</td><td>foot ft = 12 inches</td><td>30.48 cm</td></tr>
+<tr><td>Length</td><td>yard yd = 3 feet</td><td>0.9144 m</td></tr>
+<tr><td>Length</td><td>mile = 1760 yards</td><td>1.609 km</td></tr>
+<tr><td>Mass</td><td>ounce oz</td><td>28.35 g</td></tr>
+<tr><td>Mass</td><td>pound lb = 16 ounces</td><td>0.454 kg</td></tr>
+<tr><td>Volume</td><td>US gallon</td><td>3.785 litres</td></tr>
+<tr><td>Volume</td><td>imperial gallon</td><td>4.546 litres</td></tr>
+<tr><td>Temperature</td><td>Fahrenheit °F</td><td>Water freezes at 32° and boils at 212°</td></tr></table>
+<h3 style="margin-top:12px">6. Dimensional analysis — testing laws and deriving them</h3>
+<p class="thsum">Every physical quantity has a 'dimension' describing its nature, not its unit: length has dimension <span class="fxl" data-tex="L"></span>, mass <span class="fxl" data-tex="M"></span>, time <span class="fxl" data-tex="T"></span>, and the dimensions of everything else are built from them: speed <span class="fxl" data-tex="v: LT^{-1}"></span>, acceleration <span class="fxl" data-tex="LT^{-2}"></span>, force <span class="fxl" data-tex="MLT^{-2}"></span>, energy <span class="fxl" data-tex="ML^{2}T^{-2}"></span>. The golden rule — dimensional homogeneity: two quantities of different dimensions can never be added, and in any correct physical equation the dimensions of the two sides must match exactly. This tool has three powers: (1) catching errors in any law or calculation, (2) verifying a unit conversion, and (3) deriving the form of an unknown relation from the quantities it depends on.</p>
+<p class="thsum"><b>Worked example 1 — checking a law:</b> is the pendulum law <span class="fxl" data-tex="T = 2\\pi\\sqrt{L/g}"></span> dimensionally possible? Step 1: the dimension of g is <span class="fxl" data-tex="LT^{-2}"></span>. Step 2: the dimension of the ratio L/g is <span class="fxl" data-tex="L / (LT^{-2}) = T^{2}"></span>. Step 3: the square root gives <span class="fxl" data-tex="T"></span> — exactly the dimension of time, and the constant 2π is dimensionless. The law passes the test. Had the law been <span class="fxl" data-tex="T = 2\\pi\\sqrt{g/L}"></span>, its dimension would be <span class="fxl" data-tex="T^{-1}"></span> — a frequency, not a time — and we would reject it at once, with no experiment at all.</p>
+<p class="thsum"><b>Worked example 2 — deriving the form of a relation:</b> suppose the pendulum's period depends on the length L, the acceleration g, and the bob's mass m in the form <span class="fxl" data-tex="T \\propto L^{a} g^{b} m^{c}"></span>. Matching dimensions: <span class="fxl" data-tex="T = (L)^{a} (LT^{-2})^{b} (M)^{c}"></span>, so compare exponents: for mass, c = 0 (the mass does not enter at all!); for time: −2b = 1, giving b = −1/2; for length: a + b = 0, giving a = 1/2. The result: <span class="fxl" data-tex="T \\propto \\sqrt{L/g}"></span> — we derived the law's form and exposed the period's independence of mass from dimensions alone; only the constant 2π remains, set by experiment or the full derivation.</p>
+<p class="thsum"><b>Worked example 3 — catching an error:</b> a student wrote the falling distance as <span class="fxl" data-tex="s = v t^{2}"></span>. The dimension of the right side is <span class="fxl" data-tex="(LT^{-1})(T^{2}) = LT"></span>, which is not a length — the equation is certainly wrong. Dimensionally correct forms: <span class="fxl" data-tex="s = vt"></span>, or <span class="fxl" data-tex="s = \\tfrac{1}{2} a t^{2}"></span> because <span class="fxl" data-tex="(LT^{-2})(T^{2}) = L"></span>.</p>
+<h3 style="margin-top:12px">7. Measurement, significant figures and uncertainty</h3>
+<p class="thsum">Every real measurement falls short of certainty: the last digit you write is always an estimate. The rules of significant figures: (1) every non-zero digit is significant; (2) zeros between significant digits are significant (1005 has four); (3) trailing zeros after a decimal point are significant because they carry measurement information (14.60 claims precision to 0.01); (4) leading zeros before the first significant digit are never significant (0.0042 has only two). Uncertainty has two faces: absolute (±0.1 cm) and relative, measured by <span class="fxl" data-tex="\\dfrac{\\Delta x}{x}"></span> and usually expressed as a percentage — the more important one, because it compares the error with the size of the quantity itself.</p>
+<p class="thsum"><b>Worked example:</b> you measured a pencil with a millimetre ruler and found 14.6 cm, with an absolute uncertainty of ±0.1 cm (about half the smallest division, when estimating between marks). The relative uncertainty = 0.1/14.6 ≈ 0.0068, i.e. about 0.7% only — a good measurement. And note: writing the result as 14.600 cm would be a scientific lie, because it claims a precision your instrument does not have; the significant figures in your result may never exceed those of your measurement.</p>
+<h3 style="margin-top:12px">8. Visual estimation and orders of magnitude — the Fermi method</h3>
+<p class="thsum">An 'order of magnitude' is the nearest power of ten to a quantity: a pencil's length is of order 10⁻¹ m, a human's height 10⁰ m, a tower's height 10² m. The Fermi method (after Enrico Fermi) for estimating any unknown quantity: break it into factors you can estimate one by one, round each factor to the nearest power of ten, and multiply — the individual errors tend to cancel, so the result lands on the correct order of magnitude. This is exactly the skill this experiment's lab builds: an eye trained to compare against a reference, and a brain that works in powers of ten.</p>
+<p class="thsum"><b>Worked example — the mass of the air in a lecture hall:</b> Step 1: the hall's volume ≈ 10 m × 8 m × 3 m = 240 m³ (of order 10²). Step 2: the density of air ≈ 1.2 kg/m³ (of order 10⁰ — you know it from the fact that a litre of air is about a gram and a quarter). Step 3: the mass = 240 × 1.2 ≈ 290 kg ≈ 300 kg — about the mass of four students, breathed by the whole hall! With no instrument at all, and three simple estimates, you reached the correct order of magnitude.</p>
+<h3 style="margin-top:12px">9. The complete conversion tables — with a worked example for every quantity</h3>
+<p class="thsum">The working rule in every table: a conversion is a multiplication by a 'fraction equal to 1' (such as 100 cm/1 m), so the old unit cancels and the new one remains. Under each table: what the conversion means physically, and a worked example, step by step, crossing between the systems.</p>
 <h3 style="margin-top:12px">Length</h3>
+<p class="thsum">What it means: all length units measure the same thing — distance — and differ only in the size of the 'ruler'. The inch is the bridge between the two worlds because it is defined internationally as exactly 2.54 cm, so every imperial length conversion is exact, not approximate.</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
 <tr><td>Inch (in)</td><td>cm</td><td>× 2.54 (exact)</td></tr>
 <tr><td>Foot (ft)</td><td>cm / m</td><td>× 30.48 cm = 0.3048 m</td></tr>
 <tr><td>Yard (yd)</td><td>m</td><td>× 0.9144</td></tr>
 <tr><td>Mile</td><td>km</td><td>× 1.609</td></tr>
-<tr><td>m (SI)</td><td>cm (CGS)</td><td>× 100</td></tr></table>
-<p class="thsum">Worked example: a door 6 feet 5 inches high = 6×30.48 + 5×2.54 = 182.9 + 12.7 = 195.6 cm ≈ 1.96 m.</p>
+<tr><td>m (SI)</td><td>cm (CGS)</td><td>× 100</td></tr>
+<tr><td>km</td><td>mile</td><td>× 0.6214</td></tr></table>
+<p class="thsum">Worked example, step by step: a player is 6 feet 1 inch tall. Step 1: feet to metres: 6 × 0.3048 = 1.829 m. Step 2: the inch to centimetres: 1 × 2.54 = 2.54 cm = 0.0254 m. Step 3: the total = 1.829 + 0.025 ≈ 1.85 m — which is 185 cm in CGS units.</p>
+<h3 style="margin-top:12px">Area</h3>
+<p class="thsum">What it means: area is length × length, so its conversion factor is the square of the length factor: 1 m = 100 cm, but 1 m² = 100² = 10,000 cm². Forgetting to square is the most common mistake in all area conversions.</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>m² (SI)</td><td>cm² (CGS)</td><td>× 10⁴</td></tr>
+<tr><td>cm²</td><td>mm²</td><td>× 100</td></tr>
+<tr><td>km²</td><td>m²</td><td>× 10⁶</td></tr>
+<tr><td>Hectare (ha)</td><td>m²</td><td>× 10⁴</td></tr>
+<tr><td>Square foot (ft²)</td><td>m²</td><td>× 0.0929</td></tr>
+<tr><td>Feddan (Egypt)</td><td>m²</td><td>× about 4200</td></tr></table>
+<p class="thsum">Worked example, step by step: a flat of 120 m² — how many square centimetres? Step 1: the length factor from m to cm is 100. Step 2: square it for area: 100² = 10,000. Step 3: 120 × 10,000 = 1,200,000 cm² = 1.2×10⁶ cm². Conversely, a plot of 2 feddans ≈ 8400 m².</p>
+<h3 style="margin-top:12px">Volume</h3>
+<p class="thsum">What it means: volume is length × length × length, so its factor is the cube of the length factor: 1 m³ = 100³ = 10⁶ cm³. And the litre itself is a hidden volume unit: 1 litre = exactly 1000 cm³ (a cube of side 10 cm).</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>Litre (L)</td><td>cm³ (CGS) / ml</td><td>× 1000</td></tr>
+<tr><td>m³ (SI)</td><td>Litre</td><td>× 1000</td></tr>
+<tr><td>m³</td><td>cm³</td><td>× 10⁶</td></tr>
+<tr><td>US gallon</td><td>Litre</td><td>× 3.785</td></tr>
+<tr><td>Imperial gallon</td><td>Litre</td><td>× 4.546</td></tr>
+<tr><td>US cup</td><td>ml</td><td>× 237</td></tr></table>
+<p class="thsum">Worked example, step by step: a fuel tank holds 40 litres — how many US gallons? Step 1: the gallon is bigger than the litre, so the answer is smaller — the operation is division, not multiplication. Step 2: 40 ÷ 3.785 ≈ 10.6 gallons. Conversely: a laboratory flask of 2.5 litres = 2500 cm³ in CGS units.</p>
 <h3 style="margin-top:12px">Mass</h3>
+<p class="thsum">What it means: mass is the amount of matter itself; it does not change with your place in the universe — what changes is your weight (gravity's force on it). The pound is an imperial mass unit equal to about 0.454 kg: remember 'a pound is a little less than half a kilogram'.</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
 <tr><td>Pound (lb)</td><td>kg</td><td>× 0.454</td></tr>
 <tr><td>Ounce (oz)</td><td>g</td><td>× 28.35</td></tr>
 <tr><td>kg (SI)</td><td>g (CGS)</td><td>× 1000</td></tr>
-<tr><td>Metric ton</td><td>kg</td><td>× 1000</td></tr></table>
-<p class="thsum">Worked example: a boxer weighing 176 lb = 176 × 0.454 ≈ 79.9 kg ≈ 80 kg.</p>
-<h3 style="margin-top:12px">Time and temperature</h3>
+<tr><td>Metric ton</td><td>kg</td><td>× 1000</td></tr>
+<tr><td>Stone</td><td>kg</td><td>× 6.35</td></tr>
+<tr><td>Carat (diamonds)</td><td>g</td><td>× 0.2</td></tr></table>
+<p class="thsum">Worked example, step by step: a boxer weighs 200 lb. Step 1: the pound is smaller than the kilogram, so the answer is less than 200 — multiply by 0.454. Step 2: 200 × 0.454 = 90.8 kg. Step 3: in CGS units: 90.8 × 1000 = 90,800 g.</p>
+<h3 style="margin-top:12px">Time</h3>
+<p class="thsum">What it means: the second is the one unit shared literally by SI, CGS and imperial alike — there is never a system conversion for it. All time conversions come from dividing the Earthly day: 60 and 60 and 24.</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
-<tr><td>Minute</td><td>Second (SI and CGS alike)</td><td>× 60</td></tr>
+<tr><td>Minute</td><td>Second</td><td>× 60</td></tr>
 <tr><td>Hour</td><td>Second</td><td>× 3600</td></tr>
-<tr><td>°C (Celsius)</td><td>Kelvin (SI)</td><td>+ 273.15</td></tr>
-<tr><td>°F (Fahrenheit)</td><td>°C</td><td>(°F − 32) × 5/9</td></tr></table>
-<p class="thsum">Worked example: a fever of 102 °F: (102 − 32) × 5/9 = 38.9 °C. Note: the second is shared by SI and CGS — no conversion there.</p>
-<h3 style="margin-top:12px">Volume</h3>
+<tr><td>Day</td><td>Second</td><td>× 86,400</td></tr>
+<tr><td>Week</td><td>Day</td><td>× 7</td></tr>
+<tr><td>Year</td><td>Second</td><td>× about 3.156×10⁷</td></tr></table>
+<p class="thsum">Worked example, step by step: a film runs for two and a half hours. Step 1: hours to minutes: 2.5 × 60 = 150 minutes. Step 2: minutes to seconds: 150 × 60 = 9000 seconds. Fermi's famous trick: a year ≈ π×10⁷ seconds — an approximation that serves most estimations.</p>
+<h3 style="margin-top:12px">Speed</h3>
+<p class="thsum">What it means: speed is length ÷ time, so converting it is two conversions at once. The magic number: divide km/h by 3.6 to get m/s (because the hour is 3600 seconds and the kilometre is 1000 metres: 1000/3600 = 1/3.6).</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
-<tr><td>Litre</td><td>cm³ (CGS) / ml</td><td>× 1000</td></tr>
-<tr><td>US gallon</td><td>Litre</td><td>× 3.785</td></tr>
-<tr><td>m³ (SI)</td><td>Litre</td><td>× 1000</td></tr>
-<tr><td>US cup</td><td>ml</td><td>× 237</td></tr></table>
-<p class="thsum">Worked example: a 12-gallon car tank = 12 × 3.785 ≈ 45.4 litres.</p>
-<h3 style="margin-top:12px">Energy and power</h3>
+<tr><td>km/h</td><td>m/s (SI)</td><td>÷ 3.6</td></tr>
+<tr><td>m/s</td><td>cm/s (CGS)</td><td>× 100</td></tr>
+<tr><td>Miles per hour (mph)</td><td>km/h</td><td>× 1.609</td></tr>
+<tr><td>mph</td><td>m/s</td><td>× 0.447</td></tr>
+<tr><td>Knot</td><td>km/h</td><td>× 1.852</td></tr></table>
+<p class="thsum">Worked example, step by step: a car travels at 90 km/h. Step 1: to SI units: 90 ÷ 3.6 = 25 m/s. Step 2: to CGS units: 25 × 100 = 2500 cm/s. Conversely, an American car at 60 mph: 60 × 1.609 ≈ 96.6 km/h.</p>
+<h3 style="margin-top:12px">Acceleration</h3>
+<p class="thsum">What it means: acceleration is the change of speed every second, and its unit is length/time². Its most famous value: the acceleration of gravity, g = 9.8 m/s² = 980 cm/s² — note that converting it from SI to CGS multiplies by 100 (the length factor alone, because time is shared).</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>m/s² (SI)</td><td>cm/s² (CGS)</td><td>× 100</td></tr>
+<tr><td>g (Earth's gravity)</td><td>m/s²</td><td>× 9.8</td></tr>
+<tr><td>ft/s²</td><td>m/s²</td><td>× 0.3048</td></tr>
+<tr><td>km/h per second</td><td>m/s²</td><td>÷ 3.6</td></tr></table>
+<p class="thsum">Worked example, step by step: a car reaches 100 km/h from rest in 8 seconds. Step 1: convert the final speed: 100 ÷ 3.6 ≈ 27.8 m/s. Step 2: the acceleration = Δv/Δt = 27.8 ÷ 8 ≈ 3.5 m/s². Step 3: in CGS units: 3.5 × 100 = 350 cm/s² — about a third of g.</p>
+<h3 style="margin-top:12px">Force</h3>
+<p class="thsum">What it means: the SI force is the newton: what accelerates one kilogram by 1 m/s². In CGS it is the dyne: what accelerates one gram by 1 cm/s² — and between them lie exactly 10⁵, from the product (1000 g/kg) × (100 cm/m).</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>Newton (SI)</td><td>Dyne (CGS)</td><td>× 10⁵</td></tr>
+<tr><td>Kilogram-force (kgf)</td><td>Newton</td><td>× 9.807</td></tr>
+<tr><td>Pound-force (lbf)</td><td>Newton</td><td>× 4.448</td></tr></table>
+<p class="thsum">Worked example, step by step: the weight of a student of mass 70 kg. Step 1: weight = mass × g: 70 × 9.8 = 686 newtons. Step 2: to CGS units: 686 × 10⁵ = 6.86×10⁷ dynes. Note: the mass is 70 kg in both systems, but the 'weight' as a force carries a different number in each force unit.</p>
+<h3 style="margin-top:12px">Energy</h3>
+<p class="thsum">What it means: energy is work done: force × distance. The joule is a newton·metre, and the erg is a dyne·centimetre — with 10⁷ between them. The calorie is an old thermal unit still living on food packaging (and one food Calorie = 1000 physical calories = 1 kcal).</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
 <tr><td>Joule (SI)</td><td>Erg (CGS)</td><td>× 10⁷</td></tr>
 <tr><td>Calorie (cal)</td><td>Joule</td><td>× 4.184</td></tr>
+<tr><td>Kilocalorie (kcal)</td><td>Joule</td><td>× 4184</td></tr>
 <tr><td>Kilowatt-hour</td><td>Joule</td><td>× 3.6×10⁶</td></tr>
-<tr><td>Electron-volt (eV)</td><td>Joule</td><td>× 1.602×10⁻¹⁹</td></tr>
+<tr><td>Electron-volt (eV)</td><td>Joule</td><td>× 1.602×10⁻¹⁹</td></tr></table>
+<p class="thsum">Worked example, step by step: a 100-watt lamp lit for one full hour. Step 1: energy = power × time = 100 × 3600 = 360,000 joules = 3.6×10⁵ J. Step 2: that is exactly 0.1 kilowatt-hour (the billing unit). Step 3: in CGS units: 3.6×10⁵ × 10⁷ = 3.6×10¹² ergs — a huge number that shows why SI chose the joule.</p>
+<h3 style="margin-top:12px">Power</h3>
+<p class="thsum">What it means: power is the rate of spending energy: one joule per second = one watt. The horsepower is an imperial unit from the age of steam engines: one horsepower ≈ 746 watts — so a 100 hp engine has a power of 74.6 kilowatts.</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>Watt (SI)</td><td>Erg/second (CGS)</td><td>× 10⁷</td></tr>
+<tr><td>Kilowatt</td><td>Watt</td><td>× 1000</td></tr>
 <tr><td>Horsepower (hp)</td><td>Watt</td><td>× 746</td></tr></table>
-<p class="thsum">Worked example: a 500-kilocalorie meal = 500,000 × 4.184 ≈ 2.09×10⁶ joules — energy enough to lift 70 kg vertically by about 3 km!</p>
+<p class="thsum">Worked example, step by step: a car engine of 150 hp. Step 1: 150 × 746 = 111,900 watts. Step 2: in kilowatts: ≈ 112 kW. Step 3: in CGS units: 111,900 × 10⁷ ≈ 1.12×10¹² erg/s.</p>
 <h3 style="margin-top:12px">Pressure</h3>
+<p class="thsum">What it means: pressure is force spread over area: one pascal = one newton over a whole square metre — a very small unit, so atmospheric pressure is a hundred thousand of them. Its CGS unit is the dyne/cm², called the barye, and only 10 of them make a pascal.</p>
 <table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
 <tr><td>Atmosphere (atm)</td><td>Pascal (SI)</td><td>× 101,325</td></tr>
 <tr><td>Bar</td><td>Pascal</td><td>× 10⁵</td></tr>
 <tr><td>mmHg</td><td>Pascal</td><td>× 133.3</td></tr>
-<tr><td>atm</td><td>dyne/cm² (CGS)</td><td>× 1.013×10⁶</td></tr></table>
-<p class="thsum">Worked example: a blood pressure of 120 mmHg = 120 × 133.3 ≈ 16,000 pascals ≈ 0.158 atm.</p>`};
+<tr><td>Pascal</td><td>Dyne/cm² (CGS)</td><td>× 10</td></tr>
+<tr><td>psi (lb/in²)</td><td>Pascal</td><td>× 6895</td></tr></table>
+<p class="thsum">Worked example, step by step: a car tyre at 32 psi. Step 1: 32 × 6895 ≈ 220,600 pascals. Step 2: in atmospheres: 220,600 ÷ 101,325 ≈ 2.18 atm. Step 3: in CGS units: 220,600 × 10 ≈ 2.2×10⁶ dyne/cm².</p>
+<h3 style="margin-top:12px">Density</h3>
+<p class="thsum">What it means: density is the mass of a unit volume, and converting it combines a mass conversion and a volume conversion together: 1 g/cm³ = exactly 1000 kg/m³. Water is the universal reference: 1 g/cm³ in CGS is the same as 1000 kg/m³ in SI.</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>g/cm³ (CGS)</td><td>kg/m³ (SI)</td><td>× 1000</td></tr>
+<tr><td>kg/m³</td><td>g/cm³</td><td>÷ 1000</td></tr>
+<tr><td>Water (the reference)</td><td>—</td><td>1 g/cm³ = 1000 kg/m³</td></tr>
+<tr><td>lb/ft³</td><td>kg/m³</td><td>× 16.02</td></tr></table>
+<p class="thsum">Worked example, step by step: the density of iron is 7.87 g/cm³. Step 1: notice that g/cm³ is the CGS unit, and its number is 'small and friendly'. Step 2: to SI units: 7.87 × 1000 = 7870 kg/m³. And the density of oil, 0.92 g/cm³ = 920 kg/m³ — less than water, so it floats on it.</p>
+<h3 style="margin-top:12px">Temperature</h3>
+<p class="thsum">What it means: temperature conversions are the only non-proportional ones: they carry an 'offset', because the zeros of the scales differ. Kelvin and Celsius have the same degree size and differ only by the 273.15 offset, while the Fahrenheit degree is smaller (9 Fahrenheit degrees = 5 Celsius degrees) and its zero is shifted by 32. The laws in mathematical form: <span class="fxl" data-tex="T_{K} = T_{C} + 273.15"></span>, <span class="fxl" data-tex="T_{F} = \\tfrac{9}{5} T_{C} + 32"></span>, and <span class="fxl" data-tex="T_{C} = \\tfrac{5}{9} (T_{F} - 32)"></span>.</p>
+<table class="tt"><tr><th>From</th><th>To</th><th>Relation</th></tr>
+<tr><td>°C (Celsius)</td><td>Kelvin (SI)</td><td>+ 273.15</td></tr>
+<tr><td>Kelvin</td><td>°C</td><td>− 273.15</td></tr>
+<tr><td>°C</td><td>°F</td><td>× 9/5 then + 32</td></tr>
+<tr><td>°F (Fahrenheit)</td><td>°C</td><td>− 32 then × 5/9</td></tr></table>
+<p class="thsum">Worked example, step by step: a pizza oven at 200 °C — how many Fahrenheit? Step 1: multiply by 9/5: 200 × 9/5 = 360. Step 2: add the offset: 360 + 32 = 392 °F. And in kelvin (the SI unit): 200 + 273.15 = 473.15 K. Remember: a difference of one Celsius degree is exactly a difference of one kelvin, so temperature differences are never offset.</p>`};
 /* ---- attach the expansion + conversion reference to every theory rendering ---- */
 const _theoryBlockPlus=theoryBlock;
 theoryBlock=function(e,forPrint){
@@ -7954,8 +8314,20 @@ showScreen("scr-login");
    and the print/PDF sheet. No hand-drawn HTML/CSS fractions or radicals remain. */
 let _mjState=0;
 function texOf(el){const n=+el.getAttribute("data-fx");const th=(typeof THEORY!=="undefined")?THEORY[n]:null;return th?th.fx:null;}
+/* Inline LaTeX spans (.fxl[data-tex]) — used by Experiment 1's expanded study
+   reference for the laws inside its prose and tables. Rendered by the same
+   engine pass as the display formulas, in the theory screens AND in the
+   #pdfStage sheet, so the downloaded PDF carries real typeset math too. */
+function typesetInlineTex(root){
+  const els=Array.from((root||document).querySelectorAll(".fxl[data-tex]:not([data-done])"));
+  if(!els.length)return;
+  if(window.katex){els.forEach(el=>{const tex=el.getAttribute("data-tex");try{katex.render(tex,el,{displayMode:false,throwOnError:false,strict:false});}catch(e){el.textContent=tex;}el.setAttribute("data-done","1");});return;}
+  els.forEach(el=>{el.textContent="\\("+el.getAttribute("data-tex")+"\\)";el.classList.add("mj-pending");el.setAttribute("data-done","1");});
+  if(window.MathJax&&MathJax.typesetPromise)mjTypeset();
+}
 let _texQueue=[],_texBusy=false;
 function typesetMath(root){
+  try{typesetInlineTex(root);}catch(e){}
   const els=Array.from((root||document).querySelectorAll(".formula[data-fx]:not([data-done])"));
   if(!els.length)return;
   if(window.katex){
@@ -8056,7 +8428,7 @@ window.addEventListener("resize",()=>{if(_fitRz)clearTimeout(_fitRz);_fitRz=setT
    and must not trigger a full-document formula scan every frame. */
 if(window.MutationObserver&&document.body){new MutationObserver(muts=>{
   for(const m of muts)for(const nd of m.addedNodes){
-    if(nd.nodeType===1&&((nd.classList&&nd.classList.contains("formula"))||(nd.querySelector&&nd.querySelector(".formula")))){queueTypeset();return;}
+    if(nd.nodeType===1&&((nd.classList&&(nd.classList.contains("formula")||nd.classList.contains("fxl")))||(nd.querySelector&&nd.querySelector(".formula,.fxl")))){queueTypeset();return;}
   }
 }).observe(document.body,{childList:true,subtree:true});}
 window.addEventListener("load",()=>{typesetMath(document);setTimeout(()=>typesetMath(document),1500);setTimeout(()=>typesetMath(document),3500);});
@@ -8522,7 +8894,7 @@ const MISSION={
 const HOWTO={
 marker:["اسحب على المشهد نفسه: أول لمسة بتحط علامتك من الصفر، والسحب يمين وشمال بيحرّكها بدقة على الظاهرة نفسها (السلايدر اللي تحت بديل مكافئ). لما تثبّت، أكّد وشغّل المحاكاة وقارن علامتك بالحقيقة.","Drag on the scene itself: the first touch places your mark from zero, and dragging moves it precisely over the phenomenon itself (the slider below is an equivalent alternative). When settled, confirm, run the simulation, and compare your mark with the truth."],
 choice:["٣ جولات متدرجة في نفس القانون: اقرأ الموقف، اختر إجابة واحدة من التلاتة، وبعدين أكّد — الصح والغلط بيبانوا فورًا مع السبب قبل الجولة الجاية.","3 graded rounds on the same law: read the situation, pick one of the three answers, then confirm — right and wrong show at once with the reason, before the next round."],
-units:["٥ جولات تقدير، كل جولة بكمية ومشهد مختلف: اسحب على المشهد نفسه (أو السلايدر) لحد ما علامتك تطابق إحساسك، وبعد التأكيد أداة القياس الحقيقية بتظهر وتقيس قدامك.","5 estimation rounds, each with its own quantity and scene: drag on the scene itself (or the slider) until your mark matches your judgement; after you confirm, the real measuring instrument appears and measures in front of you."],
+units:["٥ جولات تقدير، كل جولة بكمية ومشهد مختلف: شريط التقدير بيبدأ فاضي تمامًا، وأول لمسة على المشهد أو الشريط بتحط علامتك من الصفر — والسحب بيحرّكها على قد مسافة سحبك بس لحد ما تطابق إحساسك، وبعد التأكيد أداة القياس الحقيقية بتظهر وتقيس قدامك.","5 estimation rounds, each with its own quantity and scene: the estimation strip starts completely empty, and the first touch on the scene or the strip places your mark from zero — dragging then moves it by exactly your drag distance until it matches your judgement; after you confirm, the real measuring instrument appears and measures in front of you."],
 heat:["توقعان على القضيب نفسه: اسحب على القضيب (أو السلايدر الأول) لتحديد جبهة الحرارة، والسلايدر التاني لحرارة المنتصف — وبعدين أكّد وشغّل التسخين وشوف التوزيع الحقيقي.","Two predictions on the rod itself: drag on the rod (or the first slider) to place the heat front, and the second slider for the midpoint temperature — then confirm, start heating, and watch the true distribution."],
 circuit:["جولتان بقيم مختلفة: اسحب على الدايرة نفسها (أو السلايدر) لضبط توقعك للتيار بالأمبير، وبعدين أكّد ووصّل الدايرة — سطوع المصباح وقراءة الأميتر هيحكموا على توقعك.","Two rounds with different values: drag on the circuit itself (or the slider) to set your current prediction in amperes, then confirm and connect — the lamp's brightness and the ammeter's reading will judge your prediction."],
 digital:["العب بحرية الأول: بدّل المداخل A وB وC واختار نوع كل بوابة ومداخلها وجدول الحقيقة بيتبني لحظيًا. وبعدين ابدأ تحدي التوقع: مداخل عشوائية والخرج مخفي، وتوقّعك Y قبل الكشف — ٣ جولات.","Play freely first: toggle inputs A, B and C, choose each gate's type and inputs, and the truth table builds live. Then start the prediction challenge: random inputs with the output hidden — predict Y before the reveal, 3 rounds."],
@@ -12109,14 +12481,13 @@ function duelBuildChoice(exp){
 function duelUnitsRounds(){
   function rr2(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
   const makers=[
-   ()=>{const tv=ri(8,26);const SC=12.2,PX=150,PY=196,OX=PX-13;
+   ()=>{const tv=ri(9,20);const SC=12.2,PX=150,PY=196,OX=PX-13;
      return {name:T("الطول","Length"),min:0,max:30,unit:"سم",trueVal:tv,
-      q:T("قلم رصاص على مكتب، وتحته موبايل حقيقي طوله ١٥ سم بيبدأ من نفس خط بداية القلم وبنفس مقياسه — قارن الطولين بعينك وخمّن طول القلم.","A pencil on a desk, with a real 15 cm phone under it starting at the pencil's exact start line and drawn at the same scale — compare the two lengths by eye and guess the pencil's length."),
+      q:T("قلم رصاص على مكتب — المشهد نضيف: مفيش أي أداة قياس ولا مرجع حجمي جنبه. خمّن طول القلم بعينك وذاكرتك البصرية بس.","A pencil on a desk — the scene is clean: no measuring tool and no size reference beside it. Guess the pencil's length with your eye and your visual memory alone."),
       draw(ctx,anim,guess,reveal){ctx.clearRect(0,0,640,300);ctx.fillStyle="rgba(125,147,158,.16)";ctx.fillRect(0,0,640,214);ctx.fillStyle="#8a5a2b";ctx.fillRect(0,214,640,46);
-        const phY=148,phH=34,phW=15*SC;
-        ctx.strokeStyle="rgba(217,119,6,.6)";ctx.lineWidth=1.5;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(OX,102);ctx.lineTo(OX,196);ctx.moveTo(OX+phW,102);ctx.lineTo(OX+phW,196);ctx.stroke();ctx.setLineDash([]);
-        ctx.fillStyle="#22303a";rr2(ctx,OX,phY,phW,phH,8);ctx.fill();ctx.fillStyle="#3d5a6b";rr2(ctx,OX+8,phY+6,phW-24,phH-12,4);ctx.fill();
-        ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("موبايل ١٥ سم — نفس خط البداية ونفس المقياس","A 15 cm phone — same start line, same scale"),330,138,"center",17,640);
+        ctx.fillStyle="rgba(255,255,255,.20)";ctx.beginPath();ctx.moveTo(430,0);ctx.lineTo(640,0);ctx.lineTo(640,120);ctx.lineTo(520,214);ctx.lineTo(430,214);ctx.closePath();ctx.fill();
+        ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(PX+(tv*SC)/2-6,PY+24,tv*SC/2,5,0,0,7);ctx.fill();
+        ctx.fillStyle=C_INK;ctx.font="12px 'IBM Plex Sans Arabic',sans-serif";ctx.textAlign="center";fillCap(ctx,T("قلم رصاص على مكتب — من غير أي مرجع جنبه: عينك بس","A pencil on a desk — with nothing beside it: your eye alone"),330,64,"center",17,640);
         const plen=tv*SC-35;
         ctx.fillStyle="#c9ccd1";ctx.fillRect(PX-13,PY,5,17);ctx.fillStyle="#d9779a";ctx.fillRect(PX-8,PY,8,17);
         ctx.fillStyle="#e8a13a";ctx.fillRect(PX,PY,plen,17);ctx.fillStyle="rgba(0,0,0,.15)";ctx.fillRect(PX,PY+12,plen,5);
